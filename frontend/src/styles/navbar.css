@@ -1,0 +1,133 @@
+.navbar {
+
+    position: sticky;
+    top: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem 2rem;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    z-index: 1000;
+    animation: fadeDown 0.5 ease forwards;
+
+}
+
+#logo img {
+
+    height: 40px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    display: block;
+
+}
+
+#logo img:hover {
+
+    transform: scale(1.05);
+
+}
+
+.navLinks {
+
+    display: flex;
+    list-style: none;
+    gap: 1.5rem;
+
+}
+
+.navLinks a,
+.navLinks span {
+
+    text-decoration: none;
+    color: black;
+    font-size: 1rem;
+    position: relative;
+    padding: 5px 0;
+    transition: color 0.3s ease;
+
+}
+
+.navLinks a::after {
+
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0%;
+    height: 2px;
+    background: black;
+    transition: width 0.3s ease;
+
+}
+
+.navLinks a:hover::after {
+
+    width: 100%;
+
+}
+
+.navLinks a:hover {
+
+    color: #188585;
+
+}
+
+.navLinks button {
+
+    background: #ff4757;
+    border: none;
+    padding: 8px 14px;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.3s ease, transform 0.2s ease;
+
+}
+
+.navLinks button:hover {
+
+    background: #ff6b81;
+    transform: translateY(-2px);
+
+}
+
+@keyframes fadeDown {
+
+    from {
+
+        opacity: 0;
+        transform: translateY(-15px);
+        
+    }
+
+    to {
+
+        opacity: 1;
+        transform: translateY(0);
+
+    }
+
+
+}
+
+@media (max-width: 768px) {
+
+    .navLinks{
+
+        gap: 1rem;
+
+    }
+
+    #logo {
+
+        font-size: 1.4rem;
+
+    }
+
+}
+
+
+

@@ -1,0 +1,152 @@
+.postCard {
+
+    background: #fff;
+    border-radius: 14px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+    border: 1px solid #f0f0f0;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+}
+
+.postCard:hover {
+
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+
+}
+
+.postCard h3 {
+
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #188585;
+
+}
+
+.postCard p {
+
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
+    color: #333;
+
+}
+
+.postCard small {
+
+    font-size: 0.8rem;
+    color: #777;
+
+}
+
+.postCard button {
+
+    background: none;
+    border: none;
+    padding: 0.5rem 0.8rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background 0.2s ease, transform 0.1s ease;
+
+}
+
+.postCard button:hover {
+
+    background: rgba(24, 133, 133, 0.08);
+
+}
+
+.postCard button:active {
+
+    transform: scale(0.95);
+
+}
+
+.postCard button.liked {
+
+    color: #ff4757;
+    font-weight: 600;
+
+}
+
+.postCard form {
+
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.8rem;
+
+}
+
+.postCard input[type = "text"] {
+
+    flex: 1;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    background: #fafafa;
+    transition: border 0.2s ease, box-shadow 0.2s ease;
+
+
+}
+
+
+.postCard input[type = "text"]:focus {
+
+    border-color: #188585;
+    background: #fff;
+    box-shadow: 0 0 4px rgba(24, 133, 133, 0.3);
+    outline: none;
+
+}
+
+.postCard form button { 
+
+    background: #188585;
+    color: white;
+    border: none;
+    padding: 0.5rem 0.9rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+
+}
+
+.postCard form button:hover {
+
+    background: #1da1a1;
+
+}
+
+/* Comments section */
+.postCard .comments {
+
+    margin-top: 1rem;
+    padding-top: 0.8rem;
+    border-top: 1px solid #eee;
+
+}
+
+.postCard .comments p {
+
+    font-size: 0.9rem;
+    margin: 0.4rem 0;
+    color: #555;
+
+}
+
+.postCard .comments strong {
+
+    color: #188585;
+
+}
+
+.outerCard {
+
+    padding: 20px;
+
+}

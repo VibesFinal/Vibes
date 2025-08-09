@@ -1,0 +1,30 @@
+.feedPage {
+
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+
+}
+
+.feedPage h2 {
+
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: #188585;
+    margin-bottom: 0.5rem;
+    border-bottom: 2px solid rgba(24, 133, 133, 0.15);
+    padding-bottom: 0.3rem;
+
+}
+
+.feedPage p {
+
+    
+    color: #666;
+    font-size: 0.95rem;
+    
+}
+
