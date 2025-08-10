@@ -1,6 +1,8 @@
 import { useState } from "react";
 import axiosInstance from "../api/axiosInstance";
 import { useNavigate } from "react-router-dom";
+import "../styles/register.css";
+import logo from "../components/images/v_logo.png"
 
 export default function Register( { onRegister } ){
 
@@ -44,10 +46,22 @@ export default function Register( { onRegister } ){
 
     return (
 
+        <div className="registerPage">
+
+        <div className="LogoRegister">
+
+            <img src={logo}/>
+
+        </div>
+
+        <div className="registerContainer">
+
 
         <form onSubmit={handleSubmit}>
 
             <h2>Register</h2>
+
+            <div className="inputs">
 
             <input
             
@@ -85,9 +99,18 @@ export default function Register( { onRegister } ){
             
             />
 
-            <button type="submit">Create your account</button>
+            </div>
+
+            <button type="submit" className="createAccountButton">Create your account</button>
 
         </form>
+
+        </div>
+
+        <button onClick={() => navigate("/login")} className="BackToLogin">Back to Login</button>
+
+        </div>
+
 
 
     );

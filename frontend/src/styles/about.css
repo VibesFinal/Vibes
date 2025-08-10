@@ -1,0 +1,39 @@
+.aboutPage {
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh; 
+    background: linear-gradient(135deg, #e6f3ff, #ffffff);
+    padding: 2rem;
+
+}
+
+.aboutContent {
+
+    max-width: 700px;
+    background: #ffffff;
+    border: 2px solid #a9d6ff;
+    border-radius: 20px;
+    padding: 2.5rem;
+    box-shadow: 0 8px 20px rgba(169, 214, 255, 0.3);
+    text-align: center;
+
+}
+
+.aboutContent p {
+
+    font-size: 1.2rem;
+    line-height: 1.8;
+    color: #1c3f6d;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+}
+
+.aboutContent p::first-letter {
+
+    font-size: 2rem;
+    font-weight: bold;
+    color: #6ec1ff;
+    
+}

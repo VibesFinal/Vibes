@@ -7,6 +7,7 @@ import Login from './pages/login';
 import Register from './pages/register';
 import Navigation from './components/Navigation';
 import Profile from './pages/profile';
+import About from './pages/About';
 
 
 export default function App() {
@@ -110,6 +111,17 @@ export default function App() {
 
             }
 
+          />
+
+          <Route
+          
+            path='/About'
+            element= {
+
+              isAuthenticated ? <About /> : <Navigate to="/login"/>
+
+            }
+          
           />
 
         </Routes>

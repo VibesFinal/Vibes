@@ -1,6 +1,8 @@
 import { useState } from "react";
 import axiosInstance from "../api/axiosInstance";
 import { useNavigate } from "react-router-dom";
+import "../styles/login.css"
+import logo from "../components/images/v_logo.png"
 
 export default function Login( { onLogin } ){
 
@@ -43,7 +45,15 @@ export default function Login( { onLogin } ){
 
     return(
 
-    <div>    
+        <div className="loginPage">
+
+        <div className="logoLogin">
+
+            <img src={logo}/>
+
+        </div>
+
+    <div className="loginContainer">    
 
         <form onSubmit={handleSubmit}>
 
@@ -83,6 +93,7 @@ export default function Login( { onLogin } ){
     </div>    
         
 
+        </div>
 
     );
 
