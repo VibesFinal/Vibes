@@ -12,3 +12,11 @@
 
 
 ![feed page](./frontend//src/components/images/feedPage.png)
+
+- this was a wireframe before creating the web app
+
+![wireframe](./frontend//src/components/images/VibesWireFrame.png)
+
+- Login page
+
+![login page](./frontend//src/components/images/loginPage.png)
