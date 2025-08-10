@@ -8,6 +8,7 @@ import Register from './pages/register';
 import Navigation from './components/Navigation';
 import Profile from './pages/profile';
 import About from './pages/About';
+import Error from './pages/Error404';
 
 
 export default function App() {
@@ -119,6 +120,17 @@ export default function App() {
             element= {
 
               isAuthenticated ? <About /> : <Navigate to="/login"/>
+
+            }
+          
+          />
+
+          <Route 
+          
+            path='*'
+            element= {
+
+              isAuthenticated ? <Error /> : <Navigate to="/login"/>
 
             }
           

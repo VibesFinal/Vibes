@@ -1,0 +1,62 @@
+.errorPage {
+
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg , #74ebd5 , #9face6);
+    color: #fff;
+    text-align: center;
+    padding: 20px;
+    animation: fadeIn 0.8s ease-in-out;
+
+}
+
+.errorCode {
+
+    font-size: 8rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+
+}
+
+.errorMessage {
+
+    font-size: 1.2rem;
+    max-width: 500px;
+    margin-bottom: 25px;
+
+}
+
+.backHomeBtn {
+
+    display: inline-block;
+    padding: 12px 25px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid white;
+    border-radius: 25px;
+    color: white;
+    font-weight: bold;
+    text-decoration: none;
+    transition: 0.3s ease;
+
+}
+
+.backHomeBtn:hover {
+
+    background: white;
+    color: #6a11cb;
+
+}
+
+@keyframes fadeIn {
+    
+    from {opacity: 0; transform: translateY(-20px); }
+    to {opacity: 1; transform: translateY(0); }
+
+}
+
+
+
