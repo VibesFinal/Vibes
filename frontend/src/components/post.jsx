@@ -4,6 +4,10 @@ import axiosInstance from "../api/axiosInstance";
 
 import "../styles/post.css"
 
+import { Link, Navigate } from "react-router-dom";
+
+import { useNavigate } from "react-router-dom";
+
 
 
 export default function Post( { post } ){
@@ -17,6 +21,9 @@ export default function Post( { post } ){
     const [likes , setLikes] = useState(0);
 
     const [likedByUser , setLikedByUser] = useState(false);
+
+    // for navigation to other pages
+    const navigate = useNavigate();
 
     //
 
@@ -138,13 +145,21 @@ export default function Post( { post } ){
 
     }
 
+    //
+
+    const goToProfile = () => {
+
+        navigate(`/profile/${post.userId}`);
+
+    };
+
     return (
 
     <div className="outerCard">
 
         <div className="postCard">
 
-            <h3>@{post.username}</h3>
+          <h3 onClick={goToProfile} className="profileNameLink">@{post.username}</h3>  
 
             <p>{post.content}</p>
 
