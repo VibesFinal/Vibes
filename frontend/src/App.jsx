@@ -10,6 +10,9 @@ import Profile from './pages/profile';
 import About from './pages/About';
 import Error from './pages/Error404';
 
+// SALAM view 
+// hy 
+
 
 export default function App() {
 
