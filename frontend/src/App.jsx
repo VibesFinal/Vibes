@@ -105,7 +105,7 @@ export default function App() {
 
           <Route 
           
-            path='/profile/:userId'
+            path='/profile/:username'
             element= {
 
               isAuthenticated ? <Profile /> : <Navigate to="/login"/>

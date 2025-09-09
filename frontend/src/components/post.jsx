@@ -149,7 +149,7 @@ export default function Post( { post } ){
 
     const goToProfile = () => {
 
-        navigate(`/profile/${post.userId}`);
+        navigate(`/profile/${post.username}`);
 
     };
 
