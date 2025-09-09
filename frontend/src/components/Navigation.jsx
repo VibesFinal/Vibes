@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { json, Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "../styles/navbar.css"
 import logo from "./images/v_logo.png"
 
@@ -8,7 +8,8 @@ export default function Navigation( { onLogout } ){
     const navigate = useNavigate();
 
     //
-    const [currentUserId , setCurrentUserID] = useState(null);
+    //const [currentUserId , setCurrentUserID] = useState(null);
+    const [currentUser , setCurrentUser] = useState(null);
 
     //
 
@@ -16,23 +17,39 @@ export default function Navigation( { onLogout } ){
 
         const token = localStorage.getItem("token");
 
-        if(token) {
+        if(token){
 
-            try {
-                
-                const payload = JSON.parse(atob(token.split('.')[1]));
-                setCurrentUserID(payload.id);
+            const fetchUser = async () => {
 
-            } catch (error) {
-                
-                console.error("error decoding token", error);
-                
+                try {
+                    
+                    const res = await fetch("http://localhost:7777/user/profile", {
 
-            }
+                        headers: {
+
+                            "Authorization": `Bearer ${token}`
+
+                        }
+
+                    });
+
+                    const data = await res.json();
+
+                    setCurrentUser(data);
+
+                } catch (error) {
+
+                    console.error("failed to fetch user data: ", error);
+                       
+                }
+
+            };
+
+            fetchUser();
 
         }
 
-    } , [])
+    } , []);
 
     //
 
@@ -69,9 +86,9 @@ export default function Navigation( { onLogout } ){
 
                     <li>
 
-                        {currentUserId ? (
+                        {currentUser ? (
 
-                            <Link to={`/profile/${currentUserId}`}>Profile</Link>
+                            <Link to={`/profile/${currentUser.username}`}>Profile</Link>
 
                         ) : (
 
