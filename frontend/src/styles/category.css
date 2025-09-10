@@ -1,0 +1,31 @@
+.categoryPills {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  margin: 20px 0;
+}
+
+.categoryPills .pill {
+  outline: none;
+  padding: 8px 18px;
+  border-radius: 20px; 
+  background: #f2f2f2;
+  color: #333;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f0f0f0;
+  margin-bottom: 1.5rem;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.categoryPills .pill:hover {
+  background: #e0e0e0;
+}
+
+.categoryPills .pill.active {
+  background: #188585; 
+  color: #fff;
+  font-weight: 500;
+}

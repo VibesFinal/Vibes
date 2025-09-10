@@ -50,7 +50,7 @@ router.post('/register' , async (req , res) => {
         
     } catch (error) {
 
-        console.error("error inserting user " , error);
+        console.error("error inserting user " , error.message);
 
         if(error.code === '23505'){
 
@@ -99,7 +99,7 @@ router.post("/login" , async (req , res) => {
 
             process.env.JWT_SECRET,
 
-            {expiresIn: "2h"}
+            {expiresIn: "60d"}
 
         );
 

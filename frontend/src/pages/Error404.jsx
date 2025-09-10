@@ -6,7 +6,7 @@ export default function Error(){
     return(
 
         <div className="errorPage">
-
+            
             <h1 className="errorCode">404</h1>
 
             <p className="errorMessage">  Oops! The page you are looking for doesn't exist or has been moved.</p>
