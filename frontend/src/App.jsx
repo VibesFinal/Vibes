@@ -11,6 +11,9 @@ import About from './pages/About';
 import Error from './pages/Error404';
 import Chatbot from './pages/chatBot';
 
+// SALAM view 
+// hy 
+
 
 export default function App() {
 

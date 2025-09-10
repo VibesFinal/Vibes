@@ -288,6 +288,12 @@ ALTER TABLE ONLY public.posts
     ADD CONSTRAINT posts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
+-- Migration: Add category column to posts table
+-- Run: psql -d vibesdb -f migrations/2025_09_08_add_category_to_posts.sql
+
+ALTER TABLE posts
+ADD COLUMN category VARCHAR(50);
+
 --
 -- PostgreSQL database dump complete
 --
