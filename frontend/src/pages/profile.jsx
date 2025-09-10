@@ -7,17 +7,21 @@ import "../styles/profile.css";
 
 export default function Profile(){
 
-    const { userId } = useParams();
+    const { username } = useParams();
+    const [user , setUser] = useState(null);
     const [posts , setPosts] = useState([]);
     const [loading , setLoading] = useState(true);
 
-    const fetchUserPosts = async () => {
+    const fetchUserProfile = async () => {
 
         try {
             
-            const res = await axiosInstance.get(`/profile/${userId}`);
-            setPosts(res.data);
-            setLoading(false);
+            const res = await axiosInstance.get(`/profile/${username}`);
+
+            setUser(res.data.user);
+
+            setPosts(res.data.posts);
+            
 
         } catch (error) {
 
@@ -34,9 +38,9 @@ export default function Profile(){
     useEffect(() => {
 
 
-        fetchUserPosts();
+        fetchUserProfile();
 
-    } , [userId])
+    } , [username])
 
     return(
 
