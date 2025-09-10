@@ -49,6 +49,9 @@ app.use("/comments" , comments)
 
 const profile = require("./Routes/profile")
 app.use("/profile" , profile);
+
+const chatRoute = require("./Routes/chatRoute");
+app.use("/api/chat" , chatRoute);
 //
 
 

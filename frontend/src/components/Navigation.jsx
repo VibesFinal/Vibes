@@ -70,7 +70,7 @@ export default function Navigation( { onLogout } ){
 
         <header className="navbar">
 
-            <div id="logo">
+            <div id="logo" onClick={() => navigate("/")}>
                 
                 <img src={logo}/>    
                 
@@ -97,6 +97,8 @@ export default function Navigation( { onLogout } ){
                         )}
 
                     </li>
+
+                    <li><Link to= "/chatBot">Ai listener</Link></li>
 
 
 
