@@ -149,7 +149,7 @@ export default function Post( { post } ){
 
     const goToProfile = () => {
 
-        navigate(`/profile/${post.userId}`);
+        navigate(`/profile/${post.username}`);
 
     };
 
@@ -162,6 +162,7 @@ export default function Post( { post } ){
           <h3 onClick={goToProfile} className="profileNameLink">@{post.username}</h3>  
 
             <p>{post.content}</p>
+            <p>{post.category || "General"}</p>
 
             <small>{new Date(post.created_at).toLocaleString()}</small>
 

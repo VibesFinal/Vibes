@@ -9,6 +9,7 @@ import Navigation from './components/Navigation';
 import Profile from './pages/profile';
 import About from './pages/About';
 import Error from './pages/Error404';
+import Chatbot from './pages/chatBot';
 
 // SALAM view 
 // hy 
@@ -108,7 +109,7 @@ export default function App() {
 
           <Route 
           
-            path='/profile/:userId'
+            path='/profile/:username'
             element= {
 
               isAuthenticated ? <Profile /> : <Navigate to="/login"/>
@@ -123,6 +124,17 @@ export default function App() {
             element= {
 
               isAuthenticated ? <About /> : <Navigate to="/login"/>
+
+            }
+          
+          />
+
+          <Route 
+          
+            path='/chatBot'
+            element= {
+
+              isAuthenticated ? <Chatbot /> : <Navigate to="/login"/>
 
             }
           
