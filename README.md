@@ -27,3 +27,5 @@ this amazing feature allows the user to use Ai to express his feelings and inter
 as a good listener
 
 ![Ai chatbot](./frontend/src/components/images/VibesAiBotImg.png)
+
+- this is Vibes
