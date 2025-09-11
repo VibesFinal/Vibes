@@ -4,7 +4,7 @@ import axiosInstance from "../api/axiosInstance";
 
 import "../styles/post.css"
 
-import { Link, Navigate } from "react-router-dom";
+//import { Link, Navigate } from "react-router-dom";
 
 import { useNavigate } from "react-router-dom";
 
