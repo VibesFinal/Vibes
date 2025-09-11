@@ -18,7 +18,7 @@ router.post("/" , async (req , res) => {
         }
 
         //prompt
-        const systemPrompt = "You are a friendly AI assistant. Always respond kindly and help the user.";
+        const systemPrompt = `You are a friendly AI assistant. Always respond kindly and help the user.`;
 
         const response = await fetch(
 
@@ -47,7 +47,7 @@ router.post("/" , async (req , res) => {
 
                     generationConfig: {
 
-                        temperature: 0.7,
+                        temperature: 0.7, 
                         maxOutputTokens: 256 
 
 
