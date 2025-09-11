@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import axiosInstance from "../api/axiosInstance";
-import Post from "../components/post";
 import NewPost from "./newPost";
 import Category from "../components/Category";
 import "../styles/feed.css";

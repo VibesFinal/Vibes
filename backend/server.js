@@ -52,6 +52,9 @@ app.use("/profile" , profile);
 
 const chatRoute = require("./Routes/chatRoute");
 app.use("/api/chat" , chatRoute);
+
+const home = require("./Routes/home")
+app.use("/",home)
 //
 
 
