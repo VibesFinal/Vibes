@@ -298,3 +298,7 @@ ADD COLUMN category VARCHAR(50);
 -- PostgreSQL database dump complete
 --
 
+
+GRANT ALL PRIVILEGES ON DATABASE vibesdb TO ghassan_emran;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO ghassan_emran;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO ghassan_emran;
