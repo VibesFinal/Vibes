@@ -10,6 +10,7 @@ import Profile from './pages/profile';
 import About from './pages/About';
 import Error from './pages/Error404';
 import Chatbot from './pages/chatBot';
+import HealthFAQ from './pages/HealthFAQ'
 
 // SALAM view 
 // hy 
@@ -151,7 +152,14 @@ export default function App() {
           
           />
 
+          <Route 
+         path="/health-faq" 
+         element={<HealthFAQ />} 
+         />
+
         </Routes>
+
+         
 
       </Router>
 

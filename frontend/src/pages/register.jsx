@@ -50,7 +50,7 @@ export default function Register( { onRegister } ){
 
         <div className="LogoRegister">
 
-            <img src={logo}/>
+            <img src={logo} alt="text"/>
 
         </div>
 
