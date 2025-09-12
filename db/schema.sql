@@ -302,14 +302,3 @@ ALTER TABLE posts ADD COLUMN IF NOT EXISTS is_anonymous BOOLEAN DEFAULT FALSE;
 
 
 
-
-
-
---
--- PostgreSQL database dump complete
---
-
-
-GRANT ALL PRIVILEGES ON DATABASE vibesdb TO ghassan_emran;
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO ghassan_emran;
-GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO ghassan_emran;
