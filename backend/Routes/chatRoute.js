@@ -47,7 +47,7 @@ router.post("/" , async (req , res) => {
 
                     generationConfig: {
 
-                        temperature: 0.7, 
+                        temperature: 0.9, 
                         maxOutputTokens: 256 
 
 
