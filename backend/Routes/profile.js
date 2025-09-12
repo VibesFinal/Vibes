@@ -42,7 +42,7 @@ router.get("/:username" , async (req , res) => {
         
         const postResult = await pool.query(
 
-            `SELECT posts.id, posts.content, posts.created_at, users.username
+            `SELECT posts.id, posts.content, posts.created_at, posts.category, users.username
             FROM posts
             JOIN users ON posts.user_id = users.id
             WHERE users.username = $1
