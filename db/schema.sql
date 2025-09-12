@@ -294,6 +294,17 @@ ALTER TABLE ONLY public.posts
 ALTER TABLE posts
 ADD COLUMN category VARCHAR(50);
 
+
+-- Migration: Add is_anonymous column to posts table
+-- Run: psql -d vibesdb -f migrations/2025_09_08_add_is_anonymous_to_posts.sql
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS is_anonymous BOOLEAN DEFAULT FALSE;
+
+
+
+
+
+
+
 --
 -- PostgreSQL database dump complete
 --

@@ -9,12 +9,10 @@ require('dotenv').config();
 const cors = require("cors");
 
 app.use(cors({
-
-    origin: "http://localhost:3000",
-
+    origin: ["http://localhost:3000", "http://localhost:4000"],
     credentials: true
-
 }));
+
 
 //db requiring
 //------------------------
@@ -27,7 +25,7 @@ app.use(express.json())
 
 //--------------------------
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT ||3000;
 
 //important routes--------------------------------
 

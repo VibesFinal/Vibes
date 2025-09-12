@@ -159,7 +159,7 @@ export default function Post( { post } ){
 
         <div className="postCard">
 
-          <h3 onClick={goToProfile} className="profileNameLink">@{post.username}</h3>  
+        <h3 onClick={goToProfile} className="profileNameLink">@{post.is_anonymous ? 'Anonymous' : post.username}</h3>  
 
             <p>{post.content}</p>
             <p>{post.category || "General"}</p>

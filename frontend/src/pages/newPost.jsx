@@ -10,6 +10,8 @@ export default function NewPost({ onPostCreated }) {
   const [categoryInput, setCategoryInput] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [isAnonymous, setIsAnonymous] = useState(false);
+
   const suggestionsRef = useRef(null);
 
   // Handle input change and filter suggestions
@@ -44,7 +46,7 @@ export default function NewPost({ onPostCreated }) {
     };
   }, []);
 
-  // Handle form submission
+    // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -55,7 +57,8 @@ export default function NewPost({ onPostCreated }) {
     try {
       const payload = {
         content,
-        category: selectedCategory || categoryInput // fallback if user typed a new category
+        category: selectedCategory || categoryInput, // fallback if user typed a new category
+        is_anonymous: isAnonymous // <<< ADD THIS LINE
       };
 
       const res = await axiosInstance.post("/posts", payload);
@@ -65,6 +68,7 @@ export default function NewPost({ onPostCreated }) {
       setContent("");
       setCategoryInput("");
       setSelectedCategory("");
+      setIsAnonymous(false); // <<< to reset the checkbox
 
       // Notify parent component about the new post
       if (onPostCreated) onPostCreated(createdPost);
@@ -74,6 +78,7 @@ export default function NewPost({ onPostCreated }) {
       alert("You must be logged in to create a post");
     }
   };
+
 
   return (
     <form onSubmit={handleSubmit} className="newPostForm">
@@ -120,7 +125,10 @@ export default function NewPost({ onPostCreated }) {
                   borderBottom: "1px solid #188585",
                 }}
                 onMouseEnter={(e) => (e.target.style.background = "#ddd")}
-                onMouseLeave={(e) => (e.target.style.background = "#ddd", e.target.style.color = "#188585")}
+                onMouseLeave={(e) => {
+                  e.target.style.background = "#ddd";
+                  e.target.style.color = "#188585";
+                }}
               >
                 {cat}
               </li>
@@ -130,6 +138,16 @@ export default function NewPost({ onPostCreated }) {
       </div>
 
       <button type="submit">Post</button>
+      <label className="anonymous-checkbox">
+    <input
+        type="checkbox"
+        checked={isAnonymous}
+        onChange={(e) => setIsAnonymous(e.target.checked)}
+    />
+    Post anonymously
+</label>
+
     </form>
+    
   );
 }
