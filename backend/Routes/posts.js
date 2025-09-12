@@ -7,7 +7,8 @@ const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 
 // Create a new post
 router.post("/", routeGuard, async (req, res) => {
-    const { content, category } = req.body;
+    // Added 'is_anonymous' to the destructuring
+    const { content, category, is_anonymous } = req.body;
     const user_id = req.user.id;
 
     if (!user_id || !content) {
@@ -15,19 +16,20 @@ router.post("/", routeGuard, async (req, res) => {
     }
 
     try {
+        // Updated INSERT query to include 'is_anonymous'
         const insertResult = await pool.query(
-            "INSERT INTO posts (user_id, content, category) VALUES ($1, $2, $3) RETURNING *",
-            [user_id, content, category]
+            "INSERT INTO posts (user_id, content, category, is_anonymous) VALUES ($1, $2, $3, $4) RETURNING *",
+            [user_id, content, category, is_anonymous || false] // Pass the value, default to false
         );
 
         const postId = insertResult.rows[0].id;
 
-        // Fetch the full post
+        // Updated SELECT query to fetch 'is_anonymous'
         const fullPost = await pool.query(
-            `SELECT posts.id, users.username, posts.content, posts.created_at, posts.category
-             FROM posts
-             JOIN users ON posts.user_id = users.id
-             WHERE posts.id = $1`,
+            `SELECT posts.id, users.username, posts.content, posts.created_at, posts.category, posts.is_anonymous
+            FROM posts
+            JOIN users ON posts.user_id = users.id
+            WHERE posts.id = $1`,
             [postId]
         );
 
@@ -43,8 +45,9 @@ router.get("/", async (req, res) => {
     const { category } = req.query;
 
     try {
+        // Updated SELECT query to fetch 'is_anonymous'
         let query = `
-            SELECT posts.id, users.username, posts.content, posts.created_at, posts.category
+            SELECT posts.id, users.username, posts.content, posts.created_at, posts.category, posts.is_anonymous
             FROM posts
             JOIN users ON posts.user_id = users.id
         `;
