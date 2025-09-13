@@ -128,11 +128,11 @@ export default function App() {
         />
 
         <Route
-          path="/profile/:username"
-          element={
-            isAuthenticated ? <Profile /> : <Navigate to="/login" />
-          }
-        />
+           path="/profile/:userId"           // 👈 CHANGE THIS LINE FROM ":username" TO ":userId"
+           element={
+           isAuthenticated ? <Profile /> : <Navigate to="/login" />
+           }
+           />
 
         <Route
           path="/About"

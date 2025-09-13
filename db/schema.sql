@@ -300,16 +300,20 @@ ADD COLUMN category VARCHAR(50);
 ALTER TABLE posts ADD COLUMN IF NOT EXISTS is_anonymous BOOLEAN DEFAULT FALSE;
 
 
+-- Migration: Create follows table
+-- Run: psql -d vibesdb -f migrations/2025_09_13_create_follows_table.sql
+
+CREATE TABLE follows (
+  id SERIAL PRIMARY KEY,
+  follower_id INT NOT NULL,
+  following_id INT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_follower FOREIGN KEY (follower_id) REFERENCES users(id) ON DELETE CASCADE,
+  CONSTRAINT fk_following FOREIGN KEY (following_id) REFERENCES users(id) ON DELETE CASCADE,
+  CONSTRAINT unique_follow UNIQUE (follower_id, following_id)
+);
 
 
 
 
 
---
--- PostgreSQL database dump complete
---
-
-
-GRANT ALL PRIVILEGES ON DATABASE vibesdb TO ghassan_emran;
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO ghassan_emran;
-GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO ghassan_emran;

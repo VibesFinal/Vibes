@@ -47,7 +47,7 @@ router.get("/", async (req, res) => {
     try {
         // Updated SELECT query to fetch 'is_anonymous'
         let query = `
-            SELECT posts.id, users.username, posts.content, posts.created_at, posts.category, posts.is_anonymous
+            SELECT posts.id, posts.user_id, users.username, posts.content, posts.created_at, posts.category, posts.is_anonymous
             FROM posts
             JOIN users ON posts.user_id = users.id
         `;

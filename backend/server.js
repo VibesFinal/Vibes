@@ -7,11 +7,27 @@ const app = express()
 require('dotenv').config();
 
 const cors = require("cors");
+app.use(express.json())
 
-app.use(cors({
+const corsOptions = {
+  origin: [
+    "http://localhost:3000", // 👈 Your React frontend (default Vite port)
+    "http://localhost:4000"  // 👈 Optional: if you have another frontend or test app
+  ],
+  credentials: true,
+  optionsSuccessStatus: 200,
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization"
+  ]
+};
+
+app.use(cors(corsOptions));
+
+/*app.use(cors({
     origin: ["http://localhost:3000", "http://localhost:4000"],
     credentials: true
-}));
+}));*/
 
 
 //db requiring
@@ -21,7 +37,7 @@ const pg = require("pg");
 
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 
-app.use(express.json())
+
 
 //--------------------------
 
@@ -33,6 +49,13 @@ const PORT = process.env.PORT ||3000;
 const auth = require("./Routes/auth");
 app.use("/user" , auth);
 
+// follow route
+const follow = require("./Routes/follow");
+app.use("/follow" , follow);
+
+// search user
+const searchRoute = require("./Routes/search");
+app.use("/user/search", searchRoute);
 
 const postRoute = require("./Routes/posts");
 app.use("/posts" , postRoute);

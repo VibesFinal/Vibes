@@ -41,7 +41,19 @@ router.post('/register', async (req, res) => {
 
 // ✅ Enhanced Login — Now returns token + Gemini welcome message
 router.post("/login", async (req, res) => {
+    console.log("✅ auth.js login route is being used!");
+  console.log("🔍 Raw request body:", req.body); // 👈 Debug line
+
+  // 👇 SAFETY CHECK — even if Express.json() is working
+  if (!req.body || typeof req.body !== 'object') {
+    return res.status(400).json({ error: "Invalid request body. Ensure Content-Type: application/json" });
+  }
+
   const { username, password } = req.body;
+
+  if (!username || !password) {
+    return res.status(400).json({ error: "Username and password are required" });
+  }
 
   try {
     const userResult = await pool.query(
@@ -91,19 +103,24 @@ router.post("/login", async (req, res) => {
 router.get("/profile", routeGuard, async (req, res) => {
   try {
     const userId = req.user.id;
+
     const result = await pool.query(
-      "SELECT username, email FROM users WHERE id = $1",
+      "SELECT id, username, email FROM users WHERE id = $1", // 👈 ADD "id" TO SELECT!
       [userId]
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).send("User not found");
+      return res.status(404).json({ error: "User not found" }); // 👈 Use json(), not send()
     }
 
-    res.json(result.rows[0]);
+    // 👇 FIXED: Wrap in { user: ... } to match frontend expectation
+    res.json({
+      user: result.rows[0] // 👈 This makes data.user available in frontend
+    });
+
   } catch (error) {
-    console.log("Error fetching profile", error);
-    res.status(500).send("Server error");
+    console.error("Error fetching profile", error); // 👈 Use console.error for errors
+    res.status(500).json({ error: "Server error" }); // 👈 Use json(), not send()
   }
 });
 
