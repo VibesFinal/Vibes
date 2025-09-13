@@ -23,8 +23,9 @@ export default function Login({ onLogin }) {
         username,
         password,
       });
-
+      // Save JWT and user info
       localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
 
       const message = res.data.welcomeMessage;
       setWelcomeMessage(message);
