@@ -59,9 +59,7 @@ export default function Navigation({ onLogout }) {
 
           <li><Link to="/about">About</Link></li> {/* 👈 Fixed: was "About" → should be "/about" */}
 
-          {/* ✅ NEW: Health FAQ Link */}
-          <li><Link to="/health-faq">Health FAQs</Link></li>
-
+         
           <li>
             <button onClick={handleLogout}>Logout</button>
           </li>
