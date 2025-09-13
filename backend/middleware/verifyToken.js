@@ -21,17 +21,13 @@ function routeGuard(req , res , next){  /* we used next to make the function con
 
     }
 
-    try { // decode
-        
-        const decode = jwt.verify(token , process.env.JWT_SECRET);
-        req.user = decode
-
-        next();
-
+   try {
+       
+       const decode = jwt.verify(token, process.env.JWT_SECRET);
+       req.user = decode;
+       next();
     } catch (error) {
-
-        return res.status(403).send("invalid or expired token");
-        
+      return res.status(403).send("invalid or expired token");
     }
 
 }

@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from "react";
 import axiosInstance from "../api/axiosInstance";
-import "../styles/newPost.css";
 
 // Default categories for suggestions
 const categories = ["Mindfulness", "Self Care", "Anxiety", "Depression", "Positive Vibes"];
@@ -46,7 +45,7 @@ export default function NewPost({ onPostCreated }) {
     };
   }, []);
 
-    // Handle form submission
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -57,8 +56,8 @@ export default function NewPost({ onPostCreated }) {
     try {
       const payload = {
         content,
-        category: selectedCategory || categoryInput, // fallback if user typed a new category
-        is_anonymous: isAnonymous // <<< ADD THIS LINE
+        category: selectedCategory || categoryInput,
+        is_anonymous: isAnonymous,
       };
 
       const res = await axiosInstance.post("/posts", payload);
@@ -68,67 +67,44 @@ export default function NewPost({ onPostCreated }) {
       setContent("");
       setCategoryInput("");
       setSelectedCategory("");
-      setIsAnonymous(false); // <<< to reset the checkbox
+      setIsAnonymous(false);
 
       // Notify parent component about the new post
       if (onPostCreated) onPostCreated(createdPost);
-
     } catch (error) {
       console.error("Error creating post:", error);
       alert("You must be logged in to create a post");
     }
   };
 
-
   return (
-    <form onSubmit={handleSubmit} className="newPostForm">
+    <form onSubmit={handleSubmit} className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 w-full transition-all duration-200 hover:shadow-md hover:-translate-y-1">
+      {/* Main Post Textarea */}
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder="What's on your mind?"
         rows="3"
+        className="w-full px-4 py-3 text-gray-800 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-all duration-200 resize-none"
       />
 
-      <div style={{ position: "relative", marginBottom: "10px" }} ref={suggestionsRef}>
+      {/* Category Input + Suggestions Dropdown */}
+      <div className="relative mt-4" ref={suggestionsRef}>
         <textarea
-          type="text"
           value={categoryInput}
           onChange={handleCategoryChange}
           placeholder="Type or select a category"
           rows="1"
+          className="w-full px-4 py-3 text-gray-800 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-all duration-200 resize-none"
         />
+
         {suggestions.length > 0 && (
-          <ul
-            style={{
-              listStyle: "none",
-              margin: 0,
-              padding: 0,
-              border: "1px solid #188585",
-              position: "absolute",
-              width: "100%",
-              background: "white",       
-              fontWeight: 500,       
-              zIndex: 10,
-              borderRadius: "20px",
-              maxHeight: "150px",
-              overflowY: "auto",
-              boxShadow: "0 4px 14px rgba(0, 0, 0, 0.05)",
-            }}
-          >
+          <ul className="absolute z-10 w-full mt-1 bg-white border border-cyan-300 rounded-xl shadow-lg max-h-60 overflow-y-auto divide-y divide-gray-100">
             {suggestions.map((cat, index) => (
               <li
                 key={index}
                 onClick={() => handleSelectCategory(cat)}
-                style={{
-                  padding: "8px",
-                  cursor: "pointer",
-                  borderBottom: "1px solid #188585",
-                }}
-                onMouseEnter={(e) => (e.target.style.background = "#ddd")}
-                onMouseLeave={(e) => {
-                  e.target.style.background = "#ddd";
-                  e.target.style.color = "#188585";
-                }}
+                className="px-4 py-3 cursor-pointer hover:bg-cyan-50 text-gray-800 font-medium transition-colors duration-150"
               >
                 {cat}
               </li>
@@ -137,17 +113,24 @@ export default function NewPost({ onPostCreated }) {
         )}
       </div>
 
-      <button type="submit">Post</button>
-      <label className="anonymous-checkbox">
-    <input
-        type="checkbox"
-        checked={isAnonymous}
-        onChange={(e) => setIsAnonymous(e.target.checked)}
-    />
-    Post anonymously
-</label>
+      {/* Submit Button */}
+      <button
+        type="submit"
+        className="mt-5 w-full bg-cyan-600 text-white font-medium py-3 rounded-lg hover:bg-cyan-700 transform transition-all duration-150 hover:-translate-y-0.5 active:scale-95 shadow-sm"
+      >
+        Post
+      </button>
 
+      {/* Anonymous Checkbox */}
+      <label className="flex items-center mt-4 text-sm text-gray-700">
+        <input
+          type="checkbox"
+          checked={isAnonymous}
+          onChange={(e) => setIsAnonymous(e.target.checked)}
+          className="mr-2 h-4 w-4 text-cyan-600 focus:ring-cyan-500 border-gray-300 rounded"
+        />
+        Post anonymously
+      </label>
     </form>
-    
   );
 }

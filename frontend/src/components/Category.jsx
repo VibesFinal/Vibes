@@ -1,57 +1,65 @@
 import { useState, useEffect } from "react";
 import Post from "./post";
-import "../styles/post.css";
-import "../styles/category.css";
 
 export default function Category({ posts, selectedCategory, setSelectedCategory }) {
-  // default categories
+  // Default categories
   const defaultCategories = ["Mindfulness", "Self Care", "Anxiety", "Depression"];
+
   const [categories, setCategories] = useState(defaultCategories);
 
   useEffect(() => {
-    // extract unique categories from posts
+    // Extract unique categories from posts
     const uniqueCategories = Array.from(new Set(posts.map(p => p.category)));
 
-    // merge with default categories
+    // Merge with defaults and deduplicate
     let merged = [...defaultCategories, ...uniqueCategories];
-
-    // remove duplicates
     merged = [...new Set(merged)];
 
-    // limit to 6 categories
+    // Limit to max 6 categories
     setCategories(merged.slice(0, 6));
   }, [posts]);
 
   return (
-    <div className="postsContainer">
-      <h2>Posts</h2>
+    <div className="max-w-4xl mx-auto px-4 py-6">
+      <h2 className="text-2xl font-bold text-gray-800 mb-6">Posts</h2>
 
-      {/* Category pills bar */}
-      <div className="categoryPills">
+      {/* Category Pills Bar */}
+      <div className="flex flex-wrap gap-3 mb-8">
         <button
-          className={`pill ${selectedCategory === "" ? "active" : ""}`}
           onClick={() => setSelectedCategory("")}
+          className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 transform hover:-translate-y-0.5 ${
+            selectedCategory === ""
+              ? "bg-cyan-600 text-white shadow-md"
+              : "bg-gray-100 text-gray-700 hover:bg-gray-200 shadow-sm"
+          }`}
         >
           All Posts
         </button>
+
         {categories.map(cat => (
           <button
             key={cat}
-            className={`pill ${selectedCategory === cat ? "active" : ""}`}
             onClick={() => setSelectedCategory(cat)}
+            className={`px-5 py-2 rounded-full text-sm font-medium capitalize transition-all duration-200 transform hover:-translate-y-0.5 ${
+              selectedCategory === cat
+                ? "bg-cyan-600 text-white shadow-md"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200 shadow-sm"
+            }`}
           >
             {cat}
           </button>
         ))}
       </div>
 
-      {/* Render posts */}
+      {/* Posts List */}
       {posts.length > 0 ? (
         posts
-          .filter(p => !selectedCategory || p.category === selectedCategory)
+          .filter(post => !selectedCategory || post.category === selectedCategory)
           .map(post => <Post key={post.id} post={post} />)
       ) : (
-        <p>No posts found.</p>
+        <div className="text-center py-12 bg-gray-50 rounded-xl">
+          <p className="text-gray-500 text-lg">No posts found.</p>
+        </div>
       )}
     </div>
   );
