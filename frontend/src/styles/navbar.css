@@ -130,4 +130,51 @@
 }
 
 
+/* ---------- Search Bar in Navbar ---------- */
+.searchContainer {
+    position: relative;
+}
+
+.searchContainer input {
+    padding: 5px 10px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    outline: none;
+    font-size: 0.9rem;
+    width: 180px;
+    transition: box-shadow 0.3s ease;
+}
+
+.searchContainer input:focus {
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+    border-color: #188585;
+}
+
+.searchResults {
+    position: absolute;
+    top: 35px;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #ddd;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-radius: 4px;
+}
+
+.searchResults li {
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.searchResults li:hover {
+    background-color: #f0f0f0;
+}
+
+
 

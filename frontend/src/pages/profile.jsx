@@ -1,7 +1,7 @@
-
 import { useEffect, useState } from "react";
 import axiosInstance from "../api/axiosInstance";
 import Post from "../components/post";
+import FollowList from "../components/FollowList";
 import { useParams } from "react-router-dom";
 import "../styles/profile.css";
 
@@ -11,6 +11,9 @@ export default function Profile() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Get logged-in user from localStorage
+  const currentUser = JSON.parse(localStorage.getItem("user"));
 
   const fetchUserProfile = async () => {
     try {
@@ -48,7 +51,7 @@ export default function Profile() {
 
   return (
     <div className="profileContainer">
-      {/* ✅ User Profile Header */}
+      {/* User Profile Header */}
       <div className="profileHeader">
         <h2>{user?.username || "User"}'s Profile</h2>
         {user?.avatar && (
@@ -60,9 +63,12 @@ export default function Profile() {
         )}
         <p>Email: {user?.email || "Not provided"}</p>
         <p>Total Posts: {posts.length}</p>
+
+        {/* Followers / Following Section */}
+        <FollowList userId={user.id} currentUserId={currentUser.id} />
       </div>
 
-      {/* ✅ Posts Section */}
+      {/* Posts Section */}
       {posts.length === 0 ? (
         <p>No posts found</p>
       ) : (

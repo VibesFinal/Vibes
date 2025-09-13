@@ -33,6 +33,13 @@ const PORT = process.env.PORT ||3000;
 const auth = require("./Routes/auth");
 app.use("/user" , auth);
 
+// follow route
+const follow = require("./Routes/follow");
+app.use("/follow" , follow);
+
+// search user
+const searchRoute = require("./Routes/search");
+app.use("/user/search", searchRoute);
 
 const postRoute = require("./Routes/posts");
 app.use("/posts" , postRoute);
