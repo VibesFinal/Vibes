@@ -315,5 +315,10 @@ CREATE TABLE follows (
 
 
 
+ALTER TABLE posts ADD COLUMN photo TEXT;
+ALTER TABLE posts ADD COLUMN video TEXT;
+
+
+
 
 
