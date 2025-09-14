@@ -304,15 +304,26 @@ ALTER TABLE posts ADD COLUMN IF NOT EXISTS is_anonymous BOOLEAN DEFAULT FALSE;
 -- Run: psql -d vibesdb -f migrations/2025_09_13_create_follows_table.sql
 
 CREATE TABLE follows (
-  id SERIAL PRIMARY KEY,
-  follower_id INT NOT NULL,
-  following_id INT NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT fk_follower FOREIGN KEY (follower_id) REFERENCES users(id) ON DELETE CASCADE,
-  CONSTRAINT fk_following FOREIGN KEY (following_id) REFERENCES users(id) ON DELETE CASCADE,
-  CONSTRAINT unique_follow UNIQUE (follower_id, following_id)
+id SERIAL PRIMARY KEY,
+follower_id INT NOT NULL,
+following_id INT NOT NULL,
+created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+CONSTRAINT fk_follower FOREIGN KEY (follower_id) REFERENCES users(id) ON DELETE CASCADE,
+CONSTRAINT fk_following FOREIGN KEY (following_id) REFERENCES users(id) ON DELETE CASCADE,
+CONSTRAINT unique_follow UNIQUE (follower_id, following_id)
 );
 
+
+-- Migration: Add photo and video columns to posts table
+-- Run: psql -d vibesdb -f migrations/2025_09_14_add_media_to_posts.sql
+ALTER TABLE posts ADD COLUMN photo TEXT;
+ALTER TABLE posts ADD COLUMN video TEXT;
+
+-- Migration: Add reaction_type column to likes table
+--  Run: psql -d vibesdb -f migrations/2025_09_15_add_reaction_type_to_likes.sql 
+ALTER TABLE public.likes ADD COLUMN reaction_type VARCHAR(50) DEFAULT 'Love';
+ALTER TABLE ONLY public.likes DROP CONSTRAINT likes_user_id_post_id_key;
+ALTER TABLE ONLY public.likes ADD CONSTRAINT likes_user_id_post_id_key UNIQUE (user_id, post_id, reaction_type);
 
 
 
