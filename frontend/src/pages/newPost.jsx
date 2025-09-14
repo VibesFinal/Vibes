@@ -10,6 +10,9 @@ export default function NewPost({ onPostCreated }) {
   const [suggestions, setSuggestions] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(false);
+  const [photo, setPhoto] = useState(null);
+  const [video, setVideo] = useState(null);
+
 
   const suggestionsRef = useRef(null);
 
@@ -54,13 +57,23 @@ export default function NewPost({ onPostCreated }) {
     }
 
     try {
-      const payload = {
-        content,
-        category: selectedCategory || categoryInput,
-        is_anonymous: isAnonymous,
-      };
+   
+      const formData = new FormData();
 
-      const res = await axiosInstance.post("/posts", payload);
+        formData.append("content" , content);
+        formData.append("category" , selectedCategory || categoryInput);
+        formData.append("is_anonymous" , isAnonymous);
+
+        if(photo) formData.append("photo" , photo);
+        if(video) formData.append("video" , video);
+
+      const res = await axiosInstance.post("/posts", formData, {
+
+          headers: { "Content-Type": "multipart/form-data" },
+
+      });
+
+
       const createdPost = res.data;
 
       // Clear input fields
@@ -68,13 +81,22 @@ export default function NewPost({ onPostCreated }) {
       setCategoryInput("");
       setSelectedCategory("");
       setIsAnonymous(false);
+      //
+
+      setVideo(null);
+      setPhoto(null);
+      
 
       // Notify parent component about the new post
       if (onPostCreated) onPostCreated(createdPost);
+
     } catch (error) {
+
       console.error("Error creating post:", error);
       alert("You must be logged in to create a post");
+
     }
+
   };
 
   return (
@@ -112,6 +134,121 @@ export default function NewPost({ onPostCreated }) {
           </ul>
         )}
       </div>
+
+      
+{/* Media Upload Section */}
+<div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+  {/* Photo Upload */}
+
+  <div className="flex flex-col items-center justify-center w-full">
+
+    <label className="w-full flex flex-col items-center px-4 py-6 bg-gray-50 text-gray-700 rounded-lg border-2 border-dashed border-gray-300 cursor-pointer hover:bg-cyan-50 hover:border-cyan-400 transition-colors duration-200">
+
+      <svg
+
+        className="w-8 h-8 mb-2 text-cyan-500"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+
+      >
+        <path
+
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6h.1a5 5 0 010 10H7z"
+
+        />
+
+      </svg>
+
+      <span className="font-medium text-sm">Upload Photo</span>
+
+      <input
+
+        type="file"
+        accept="image/*"
+        onChange={(e) => setPhoto(e.target.files[0])}
+        className="hidden"
+
+      />
+
+    </label>
+
+    {photo && (
+
+      <p className="mt-2 text-sm text-gray-600">
+        📷 {photo.name}
+      </p>
+
+    )}
+    
+  </div>
+
+  {/* Video Upload */}
+
+  <div className="flex flex-col items-center justify-center w-full">
+
+    <label className="w-full flex flex-col items-center px-4 py-6 bg-gray-50 text-gray-700 rounded-lg border-2 border-dashed border-gray-300 cursor-pointer hover:bg-cyan-50 hover:border-cyan-400 transition-colors duration-200">
+
+      <svg
+
+        className="w-8 h-8 mb-2 text-cyan-500"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+
+      >
+        <path
+
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          d="M14.752 11.168l-4.586-2.657A1 1 0 009 9.342v5.316a1 1 0 001.166.95l4.586-2.657a1 1 0 000-1.732z"
+
+        />
+        <path
+
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+
+        />
+
+      </svg>
+
+      <span className="font-medium text-sm">Upload Video</span>
+
+      <input
+
+        type="file"
+        accept="video/*"
+        onChange={(e) => setVideo(e.target.files[0])}
+        className="hidden"
+
+      />
+
+    </label>
+
+    {video && (
+
+      <p className="mt-2 text-sm text-gray-600">
+        🎥 {video.name}
+      </p>
+
+    )}
+
+  </div>
+
+</div>
+
+
+      {video && <p>Selected video: {video.name}</p>}
 
       {/* Submit Button */}
       <button
