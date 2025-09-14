@@ -57,26 +57,33 @@ app.use("/follow" , follow);
 const searchRoute = require("./Routes/search");
 app.use("/user/search", searchRoute);
 
+//post route
 const postRoute = require("./Routes/posts");
 app.use("/posts" , postRoute);
 
-
+//likes route
 const likes = require("./Routes/likes");
 app.use("/likes" , likes);
 
-
+//comments route
 const comments = require("./Routes/comments");
 app.use("/comments" , comments)
 
+//profile route
 const profile = require("./Routes/profile")
 app.use("/profile" , profile);
 
+//chatbot route
 const chatRoute = require("./Routes/chatRoute");
 app.use("/api/chat" , chatRoute);
 
+//home route
 const home = require("./Routes/home")
 app.use("/",home)
+
 //
+app.use("/uploads", express.static("uploads"));
+
 
 
 //listening to the port with connecting it with the database server

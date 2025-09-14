@@ -8,8 +8,17 @@ const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 
 // 🟢 Follow a user
 router.post("/:userId",routeGuard, async (req, res) => {
+  
   const followerId = req.user.id; // Current logged-in user (from auth middleware)
   const followingId = parseInt(req.params.userId);
+
+  //validating after parsing
+  if(isNaN(followingId)){
+
+    return res.status(400).json({ message: "invalid user ID" })
+
+  }
+  //
 
   if (followerId === followingId) {
     return res.status(400).json({ message: "You can't follow yourself" });
