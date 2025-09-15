@@ -326,19 +326,6 @@ ALTER TABLE ONLY public.likes DROP CONSTRAINT likes_user_id_post_id_key;
 ALTER TABLE ONLY public.likes ADD CONSTRAINT likes_user_id_post_id_key UNIQUE (user_id, post_id, reaction_type);
 
 
-<<<<<<< Updated upstream
-=======
-
-
-
->>>>>>> Stashed changes
-
-
-
-
-
-
-
 
 
 

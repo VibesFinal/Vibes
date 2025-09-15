@@ -10,6 +10,9 @@ export default function NewPost({ onPostCreated }) {
   const [suggestions, setSuggestions] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(false);
+  const [photo, setPhoto] = useState(null);
+  const [video, setVideo] = useState(null);
+
 
   const suggestionsRef = useRef(null);
 
@@ -54,13 +57,23 @@ export default function NewPost({ onPostCreated }) {
     }
 
     try {
-      const payload = {
-        content,
-        category: selectedCategory || categoryInput,
-        is_anonymous: isAnonymous,
-      };
+   
+      const formData = new FormData();
 
-      const res = await axiosInstance.post("/posts", payload);
+        formData.append("content" , content);
+        formData.append("category" , selectedCategory || categoryInput);
+        formData.append("is_anonymous" , isAnonymous);
+
+        if(photo) formData.append("photo" , photo);
+        if(video) formData.append("video" , video);
+
+      const res = await axiosInstance.post("/posts", formData, {
+
+          headers: { "Content-Type": "multipart/form-data" },
+
+      });
+
+
       const createdPost = res.data;
 
       // Clear input fields
@@ -68,13 +81,22 @@ export default function NewPost({ onPostCreated }) {
       setCategoryInput("");
       setSelectedCategory("");
       setIsAnonymous(false);
+      //
+
+      setVideo(null);
+      setPhoto(null);
+      
 
       // Notify parent component about the new post
       if (onPostCreated) onPostCreated(createdPost);
+
     } catch (error) {
+
       console.error("Error creating post:", error);
       alert("You must be logged in to create a post");
+
     }
+
   };
 
   return (
@@ -113,9 +135,7 @@ export default function NewPost({ onPostCreated }) {
         )}
       </div>
 
-<<<<<<< Updated upstream
-=======
-      
+
 {/* Media Upload Section */}
 <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
 
@@ -128,6 +148,8 @@ export default function NewPost({ onPostCreated }) {
       <svg
 
         className="w-8 h-8 mb-2 text-teal-500"
+ 
+
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -172,11 +194,13 @@ export default function NewPost({ onPostCreated }) {
 
   <div className="flex flex-col items-center justify-center w-full">
 
+ 
     <label className="w-full flex flex-col items-center px-2 py-4 bg-gray-50 text-gray-700 rounded-lg border-4 border-dashed border-gray-300 cursor-pointer hover:bg-teal-50 hover:border-teal-300 transition-colors duration-200">
 
       <svg
 
         className="w-8 h-8 mb-2 text-teal-500"
+
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -230,7 +254,7 @@ export default function NewPost({ onPostCreated }) {
 
       {video && <p>Selected video: {video.name}</p>}
 
->>>>>>> Stashed changes
+
       {/* Submit Button */}
       <button
         type="submit"

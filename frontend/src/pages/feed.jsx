@@ -570,8 +570,34 @@ export default function Feed() {
         )}
       </div>
 
-<<<<<<< Updated upstream
-                <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+
+                {/*media preview*/}
+
+                {post.photo && (
+
+                  <img 
+                  
+                    src={`http://localhost:7777/uploads/${post.photo}`}
+                    alt="Post"
+                    className="mt-3 rounded-lg shadow-sm max-h-80 object-cover" 
+                  
+                  />
+
+                )}
+
+                {post.video && (
+
+                  <video 
+                  
+                    src={`http://localhost:7777/uploads/${post.video}`}
+                    controls
+                    className="mt-3 rounded-lg shadow-sm max-h-80"
+
+                  />
+
+                )}
+
+<div className="flex items-center justify-between pt-4 border-t border-gray-100">
                   <span className="text-sm text-gray-600">
                     {post.is_anonymous ? "Anonymous" : post.username}
                   </span>
@@ -608,7 +634,7 @@ export default function Feed() {
                 )}
               </article>
             ))}
-=======
+
       {/* ✅ DEBUG: Development info */}
       {process.env.NODE_ENV === 'development' && (
         <div className="mt-8 p-4 bg-gray-100 rounded-lg text-xs text-gray-600">
@@ -616,7 +642,6 @@ export default function Feed() {
           Persistent: {postsDataRef.current.length} | 
           Fetches: {fetchCountRef.current} | 
           Media Posts: {posts.filter(p => p.photo || p.video).length}
->>>>>>> Stashed changes
         </div>
       )}
     </div>

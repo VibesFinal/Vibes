@@ -4,34 +4,67 @@ const pg = require('pg');
 <<<<<<< Updated upstream
 const routeGuard = require('../middleware/verifyToken');
 
+const multer = require("multer");
+const path = require("path");
+
+// Set storage for uploaded files
+const storage = multer.diskStorage({
+
+  destination: (req, file, cb) => {
+
+    cb(null, "uploads/");
+
+  },
+
+  filename: (req, file, cb) => {
+
+    cb(null, Date.now() + path.extname(file.originalname)); // unique filename
+
+  }
+
+});
+
+const upload = multer({ storage });
+
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 
 // Create a new post
-router.post("/", routeGuard, async (req, res) => {
+router.post("/", routeGuard, upload.fields([{ name: "photo" } , { name: "video" }]) , async (req, res) => {
+
     // Added 'is_anonymous' to the destructuring
     const { content, category, is_anonymous } = req.body;
     const user_id = req.user.id;
 
+    //file paths if uploaded (ternary operators)
+    const photo = req.files?.photo ? req.files.photo[0].filename : null;
+    const video = req.files?.video ? req.files.video[0].filename : null;
+
     if (!user_id || !content) {
+
         return res.status(400).send("user_id and content are required");
+
     }
 
     try {
         // Updated INSERT query to include 'is_anonymous'
         const insertResult = await pool.query(
-            "INSERT INTO posts (user_id, content, category, is_anonymous) VALUES ($1, $2, $3, $4) RETURNING *",
-            [user_id, content, category, is_anonymous || false] // Pass the value, default to false
+
+            "INSERT INTO posts (user_id, content, category, is_anonymous , photo , video) VALUES ($1, $2, $3, $4 , $5 , $6) RETURNING *",
+            [user_id, content, category, is_anonymous || false , photo , video] // Pass the value, default to false
+
         );
 
         const postId = insertResult.rows[0].id;
 
-        // Updated SELECT query to fetch 'is_anonymous'
+        // Updated SELECT query to fetch 'is_anonymous' , photo and video
         const fullPost = await pool.query(
-            `SELECT posts.id, users.username, posts.content, posts.created_at, posts.category, posts.is_anonymous
+
+            `SELECT posts.id, users.username, posts.content, posts.created_at, posts.category, posts.is_anonymous , posts.photo , posts.video
             FROM posts
             JOIN users ON posts.user_id = users.id
             WHERE posts.id = $1`,
             [postId]
+            
         );
 
         res.status(201).json(fullPost.rows[0]);
