@@ -1,150 +1,309 @@
-import React, { useState, useRef, useEffect } from 'react';
-
+import React, { useState, useRef, useEffect } from "react";
+import { playSound } from "../utils/playSound";
+import "./ReactionPicker.css";
 
 const REACTIONS = [
-  { type: 'inspire', emoji: '🌟'},
-  { type: 'love', emoji: '❤️' },
-  { type: 'care', emoji: '🤗' },
-  { type: 'strength', emoji: '💪' },
-  { type: 'hope', emoji: '😊' },
-  { type: 'empathy', emoji: '😢' },
-  { type: 'hug', emoji: '🫂' }
+  { type: "inspire", emoji: "✨", color: "#FFD700", label: "Inspiring" },
+  { type: "love", emoji: "❤️", color: "#FF3B30", label: "Love" },
+  { type: "care", emoji: "🤗", color: "#FF9500", label: "Care" },
+  { type: "strength", emoji: "💪", color: "#007AFF", label: "Strength" },
+  { type: "hope", emoji: "🌈", color: "#34C759", label: "Hope" },
+  { type: "empathy", emoji: "💜", color: "#5856D6", label: "Empathy" },
+  { type: "hug", emoji: "🤝", color: "#FF2D55", label: "Support" }
 ];
 
-const ReactionPicker = ({ 
-  reactions = {}, 
-  userReaction = null, 
-  onReactionSelect, 
+// دالة لتوليد مفتاح فريد
+const generateUniqueId = () => {
+  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+};
+
+export default function ReactionPicker({
+  reactions = {},
+  userReaction,
+  onReactionSelect,
   totalReactions = 0,
-  showCounts = true 
-}) => {
-  const [showPicker, setShowPicker] = useState(false);
+  postId,
+  showCounts = false,
+  size = "medium", // small, medium, large
+  disabled = false
+}) {
   const [hoveredReaction, setHoveredReaction] = useState(null);
-  const pickerRef = useRef(null);
-  const buttonRef = useRef(null);
+  const [showReactions, setShowReactions] = useState(false);
+  const [floatingEmojis, setFloatingEmojis] = useState([]);
+  const [particles, setParticles] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const containerRef = useRef(null);
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (pickerRef.current && !pickerRef.current.contains(event.target) &&
-          buttonRef.current && !buttonRef.current.contains(event.target)) {
-        setShowPicker(false);
+  // العثور على الريأكشن المختار حالياً
+  const selectedReaction = REACTIONS.find(r => r.type === userReaction);
+
+  // تحديد أحجام المكونات حسب الحجم المطلوب
+  const sizeClasses = {
+    small: {
+      button: "p-1 text-sm",
+      emoji: "text-lg",
+      counter: "text-xs"
+    },
+    medium: {
+      button: "p-2 text-base",
+      emoji: "text-xl",
+      counter: "text-sm"
+    },
+    large: {
+      button: "p-3 text-lg",
+      emoji: "text-2xl",
+      counter: "text-base"
+    }
+  };
+
+  const currentSize = sizeClasses[size] || sizeClasses.medium;
+
+  // معالجة اختيار التفاعل مع تحسينات الأداء
+  const handleReactionClick = async (reaction, event) => {
+    if (disabled || isLoading) return;
+
+    setIsLoading(true);
+    playSound();
+
+    // الحصول على موضع الزر المضغوط
+    const rect = event.target.getBoundingClientRect();
+    const containerRect = containerRef.current.getBoundingClientRect();
+    
+    // حساب الموضع النسبي للأنيميشن
+    const relativeX = rect.left - containerRect.left + rect.width / 2;
+    const relativeY = rect.top - containerRect.top;
+
+    // Floating emoji عند click مع موضع صحيح ومفتاح فريد
+    setFloatingEmojis((prev) => [
+      ...prev,
+      { 
+        id: generateUniqueId(),
+        emoji: reaction.emoji,
+        x: relativeX,
+        y: relativeY
       }
-    };
+    ]);
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const handleReactionClick = (reactionType) => {
-    if (userReaction === reactionType) {
-      // Remove reaction if clicking the same one
-      onReactionSelect(null);
-    } else {
-      // Add or change reaction
-      onReactionSelect(reactionType);
+    try {
+      // تحديد نوع التفاعل الجديد
+      const newReactionType = userReaction === reaction.type ? null : reaction.type;
+      
+      // استدعاء دالة معالجة التفاعل
+      await onReactionSelect(newReactionType);
+      
+      // إخفاء قائمة الريأكشن بعد الاختيار
+      setShowReactions(false);
+    } catch (error) {
+      console.error("Error handling reaction:", error);
+    } finally {
+      setIsLoading(false);
     }
-    setShowPicker(false);
+
+    // إزالة الأنيميشن بعد انتهائه
+    setTimeout(() => {
+      setFloatingEmojis((prev) => prev.slice(1));
+    }, 800);
   };
 
-  const handleMainButtonClick = () => {
-    if (userReaction) {
-      // If user has a reaction, remove it
-      onReactionSelect(null);
+  // معالجة الضغط على الزر الرئيسي
+  const handleMainButtonClick = async (event) => {
+    if (disabled || isLoading) return;
+
+    if (selectedReaction) {
+      // إذا كان هناك ريأكشن مختار، قم بإلغائه
+      setIsLoading(true);
+      playSound();
+      
+      const rect = event.target.getBoundingClientRect();
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const relativeX = rect.left - containerRect.left + rect.width / 2;
+      const relativeY = rect.top - containerRect.top;
+
+      setFloatingEmojis((prev) => [
+        ...prev,
+        { 
+          id: generateUniqueId(),
+          emoji: selectedReaction.emoji,
+          x: relativeX,
+          y: relativeY
+        }
+      ]);
+
+      try {
+        await onReactionSelect(null);
+      } catch (error) {
+        console.error("Error removing reaction:", error);
+      } finally {
+        setIsLoading(false);
+      }
+
+      setTimeout(() => {
+        setFloatingEmojis((prev) => prev.slice(1));
+      }, 800);
     } else {
-      // If no reaction, show picker
-      setShowPicker(!showPicker);
+      // إذا لم يكن هناك ريأكشن، أظهر القائمة
+      setShowReactions(!showReactions);
     }
   };
 
-  const getUserReactionData = () => {
-    return REACTIONS.find(r => r.type === userReaction);
+  // Particles عند hover مع موضع صحيح نسبة للحاوي
+  const triggerParticles = (reaction, event) => {
+    if (disabled) return;
+
+    const rect = event.target.getBoundingClientRect();
+    const containerRect = containerRef.current.getBoundingClientRect();
+    
+    const relativeX = rect.left - containerRect.left + rect.width / 2;
+    const relativeY = rect.top - containerRect.top + rect.height / 2;
+
+    const newParticles = Array.from({ length: 6 }).map(() => ({
+      id: generateUniqueId(),
+      color: reaction.color,
+      x: relativeX + (Math.random() * 20 - 10),
+      y: relativeY + (Math.random() * 20 - 10),
+      dx: Math.random() * 40 - 20,
+      dy: Math.random() * -40
+    }));
+
+    setParticles((prev) => [...prev, ...newParticles]);
+
+    setTimeout(() => {
+      setParticles((prev) => prev.filter((p) => !newParticles.includes(p)));
+    }, 600);
   };
 
-  const getTopReactions = () => {
-    return REACTIONS
-      .filter(r => reactions[r.type] > 0)
-      .sort((a, b) => reactions[b.type] - reactions[a.type])
-      .slice(0, 3);
-  };
+  // حساب أعلى التفاعلات للعرض
+  const topReactions = Object.entries(reactions)
+    .filter(([_, count]) => count > 0)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 3);
 
   return (
-    <div className="relative inline-block">
-      {/* Main reaction button */}
-      <button
-        ref={buttonRef}
-        className={`flex items-center rounded-md text-sm font-sm transition-colors duration-200
-          ${userReaction ? 'bg-red text-blue' :' text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500'}
-        `}
-        onClick={handleMainButtonClick}
-        onMouseEnter={() => setShowPicker(true)}
-        onMouseLeave={() => setTimeout(() => setShowPicker(false), 10000)}
-      >
-        {userReaction ? (
-          <>
-            <span className="mr-1 text-lg">
-              {getUserReactionData()?.emoji}
+    <div ref={containerRef} className="relative flex flex-col items-center space-y-2">
+      {/* الزر الرئيسي - يعرض الإيموجي المختار أو الافتراضي */}
+      <div className="flex items-center space-x-2">
+        <button
+          className={`flex items-center space-x-1 rounded-full transition-all duration-200 reaction-button
+            ${currentSize.button}
+            ${selectedReaction 
+              ? 'selected-reaction' 
+              : 'bg-gray-100 hover:bg-gray-200'
+            }
+            ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}
+            ${isLoading ? 'animate-pulse' : ''}
+          `}
+          onClick={handleMainButtonClick}
+          onMouseEnter={() => !selectedReaction && !disabled && setShowReactions(true)}
+          title={selectedReaction ? `Remove ${selectedReaction.label}` : "Add reaction"}
+          style={selectedReaction ? { 
+            backgroundColor: `${selectedReaction.color}20`,
+            borderColor: selectedReaction.color,
+            borderWidth: '2px'
+          } : {}}
+          disabled={disabled || isLoading}
+        >
+          <span className={currentSize.emoji}>
+            {selectedReaction ? selectedReaction.emoji : '😊'}
+          </span>
+          {totalReactions > 0 && (
+            <span className={`font-medium text-gray-700 ${currentSize.counter}`}>
+              {totalReactions}
             </span>
-            <span>
-              {getUserReactionData()?.label}
-            </span>
-          </>
-        ) : (
-          <>
-            <span className="mr-1 text-lg">💠</span>
-            <span>react</span>
-          </>
-        )}
-      </button>
+          )}
+        </button>
 
-      {/* Reaction counts display */}
-      {showCounts && totalReactions > 0 && (
-        <div className="flex items-center ml-2 text-gray-500 text-sm">
-          <div className="flex -space-x-1 overflow-hidden">
-            {getTopReactions().map((reaction, index) => (
-              <span key={reaction.type} className="inline-block h-5 w-5 rounded-full ring-2 ring-white text-center text-xs leading-5">
-                {reaction.emoji}
-              </span>
-            ))}
+        {/* عرض أعلى التفاعلات إذا كان showCounts مفعل */}
+        {showCounts && topReactions.length > 0 && (
+          <div className="flex items-center space-x-1 text-xs text-gray-500">
+            {topReactions.map(([reactionType, count]) => {
+              const reaction = REACTIONS.find(r => r.type === reactionType);
+              return reaction ? (
+                <span key={reactionType} className="flex items-center space-x-1">
+                  <span>{reaction.emoji}</span>
+                  <span>{count}</span>
+                </span>
+              ) : null;
+            })}
           </div>
-          <span className="ml-1 text-gray-700">{totalReactions}</span>
+        )}
+      </div>
+
+      {/* أزرار الريأكشن - تظهر فقط عند الحاجة */}
+      {showReactions && !selectedReaction && !disabled && (
+        <div 
+          className="flex space-x-3 bg-white p-3 rounded-2xl shadow-lg border reactions-list backdrop-blur-sm"
+          onMouseLeave={() => setShowReactions(false)}
+        >
+          {REACTIONS.map((r) => (
+            <button
+              key={r.type}
+              className={`p-2 rounded-full hover:bg-gray-200 transition-all duration-200 reaction-button hover:scale-110 ${currentSize.button}`}
+              onClick={(e) => handleReactionClick(r, e)}
+              onMouseEnter={(e) => {
+                setHoveredReaction(r);
+                triggerParticles(r, e);
+              }}
+              onMouseLeave={() => setHoveredReaction(null)}
+              title={r.label}
+              disabled={isLoading}
+            >
+              <span className={currentSize.emoji}>{r.emoji}</span>
+            </button>
+          ))}
         </div>
       )}
 
-      {/* Reaction picker popup */}
-      {showPicker && (
-        <div
-          ref={pickerRef}
-          className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 p-2 bg-white rounded-full shadow-lg flex items-center space-x-1 transition-all duration-300 ease-out"
-          onMouseEnter={() => setShowPicker(true)}
-          onMouseLeave={() => setShowPicker(false)}
-        >
-          {REACTIONS.map((reaction) => (
-            <button
-              key={reaction.type}
-              className={`group relative p-2 rounded-full hover:bg-gray-200 transition-colors duration-200
-                ${userReaction === reaction.type ? 'bg-blue-100' : ''}
-              `}
-              onClick={() => handleReactionClick(reaction.type)}
-              onMouseEnter={() => setHoveredReaction(reaction)}
-              onMouseLeave={() => setHoveredReaction(null)}
-              title={reaction.label}
-            >
-              <span className="text-2xl">
-                {reaction.emoji}
-              </span>
-            </button>
-          ))}
-          
-          {/* Tooltip */}
-          {hoveredReaction && (
-            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-800 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-              {hoveredReaction.label}
+      {/* Tooltip محسن */}
+      {hoveredReaction && showReactions && (
+        <div className="absolute -bottom-10 bg-gray-800 text-white text-xs px-3 py-2 rounded-lg shadow-lg reaction-tooltip">
+          <div className="font-medium">{hoveredReaction.label}</div>
+          {reactions[hoveredReaction.type] > 0 && (
+            <div className="text-gray-300">
+              {reactions[hoveredReaction.type]} reactions
             </div>
           )}
         </div>
       )}
+
+      {/* عرض تفصيلي للتفاعلات إذا كان هناك تفاعلات متعددة */}
+      {totalReactions > 1 && selectedReaction && (
+        <div className="text-xs text-gray-500 text-center">
+          You and {totalReactions - 1} others reacted
+        </div>
+      )}
+
+      {/* Floating Emojis مع موضع صحيح ومفاتيح فريدة */}
+      {floatingEmojis.map((f) => (
+        <span
+          key={f.id}
+          className="absolute text-3xl animate-float pointer-events-none"
+          style={{ 
+            left: `${f.x}px`, 
+            top: `${f.y}px`,
+            transform: 'translate(-50%, -50%)',
+            zIndex: 1000
+          }}
+        >
+          {f.emoji}
+        </span>
+      ))}
+
+      {/* Particles مع موضع صحيح ومفاتيح فريدة */}
+      {particles.map((p) => (
+        <span
+          key={p.id}
+          className="absolute w-2 h-2 rounded-full pointer-events-none animate-particle"
+          style={{
+            left: `${p.x}px`,
+            top: `${p.y}px`,
+            backgroundColor: p.color,
+            transform: 'translate(-50%, -50%)',
+            zIndex: 999,
+            "--dx": `${p.dx}px`,
+            "--dy": `${p.dy}px`
+          }}
+        />
+      ))}
     </div>
   );
-};
-
-export default ReactionPicker;
+}

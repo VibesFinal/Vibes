@@ -85,7 +85,7 @@ export default function NewPost({ onPostCreated }) {
         onChange={(e) => setContent(e.target.value)}
         placeholder="What's on your mind?"
         rows="3"
-        className="w-full px-4 py-3 text-gray-800 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-all duration-200 resize-none"
+        className="w-full px-4 py-3 text-gray-800 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all duration-200 resize-none"
       />
 
       {/* Category Input + Suggestions Dropdown */}
@@ -95,7 +95,7 @@ export default function NewPost({ onPostCreated }) {
           onChange={handleCategoryChange}
           placeholder="Type or select a category"
           rows="1"
-          className="w-full px-4 py-3 text-gray-800 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-all duration-200 resize-none"
+          className="w-full px-4 py-3 text-gray-800 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all duration-200 resize-none"
         />
 
         {suggestions.length > 0 && (
@@ -113,23 +113,141 @@ export default function NewPost({ onPostCreated }) {
         )}
       </div>
 
+<<<<<<< Updated upstream
+=======
+      
+{/* Media Upload Section */}
+<div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+  {/* Photo Upload */}
+
+  <div className="flex flex-col items-center justify-center w-sm">
+
+    <label className="w-full flex flex-col items-center px-2 py-4 bg-gray-50 text-gray-700 rounded-lg border-4 border-dashed border-gray-300 cursor-pointer hover:bg-teal-50 hover:border-teal-400 transition-colors duration-200">
+
+      <svg
+
+        className="w-8 h-8 mb-2 text-teal-500"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+
+      >
+        <path
+
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6h.1a5 5 0 010 10H7z"
+
+        />
+
+      </svg>
+
+      <span className="font-medium text-sm">Upload Photo</span>
+
+      <input
+
+        type="file"
+        accept="image/*"
+        onChange={(e) => setPhoto(e.target.files[0])}
+        className="hidden"
+
+      />
+
+    </label>
+
+    {photo && (
+
+      <p className="mt-2 text-sm text-gray-600">
+        📷 {photo.name}
+      </p>
+
+    )}
+    
+  </div>
+
+  {/* Video Upload */}
+
+  <div className="flex flex-col items-center justify-center w-full">
+
+    <label className="w-full flex flex-col items-center px-2 py-4 bg-gray-50 text-gray-700 rounded-lg border-4 border-dashed border-gray-300 cursor-pointer hover:bg-teal-50 hover:border-teal-300 transition-colors duration-200">
+
+      <svg
+
+        className="w-8 h-8 mb-2 text-teal-500"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+
+      >
+        <path
+
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          d="M14.752 11.168l-4.586-2.657A1 1 0 009 9.342v5.316a1 1 0 001.166.95l4.586-2.657a1 1 0 000-1.732z"
+
+        />
+        <path
+
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+
+        />
+
+      </svg>
+
+      <span className="font-medium text-sm">Upload Video</span>
+
+      <input
+
+        type="file"
+        accept="video/*"
+        onChange={(e) => setVideo(e.target.files[0])}
+        className="hidden"
+
+      />
+
+    </label>
+
+    {video && (
+
+      <p className="mt-2 text-sm text-gray-600">
+        🎥 {video.name}
+      </p>
+
+    )}
+
+  </div>
+
+</div>
+
+
+      {video && <p>Selected video: {video.name}</p>}
+
+>>>>>>> Stashed changes
       {/* Submit Button */}
       <button
         type="submit"
-        className="mt-5 w-full bg-cyan-600 text-white font-medium py-3 rounded-lg hover:bg-cyan-700 transform transition-all duration-150 hover:-translate-y-0.5 active:scale-95 shadow-sm"
+        className="mt-5 w-full bg-teal-700 text-white font-medium py-3 rounded-lg hover:bg-teal-500 transform transition-all duration-150 hover:-translate-y-0.5 active:scale-95 shadow-sm"
       >
         Post
       </button>
 
       {/* Anonymous Checkbox */}
-      <label className="flex items-center mt-4 text-sm text-gray-700">
+      <label className="flex items-center mt-2 text-xsm text-teal-700">
         <input
           type="checkbox"
           checked={isAnonymous}
           onChange={(e) => setIsAnonymous(e.target.checked)}
-          className="mr-2 h-4 w-4 text-cyan-600 focus:ring-cyan-500 border-gray-300 rounded"
+          className=" mt-1 mr-1 h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded checked:bg-teal-600"
         />
-        Post anonymously
+        Anonymous🙈
       </label>
     </form>
   );

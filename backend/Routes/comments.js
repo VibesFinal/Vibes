@@ -1,12 +1,7 @@
 const express = require('express');
-
 const router = express.Router();
-
 const pg = require('pg');
-
 const routeGuard = require('../middleware/verifyToken');
-
-
 const pool = new pg.Pool( { connectionString: process.env.DATABASE_URL } );
 
 
@@ -15,9 +10,7 @@ router.post("/:postId" , routeGuard , async (req , res) => {
 
 
     const { postId } = req.params;
-
     const { content } = req.body;
-
     const userId = req.user.id;
 
     try {

@@ -4,7 +4,7 @@ import FAQSection from '../components/FAQSection/FAQSection';
 
 const HealthFAQ = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-white">
       {/* Optional: Add a header if needed */}
       <header className="text-center py-16 px-6">
         <h1 className="text-4xl md:text-5xl font-bold text-gray-800">

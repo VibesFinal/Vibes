@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 export default function Error() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-r from-cyan-300 via-blue-400 to-indigo-500 text-white text-center px-6 animate-fadeIn">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-r from-cyan-300 via-teal-400 to-indigo-500 text-white text-center px-6 animate-fadeIn">
       <h1 className="text-8xl font-bold mb-4 tracking-tight" style={{ textShadow: "0 5px 15px rgba(0, 0, 0, 0.3)" }}>
         404
       </h1>

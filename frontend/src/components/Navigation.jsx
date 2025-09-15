@@ -79,10 +79,10 @@ export default function Navigation({ onLogout }) {
   };
 
   // Navigate to user profile when clicked
-  const handleSelectUser = (user) => { // 👈 Accept user object
+  const handleSelectUser = (user) => {
     setSearchTerm("");
     setSearchResults([]);
-    navigate(`/profile/${user.id}`); // 👈 Use user.id — NUMBER!
+    navigate(`/profile/${user.username}`); // 👈 CHANGED TO username
   };
 
   // Show loading state while fetching user

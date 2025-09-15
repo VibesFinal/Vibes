@@ -326,5 +326,55 @@ ALTER TABLE ONLY public.likes DROP CONSTRAINT likes_user_id_post_id_key;
 ALTER TABLE ONLY public.likes ADD CONSTRAINT likes_user_id_post_id_key UNIQUE (user_id, post_id, reaction_type);
 
 
+<<<<<<< Updated upstream
+=======
 
 
+
+>>>>>>> Stashed changes
+
+
+
+
+
+
+
+
+
+
+
+
+-- This fixes the likes table to properly support reactions
+
+-- First, drop the problematic unique constraint
+ALTER TABLE public.likes DROP CONSTRAINT IF EXISTS likes_user_id_post_id_key;
+
+-- Add missing timestamp columns if they don't exist
+ALTER TABLE public.likes ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE public.likes ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+
+-- Ensure reaction_type column exists with proper default
+ALTER TABLE public.likes ADD COLUMN IF NOT EXISTS reaction_type VARCHAR(50) DEFAULT 'love';
+
+-- Add the correct unique constraint: only one reaction per user per post
+ALTER TABLE public.likes ADD CONSTRAINT likes_user_id_post_id_unique UNIQUE (user_id, post_id);
+
+-- Create an index for better performance on reaction queries
+CREATE INDEX IF NOT EXISTS idx_likes_post_reaction ON public.likes(post_id, reaction_type);
+CREATE INDEX IF NOT EXISTS idx_likes_user_post ON public.likes(user_id, post_id);
+
+-- Update trigger to automatically set updated_at timestamp
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+-- Create trigger for likes table
+DROP TRIGGER IF EXISTS update_likes_updated_at ON public.likes;
+CREATE TRIGGER update_likes_updated_at
+    BEFORE UPDATE ON public.likes
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();

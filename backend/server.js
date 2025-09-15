@@ -60,7 +60,15 @@ app.use("/user/search", searchRoute);
 const postRoute = require("./Routes/posts");
 app.use("/posts" , postRoute);
 
+<<<<<<< Updated upstream
 
+=======
+//reactions route
+const reactions = require("./Routes/reactions");
+app.use("/reactions" , reactions);
+
+//likes route
+>>>>>>> Stashed changes
 const likes = require("./Routes/likes");
 app.use("/likes" , likes);
 

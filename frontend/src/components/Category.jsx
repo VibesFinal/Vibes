@@ -27,13 +27,13 @@ export default function Category({ posts, selectedCategory, setSelectedCategory 
       <div className="flex flex-wrap gap-3 mb-8">
         <button
           onClick={() => setSelectedCategory("")}
-          className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 transform hover:-translate-y-0.5 ${
+          className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 transform hover:-translate-y-0.5 ${
             selectedCategory === ""
-              ? "bg-cyan-600 text-white shadow-md"
+              ? "bg-teal-500 text-white shadow-md"
               : "bg-gray-100 text-gray-700 hover:bg-gray-200 shadow-sm"
           }`}
         >
-          All Posts
+          All
         </button>
 
         {categories.map(cat => (
@@ -42,7 +42,7 @@ export default function Category({ posts, selectedCategory, setSelectedCategory 
             onClick={() => setSelectedCategory(cat)}
             className={`px-5 py-2 rounded-full text-sm font-medium capitalize transition-all duration-200 transform hover:-translate-y-0.5 ${
               selectedCategory === cat
-                ? "bg-cyan-600 text-white shadow-md"
+                ? "bg-teal-500 text-white shadow-md"
                 : "bg-gray-100 text-gray-700 hover:bg-gray-200 shadow-sm"
             }`}
           >

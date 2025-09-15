@@ -3,6 +3,8 @@ import axiosInstance from './axiosInstance';
 export const reactionsApi = {
   // Add or update a reaction
   addReaction: async (postId, reactionType) => {
+    // The backend should handle the ON CONFLICT DO UPDATE logic.
+    // This frontend call remains the same, as it sends the necessary data.
     const response = await axiosInstance.post(`/reactions/reaction/${postId}`, {
       reactionType
     });

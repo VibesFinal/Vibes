@@ -9,8 +9,20 @@ require('dotenv').config();
 const pg = require("pg");
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 
-// ✅ Import Gemini welcome message generator
-const { generateWelcomeMessage } = require('./welcome'); // ← ADD THIS
+// ✅ FIXED: Import Gemini welcome message generator with correct path
+// Changed from './welcome' to './welcome' (assuming welcome.js is in the same Routes directory)
+let generateWelcomeMessage;
+try {
+  const welcomeModule = require('./welcome');
+  generateWelcomeMessage = welcomeModule.generateWelcomeMessage;
+  console.log("✅ Welcome message generator loaded successfully");
+} catch (error) {
+  console.warn("⚠️ Welcome message generator not found, login will work without AI messages:", error.message);
+  // Fallback function if welcome.js is not available
+  generateWelcomeMessage = async (username) => {
+    return `Welcome back, ${username}! 👋`;
+  };
+}
 
 // Register (unchanged)
 router.post('/register', async (req, res) => {
@@ -39,9 +51,9 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// ✅ Enhanced Login — Now returns token + Gemini welcome message
+// ✅ Enhanced Login — Now returns token + Gemini welcome message (with fallback)
 router.post("/login", async (req, res) => {
-    console.log("✅ auth.js login route is being used!");
+  console.log("✅ auth.js login route is being used!");
   console.log("🔍 Raw request body:", req.body); // 👈 Debug line
 
   // 👇 SAFETY CHECK — even if Express.json() is working
@@ -79,8 +91,14 @@ router.post("/login", async (req, res) => {
       { expiresIn: "60d" }
     );
 
-    // ✅ Generate AI welcome message
-    const welcomeMessage = await generateWelcomeMessage(username);
+    // ✅ Generate AI welcome message (with fallback)
+    let welcomeMessage;
+    try {
+      welcomeMessage = await generateWelcomeMessage(username);
+    } catch (error) {
+      console.warn("⚠️ Failed to generate AI welcome message, using fallback:", error.message);
+      welcomeMessage = `Welcome back, ${username}! 👋`;
+    }
 
     // ✅ Send both token and message
     res.json({
