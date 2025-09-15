@@ -1,0 +1,318 @@
+@keyframes floatUp {
+  0%   { 
+    transform: translate(-50%, -50%) translateY(0) scale(1); 
+    opacity: 1; 
+  }
+  100% { 
+    transform: translate(-50%, -50%) translateY(-60px) scale(1.3); 
+    opacity: 0; 
+  }
+}
+
+@keyframes particleMove {
+  0%   { 
+    transform: translate(0, 0) scale(1); 
+    opacity: 1; 
+  }
+  100% { 
+    transform: translate(var(--dx), var(--dy)) scale(0); 
+    opacity: 0; 
+  }
+}
+
+.animate-float {
+  animation: floatUp 0.8s ease-out forwards;
+  z-index: 1000;
+}
+
+.animate-particle {
+  animation: particleMove 0.6s ease-out forwards;
+  z-index: 999;
+}
+
+/* تحسينات إضافية للتفاعل */
+.reaction-picker-container {
+  position: relative;
+  display: inline-block;
+}
+
+.reaction-button {
+  transition: all 0.2s ease;
+}
+
+.reaction-button:hover {
+  transform: scale(1.1);
+}
+
+.reaction-button:active {
+  transform: scale(0.95);
+}
+
+/* animation reactions list*/
+.reactions-list {
+  animation: slideIn 0.2s ease-out;
+}
+
+@keyframes slideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+
+
+/* ✅ Enhanced reaction button styles */
+.reaction-button {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.reaction-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.reaction-button:active {
+  transform: scale(0.95);
+}
+
+.reaction-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* ✅ Selected reaction styles */
+.selected-reaction {
+  position: relative;
+  border: 2px solid;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.3));
+}
+
+.selected-reaction::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  animation: shimmer 2s infinite;
+}
+
+.selected-reaction:hover::before {
+  animation-duration: 0.5s;
+}
+
+/* ✅ Reaction type specific colors */
+.reaction-inspire {
+  background-color: rgba(255, 215, 0, 0.1);
+  border-color: #FFD700;
+  color: #FFD700;
+}
+
+.reaction-love {
+  background-color: rgba(255, 59, 48, 0.1);
+  border-color: #FF3B30;
+  color: #FF3B30;
+}
+
+.reaction-care {
+  background-color: rgba(255, 149, 0, 0.1);
+  border-color: #FF9500;
+  color: #FF9500;
+}
+
+.reaction-strength {
+  background-color: rgba(0, 122, 255, 0.1);
+  border-color: #007AFF;
+  color: #007AFF;
+}
+
+.reaction-hope {
+  background-color: rgba(52, 199, 89, 0.1);
+  border-color: #34C759;
+  color: #34C759;
+}
+
+.reaction-empathy {
+  background-color: rgba(88, 86, 214, 0.1);
+  border-color: #5856D6;
+  color: #5856D6;
+}
+
+.reaction-hug {
+  background-color: rgba(255, 45, 85, 0.1);
+  border-color: #FF2D55;
+  color: #FF2D55;
+}
+
+/* ✅ Enhanced tooltip styles */
+.reaction-tooltip {
+  backdrop-filter: blur(8px);
+  background-color: rgba(0, 0, 0, 0.9);
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.025em;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 1001;
+}
+
+.reaction-tooltip::before {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.9);
+}
+
+/* ✅ Size variants */
+.reaction-picker-small .reaction-button {
+  padding: 0.25rem;
+}
+
+.reaction-picker-small .emoji {
+  font-size: 1rem;
+}
+
+.reaction-picker-medium .reaction-button {
+  padding: 0.5rem;
+}
+
+.reaction-picker-medium .emoji {
+  font-size: 1.25rem;
+}
+
+.reaction-picker-large .reaction-button {
+  padding: 0.75rem;
+}
+
+.reaction-picker-large .emoji {
+  font-size: 1.5rem;
+}
+
+/* ✅ Loading states */
+.reaction-loading {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.reaction-loading::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  animation: shimmer 1.5s infinite;
+}
+
+/* ✅ Accessibility improvements */
+.reaction-button:focus {
+  outline: 2px solid #007AFF;
+  outline-offset: 2px;
+}
+
+.reaction-button:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ✅ Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .reactions-list {
+    background: rgba(31, 41, 55, 0.95);
+    border-color: rgba(75, 85, 99, 0.5);
+  }
+  
+  .reaction-tooltip {
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #1f2937;
+  }
+  
+  .reaction-tooltip::before {
+    border-top-color: rgba(255, 255, 255, 0.9);
+  }
+}
+
+/* ✅ High contrast mode support */
+@media (prefers-contrast: high) {
+  .reaction-button {
+    border: 2px solid currentColor;
+  }
+  
+  .reactions-list {
+    border: 2px solid currentColor;
+    backdrop-filter: none;
+    background: white;
+  }
+}
+
+/* ✅ Mobile optimizations */
+@media (max-width: 640px) {
+  .reactions-list {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+  
+  .reaction-button {
+    min-height: 44px; /* iOS touch target minimum */
+    min-width: 44px;
+  }
+  
+  .reaction-tooltip {
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+  }
+}
+
+/* ✅ Print styles */
+@media print {
+  .reactions-list,
+  .animate-float,
+  .animate-particle {
+    display: none;
+  }
+  
+  .reaction-button {
+    border: 1px solid #000;
+    background: white !important;
+    color: black !important;
+  }
+}
