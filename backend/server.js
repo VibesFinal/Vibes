@@ -78,8 +78,12 @@ const chatRoute = require("./Routes/chatRoute");
 app.use("/api/chat" , chatRoute);
 
 //home route
-const home = require("./Routes/home")
-app.use("/",home)
+const home = require("./Routes/home");
+app.use("/" , home)
+
+//communities route
+const communities = require("./Routes/communities");
+app.use("/communities" , communities)
 
 //upload the photos and the videos
 app.use("/uploads", express.static("uploads"));

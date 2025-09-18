@@ -11,6 +11,7 @@ import About from './pages/About';
 import Error from './pages/Error404';
 import Chatbot from './pages/chatBot';
 import HealthFAQ from './pages/HealthFAQ';
+import Community from './pages/community';
 
 // Helper component to handle scrolling to #faq-section
 const ScrollToFAQ = () => {
@@ -155,6 +156,11 @@ export default function App() {
           element={
             isAuthenticated ? <Chatbot /> : <Navigate to="/login" />
           }
+        />
+
+        <Route
+          path="/Community"
+          element={<Community />}
         />
 
         <Route

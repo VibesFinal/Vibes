@@ -97,6 +97,7 @@ export default function Navigation({ onLogout }) {
           <ul className="navLinks">
             <li><Link to="/">Feed</Link></li>
             <li>Loading...</li>
+            <li><Link to="/community">Community</Link></li>
             <li><Link to="/chatBot">AI Listener</Link></li>
             <li><Link to="/about">About</Link></li>
             <li><button onClick={handleLogout}>Logout</button></li>
@@ -143,7 +144,8 @@ export default function Navigation({ onLogout }) {
               <span>Profile</span>
             )}
           </li>
-
+          
+          <li><Link to="/community">Community</Link></li>
           <li><Link to="/chatBot">AI Listener</Link></li>
           <li><Link to="/about">About</Link></li>
           <li>
