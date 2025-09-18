@@ -319,6 +319,25 @@ ALTER TABLE posts ADD COLUMN photo TEXT;
 ALTER TABLE posts ADD COLUMN video TEXT;
 
 
+-- likes table update / important note : drop the reaction_type column before you run these commands
+
+ALTER TABLE likes
+DROP COLUMN reaction_type;
+
+ALTER TABLE likes
+ADD COLUMN reaction_type VARCHAR(20) DEFAULT 'like';
+
+
+ALTER TABLE likes
+ADD CONSTRAINT unique_reaction_per_post UNIQUE(user_id, post_id);
+
+
+UPDATE likes
+SET reaction_type = 'like'
+WHERE reaction_type IS NULL;
+
+
+
 
 
 

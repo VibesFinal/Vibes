@@ -5,7 +5,7 @@ import FollowList from "../components/FollowList";
 import { useParams } from "react-router-dom";
 
 export default function Profile() {
-  const { userId } = useParams();
+  const { username } = useParams();
   const [user, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,29 +14,29 @@ export default function Profile() {
   // Get logged-in user from localStorage
   const currentUser = JSON.parse(localStorage.getItem("user"));
 
-  const fetchUserProfile = async () => {
-    try {
-      const res = await axiosInstance.get(`/profile/${userId}`);
-      setUser(res.data.user);
-      setPosts(res.data.posts);
-      setError(null);
-    } catch (error) {
-      console.error("❌ Axios Error:", error.response?.data || error.message);
-      setError("Failed to load profile. Please try again later.");
-    } finally {
-      setLoading(false);
-    }
-  };
+const fetchUserProfile = async () => {
+  try {
+    const res = await axiosInstance.get(`/profile/username/${username}`);
+    setUser(res.data.user);
+    setPosts(res.data.posts);
+    setError(null);
+  } catch (error) {
+    console.error("❌ Axios Error:", error.response?.data || error.message);
+    setError("Failed to load profile. Please try again later.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   // 👇 ONLY fetch if userId is NOT undefined or empty
   useEffect(() => {
-    if (userId) { // 👈 THIS IS THE KEY LINE
+    if (username) { // 👈 THIS IS THE KEY LINE
       fetchUserProfile();
     } else {
       console.warn("⚠️ userId is undefined — waiting for route to resolve...");
       setLoading(false); // prevent infinite loading
     }
-  }, [userId]); // 👈 This dependency is correct
+  }, [username]); // 👈 This dependency is correct
 
   if (loading) {
     return (

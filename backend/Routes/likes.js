@@ -17,17 +17,23 @@ router.post("/like/:postId" , routeGuard , async (req , res) => {
 
     const { postId } = req.params;
 
+    const { reaction_type } = req.body;
+
     try {
         
         await pool.query(
 
-            "INSERT INTO likes (user_id , post_id) VALUES ($1 , $2) ON CONFLICT DO NOTHING",
+            `INSERT INTO likes (user_id, post_id, reaction_type)
 
-            [userId , postId]
+            VALUES ($1, $2, $3)
+
+            ON CONFLICT (user_id, post_id) DO UPDATE SET reaction_type = EXCLUDED.reaction_type`,
+
+            [userId, postId, reaction_type || 'like']
 
         );
 
-        res.status(200).json({message : "Post liked"});
+        res.status(200).json({message : "Reaction added"});
 
     } catch (error) {
 
@@ -96,50 +102,57 @@ router.get("/like/count/:postId" , routeGuard , async (req , res) => {
 });
 
 //
-router.get("/like/:postId" , routeGuard , async (req , res) => {
+router.get("/like/:postId", routeGuard, async (req, res) => {
 
-    const userId = req.user.id;
-    const { postId } = req.params;
+  const userId = req.user.id;
+  const { postId } = req.params;
 
-    try {
+  try {
+
+    const result = await pool.query(
+
+      "SELECT reaction_type FROM likes WHERE user_id = $1 AND post_id = $2",
+
+      [userId, postId]
+
+    );
+
+    const likedByUser = result.rows.length > 0;
+    const reaction_type = likedByUser ? result.rows[0].reaction_type : null;
+
+    const countResult = await pool.query(
+
+      "SELECT reaction_type, COUNT(*) FROM likes WHERE post_id = $1 GROUP BY reaction_type",
+
+      [postId]
+
+    );
+
+    // e.g., { like: 3, love: 1, hug: 2 }
+    const counts = {};
+
+    countResult.rows.forEach(r => {
+
+      counts[r.reaction_type] = parseInt(r.count);
+
+    });
+
+    res.status(200).json({ 
         
-        //
-        const countResult = await pool.query(
-            
-                "SELECT COUNT(*) FROM likes WHERE post_id = $1" , 
-                [postId]
+        likedByUser, 
+        reactionType: reaction_type, 
+        counts 
+    
+    });
 
-            );
+  } catch (error) {
 
-        
-        //
-        const userResult = await pool.query(
+    console.error(error);
 
-            "SELECT * FROM likes WHERE user_id = $1 AND post_id = $2",
+    res.status(500).send("Server error");
 
-            [userId , postId]
+  }
 
-        );
-
-            const liked = userResult.rows.length > 0;
-            const count = parseInt(countResult.rows[0].count)
-
-            res.status(200).json({
-
-                count: count,
-                likedByUser: liked
-
-            });
-
-    } catch (error) {
-
-        console.error(error);
-
-        res.status(500).send("server error")
-        
-        
-    }
-
-}); 
+});
 
 module.exports = router;

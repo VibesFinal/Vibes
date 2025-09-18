@@ -70,8 +70,8 @@ const comments = require("./Routes/comments");
 app.use("/comments" , comments)
 
 //profile route
-const profile = require("./Routes/profile")
-app.use("/profile" , profile);
+const profileRoute = require("./Routes/profile");
+app.use("/profile", profileRoute); 
 
 //chatbot route
 const chatRoute = require("./Routes/chatRoute");
@@ -81,7 +81,7 @@ app.use("/api/chat" , chatRoute);
 const home = require("./Routes/home")
 app.use("/",home)
 
-//
+//upload the photos and the videos
 app.use("/uploads", express.static("uploads"));
 
 

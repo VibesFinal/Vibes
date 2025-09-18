@@ -8,6 +8,9 @@ import "../styles/post.css"
 
 import { useNavigate } from "react-router-dom";
 
+import ReactionButton from "./Reactions";
+
+
 
 
 export default function Post( { post } ){
@@ -22,6 +25,13 @@ export default function Post( { post } ){
 
     const [likedByUser , setLikedByUser] = useState(false);
 
+    const [ reactionType , setReactionType ] = useState(null);
+
+    const [ reactionCount , setReactionCount ] = useState({});
+
+
+
+
     // for navigation to other pages
     const navigate = useNavigate();
 
@@ -29,38 +39,65 @@ export default function Post( { post } ){
 
     useEffect(() => {
 
-        fetchLikes();
+        fetchReactions();
 
     } , []);
 
-    //
-
-    const fetchLikes = async () => {
-
+    
+    //fetching the reactions from the backend
+    const fetchReactions = async () => {
 
         try {
-
-            //get the likes count
-            const countRes = await axiosInstance.get(`likes/like/count/${post.id}`);
             
-            //get user's like status
+            const res = await axiosInstance.get(`/likes/like/${post.id}`);
+            setReactionType(res.data.reactionType);
+            setReactionCount(res.data.counts || {});
 
-            const userRes = await axiosInstance.get(`/likes/like/${post.id}`);
+            setLikedByUser(res.data.likedByUser); 
 
-            
-            
-            /*const res = await axiosInstance.get(`likes/like/${post.id}`); */
-            setLikes(Number(countRes.data.count) || 0);
-            setLikedByUser(userRes.data.liked); 
+                setLikes(
+
+                    Object.values(res.data.counts || {}).reduce((a, b) => a + b, 0)
+
+             ); 
+
 
         } catch (error) {
 
-            console.error("error fetching likes", error);
+            console.error("error fetching reactions", error);
+            
             
         }
 
+    };
+
+
+    //handling the reaction click
+    const handleReaction = async (type) => {
+
+        try {
+
+            if (type === reactionType) {
+            // user clicked the same reaction → delete it
+            await axiosInstance.delete(`/likes/like/${post.id}`);
+
+            } else {
+
+            await axiosInstance.post(`/likes/like/${post.id}`, { reaction_type: type });
+
+            }
+
+            fetchReactions(); // refresh state from backend
+
+        } catch (error) {
+
+            console.error("error reacting", error);
+            alert("you must be logged in to react");
+
+        }
 
     };
+    
 
     //handling the like
     const handleLike = async () => {
@@ -137,6 +174,7 @@ export default function Post( { post } ){
 
     };
 
+    //comments up and down
     const toggleComments = () => {
 
         if(!showComments) fetchComments();
@@ -149,81 +187,107 @@ export default function Post( { post } ){
 
     const goToProfile = () => {
 
-        navigate(`/profile/${post.username}`);
+        if(!post.is_anonymous && post.username){
+
+            navigate(`/profile/${post.username}`);
+
+        }
 
     };
+return (
 
-    return (
+  <div className="outerCard">
 
-    <div className="outerCard">
+    <div className="postCard">
 
-        <div className="postCard">
+      {/* Username */}
+      <h3 onClick={goToProfile} className="profileNameLink">
 
-        <h3 onClick={goToProfile} className="profileNameLink">@{post.is_anonymous ? 'Anonymous' : post.username}</h3>  
+        @{post.is_anonymous ? "Anonymous" : post.username}
 
-            <p>{post.content}</p>
-            <p>{post.category || "General"}</p>
+      </h3>
 
-            <small>{new Date(post.created_at).toLocaleString()}</small>
+      {/* Post content */}
+      <p>{post.content}</p>
 
-            <div style={{marginTop: "10PX"}}>
+      <p>{post.category || "General"}</p>
 
-                <button onClick={handleLike}>
+      <small>{new Date(post.created_at).toLocaleString()}</small>
 
-                    {likedByUser ? "unlike" : "like"} ({likes})
+      
+                {/*media preview*/}
 
-                </button>
+            <div className="mt-3 flex justify-center">
+                {post.photo && (
 
+                  <img 
+                  
+                    src={`http://localhost:7777/uploads/${post.photo}`}
+                    alt="Post"
+                    className="mt-3 rounded-lg shadow-sm max-h-80 object-cover" 
+                  
+                  />
+
+                )}
+
+                {post.video && (
+
+                  <video 
+                  
+                    src={`http://localhost:7777/uploads/${post.video}`}
+                    controls
+                    className="mt-3 rounded-lg shadow-sm max-h-80"
+
+                  />
+
+                )}
             </div>
-
-            <div style={{marginTop : "10px"}}>
-
-                <form onSubmit={handleCommentSubmit}>
-
-                    <input 
-                    
-                        type="text"
-
-                        placeholder="Write your opinion"
-
-                        value={comment}
-
-                        onChange={(e) => setComment(e.target.value)}
-                    
-                    />
-
-                    <button type="submit">Comment</button>
-
-                </form>
-
-            </div>
-
-            <button onClick={toggleComments}>
-
-                {showComments ? "Hide comments" : "View comments"}
-
-            </button>
-
-            {showComments && 
-            
-                comments.map((c) => (
-
-                    <p key={c.id}>
-
-                        <strong>@{c.username}:</strong> {c.content}
-
-                    </p>
-
-                ))
-
-            }
-
     
-    
-        </div>
 
-    </div>    
 
-    );
+
+      {/* Reactions */}
+
+        <ReactionButton 
+        
+            reactionType={reactionType}
+            reactionCount={reactionCount}
+            handleReaction={handleReaction}
+        
+        />
+
+      {/* Comment form */}
+      <div style={{ marginTop: "10px" }}>
+
+        <form onSubmit={handleCommentSubmit}>
+
+          <input
+            type="text"
+            placeholder="Write your opinion"
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+          />
+
+          <button type="submit">Comment</button>
+
+        </form>
+
+      </div>
+
+      {/* Comments toggle */}
+      <button onClick={toggleComments}>
+        {showComments ? "Hide comments" : "View comments"}
+      </button>
+
+      {/* Comments list */}
+      {showComments &&
+        comments.map((c) => (
+          <p key={c.id}>
+            <strong>@{c.username}:</strong> {c.content}
+          </p>
+        ))}
+    </div>
+  </div>
+);
 
 }

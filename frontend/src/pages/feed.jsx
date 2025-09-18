@@ -3,8 +3,10 @@ import axiosInstance from "../api/axiosInstance";
 import NewPost from "./newPost";
 import { Link } from "react-router-dom";
 import FollowList from "../components/FollowList";
+import Post from "../components/post";
 
 export default function Feed() {
+
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -134,91 +136,9 @@ export default function Feed() {
                 !selectedCategory || post.category === selectedCategory
             )
             .map((post) => (
-              <article
-                key={post.id}
-                className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 cursor-pointer group"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800">
-                    {post.category || "Uncategorized"}
-                  </span>
-                  <span className="text-xs text-gray-500 group-hover:text-cyan-600 transition-colors">
-                    {post.created_at
-                      ? new Date(post.created_at).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric'
-                        })
-                      : 'Date unavailable'}
-                  </span>
-                </div>
+            
+              <Post key={post.id} post={post}/>
 
-                <p className="text-gray-800 leading-relaxed mb-4 text-lg">
-                  {post.content}
-                </p>
-
-                {/*media preview*/}
-
-                {post.photo && (
-
-                  <img 
-                  
-                    src={`http://localhost:7777/uploads/${post.photo}`}
-                    alt="Post"
-                    className="mt-3 rounded-lg shadow-sm max-h-80 object-cover" 
-                  
-                  />
-
-                )}
-
-                {post.video && (
-
-                  <video 
-                  
-                    src={`http://localhost:7777/uploads/${post.video}`}
-                    controls
-                    className="mt-3 rounded-lg shadow-sm max-h-80"
-
-                  />
-
-                )}
-
-                <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                  <span className="text-sm text-gray-600">
-                    {post.is_anonymous ? "Anonymous" : post.username}
-                  </span>
-                  <Link
-                    to={`/profile/${post.user_id}`}
-                    className="text-cyan-600 hover:text-cyan-700 font-medium text-sm transition-colors flex items-center gap-1"
-                  >
-                    View more →
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
-                  </Link>
-                </div>
-
-                {/* 👇 FIXED: Pass BOTH userId AND currentUserId */}
-                {currentUser && (
-                  <div className="mt-4 pt-3 border-t border-gray-100">
-                    <FollowList 
-                      userId={post.user_id} 
-                      currentUserId={currentUser.id} 
-                    />
-                  </div>
-                )}
-              </article>
             ))}
         </div>
       )}

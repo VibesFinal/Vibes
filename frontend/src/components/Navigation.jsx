@@ -82,7 +82,7 @@ export default function Navigation({ onLogout }) {
   const handleSelectUser = (user) => { // 👈 Accept user object
     setSearchTerm("");
     setSearchResults([]);
-    navigate(`/profile/${user.id}`); // 👈 Use user.id — NUMBER!
+    navigate(`/profile/${user.username}`); // 👈 Use user.id — NUMBER!
   };
 
   // Show loading state while fetching user
@@ -124,9 +124,12 @@ export default function Navigation({ onLogout }) {
   }
 
   return (
+
     <header className="navbar">
+
       <div id="logo" onClick={() => navigate("/")}>
         <img src={logo} alt="Logo" />
+
       </div>
 
       <nav>
@@ -135,7 +138,7 @@ export default function Navigation({ onLogout }) {
 
           <li>
             {currentUser.id ? (
-              <Link to={`/profile/${currentUser.id}`}>Profile</Link>
+              <Link to={`/profile/${currentUser.username}`}>Profile</Link>
             ) : (
               <span>Profile</span>
             )}

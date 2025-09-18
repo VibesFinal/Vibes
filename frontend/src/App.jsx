@@ -5,7 +5,7 @@ import './App.css';
 import Feed from '../src/pages/feed';
 import Login from './pages/login';
 import Register from './pages/register';
-import Navigation from './components/Navigation'; // 👈 IMPORTED
+import Navigation from './components/Navigation'; 
 import Profile from './pages/profile';
 import About from './pages/About';
 import Error from './pages/Error404';
@@ -66,26 +66,35 @@ const FloatingFAQButton = () => {
 };
 
 export default function App() {
+
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+
     const token = localStorage.getItem("token");
+
     setIsAuthenticated(!!token);
+
     setIsLoading(false);
+
   }, []);
 
   useEffect(() => {
+
     const fetchData = async () => {
+
       try {
         const res = await axios.get('http://localhost:7777/');
         console.log(res.data);
       } catch (error) {
         console.log(error);
       }
+
     };
 
     fetchData();
+
   }, []);
 
   if (isLoading) {
@@ -128,7 +137,7 @@ export default function App() {
         />
 
         <Route
-           path="/profile/:userId"           // 👈 CHANGE THIS LINE FROM ":username" TO ":userId"
+           path="/profile/:username"           // this route should always navigate to the username
            element={
            isAuthenticated ? <Profile /> : <Navigate to="/login" />
            }
