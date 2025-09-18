@@ -336,6 +336,24 @@ UPDATE likes
 SET reaction_type = 'like'
 WHERE reaction_type IS NULL;
 
+---- add table communites ----
+CREATE TABLE communities (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  description TEXT NOT NULL,
+  member_count INTEGER DEFAULT 0,
+  icon VARCHAR(10) NOT NULL,
+  tags JSONB NOT NULL, -- store array like ["anxiety", "support"]
+  is_joined BOOLEAN DEFAULT FALSE -- for demo; in real app, this should be user-specific
+);
+
+-------- insert Data inside the table -------
+INSERT INTO communities (name, description, member_count, icon, tags, is_joined)
+VALUES
+  ('Anxiety Support Circle', 'A safe space to share experiences, coping strategies, and encouragement for those managing anxiety.', 1247, '🧠', '["anxiety", "support", "cbt"]', true),
+  ('Depression Warriors', 'You are not alone. Share your story, find hope, and connect with others walking the same path.', 893, '💙', '["depression", "hope", "peer-support"]', false),
+  ('Mindful Living Group', 'Daily mindfulness, meditation tips, and gentle reminders to breathe and be present.', 2105, '🧘', '["mindfulness", "meditation", "calm"]', true),
+  ('PTSD Healing Space', 'Trauma-informed support group for survivors. Trigger warnings enabled. Moderated 24/7.', 568, '🛡️', '["ptsd", "trauma", "safe-space"]', false);
 
 
 
