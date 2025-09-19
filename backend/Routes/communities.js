@@ -17,9 +17,9 @@ router.get('/', async (req, res) => {
     }
 
     if (tag) {
-      params.push(tag);
-      query += ` AND $${params.length} = ANY(tags)`;
-    }
+  params.push(tag);
+  query += ` AND $${params.length} IN (SELECT jsonb_array_elements_text(tags::jsonb))`;
+}
 
     const result = await pool.query(query, params);
     res.status(200).json(result.rows);

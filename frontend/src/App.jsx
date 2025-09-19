@@ -12,6 +12,7 @@ import Error from './pages/Error404';
 import Chatbot from './pages/chatBot';
 import HealthFAQ from './pages/HealthFAQ';
 import Community from './pages/community';
+import CreateCommunity from './pages/createCommunity';
 
 // Helper component to handle scrolling to #faq-section
 const ScrollToFAQ = () => {
@@ -162,6 +163,11 @@ export default function App() {
           path="/Community"
           element={<Community />}
         />
+
+          <Route 
+           path="/community/create" 
+           element={<CreateCommunity />}
+         />
 
         <Route
           path="/health-faq"

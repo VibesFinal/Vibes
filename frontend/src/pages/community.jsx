@@ -1,7 +1,6 @@
-// client/src/pages/Community.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import axiosInstance from '../api/axiosInstance'; // ✅ Adjust path as needed
+import axiosInstance from '../api/axiosInstance';
 
 const Community = () => {
   const [communities, setCommunities] = useState([]);
@@ -9,8 +8,18 @@ const Community = () => {
   const [filterTag, setFilterTag] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch communities from backend (with filters)
+  // 🔥 Preserve input focus across re-renders
+  const searchInputRef = useRef(null);
+
+  // 💡 Memoize tags to prevent unnecessary re-renders of <select>
+  const allTags = useMemo(() => {
+    return [...new Set(communities.flatMap(comm => comm.tags || []))];
+  }, [communities]);
+
+  // 🔄 Fetch communities with debounce + cancellation
   useEffect(() => {
+    const controller = new AbortController(); // 🔥 Cancel previous requests
+
     const fetchCommunities = async () => {
       try {
         setIsLoading(true);
@@ -19,21 +28,45 @@ const Community = () => {
         if (searchTerm) params.search = searchTerm;
         if (filterTag) params.tag = filterTag;
 
-        const response = await axiosInstance.get('/communities', { params });
-        setCommunities(response.data);
+        const response = await axiosInstance.get('/communities', {
+          params,
+          signal: controller.signal, // 🔥 Bind to controller
+        });
+
+        // Only update if component is still mounted
+        if (!controller.signal.aborted) {
+          setCommunities(response.data);
+        }
       } catch (err) {
-        console.error("Failed to fetch communities:", err);
-        alert("Failed to load communities. Please refresh.");
+        if (err.name !== 'CanceledError') {
+          console.error("Failed to fetch communities:", err);
+          alert("Failed to load communities. Please refresh.");
+        }
       } finally {
-        setIsLoading(false);
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
       }
     };
 
-    fetchCommunities();
-  }, [searchTerm, filterTag]);
+    // 🔥 DEBOUNCE: Wait 300ms after user stops typing
+    const debounceTimer = setTimeout(() => {
+      fetchCommunities();
+    }, 300);
 
-  // Unique tags from loaded communities
-  const allTags = [...new Set(communities.flatMap(comm => comm.tags || []))];
+    // Cleanup: Cancel fetch + clear timer
+    return () => {
+      clearTimeout(debounceTimer);
+      controller.abort(); // 🔥 Cancel in-flight request
+    };
+  }, [searchTerm, filterTag]); // ✅ Depend on actual searchTerm — not debounced
+
+  // 🔥 Refocus input after render if it was focused
+  useEffect(() => {
+    if (searchInputRef.current && document.activeElement !== searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [communities]); // Only after communities update
 
   // Handle join/leave
   const handleJoinCommunity = async (id) => {
@@ -55,7 +88,7 @@ const Community = () => {
     }
   };
 
-  if (isLoading) {
+  if (isLoading && communities.length === 0) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 flex items-center justify-center p-6">
         <div className="text-center">
@@ -82,10 +115,19 @@ const Community = () => {
       <div className="max-w-5xl mx-auto mb-14 flex flex-col sm:flex-row gap-5 items-center justify-center flex-wrap">
         <div className="relative w-full sm:w-72 lg:w-96">
           <input
+            ref={searchInputRef} // 🔥 Preserve focus
+            key="search-input"
             type="text"
             placeholder="Search for support..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+              }
+            }}
+            autoComplete="off"
+            spellCheck="false"
             className="w-full px-5 py-3 pl-12 border border-gray-200 rounded-2xl bg-white/80 backdrop-blur-sm shadow-sm focus:outline-none focus:ring-3 focus:ring-indigo-300 transition-all duration-300 placeholder:text-gray-400"
           />
           <svg className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
