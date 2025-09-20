@@ -41,13 +41,13 @@ router.get("/analyze/:userId" , routeGuard , async(req , res) => {
 
         
         //here we are sending the posts to gemini for emotional analysis
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        const model = genAi.getGenerativeModel({ model: "gemini-2.0-flash" });
 
         const prompt = `
         
                 Analyze these user posts for mental health indicators.
                 Classify each as one of: [positive, neutral, anxious, depressive, stressed].
-                Return results in JSON with counts per category only.
+                Return results in JSON with percentage per category only.
 
                 Posts: ${JSON.stringify(posts)}
         
@@ -59,14 +59,33 @@ router.get("/analyze/:userId" , routeGuard , async(req , res) => {
         //extracting the ai response
 
         const textResponse = result.response.text();
-        const analysis = JSON.parse(textResponse); //this to ensure that the prompt is structures json
+        
+
+        let cleanResponse = textResponse.trim();
+
+        
+        cleanResponse = cleanResponse.replace(/```json|```/g, "").trim();
+
+        let analysis;
+
+        try {
+            
+            analysis = JSON.parse(cleanResponse);
+
+        } catch (error) {
+
+            console.error("failed to parse gemini response", cleanResponse);
+            return res.status(500).json({error : "invalid ai response format"});            
+            
+        }
+
 
 
         //now we want to send the results back to the frontend
         res.json({
 
             postAnalyzed: posts.length,
-            chardata: analysis
+            chartData: analysis
 
         });
 

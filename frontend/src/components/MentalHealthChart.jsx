@@ -1,52 +1,82 @@
-import { pieChart , Pie , Cell , Tooltop , Legend } from "recharts";
+import { useEffect, useState } from "react";
+import aiApi from "../api/aiApi";
+import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from "recharts";
 
-export default function MentalHealthChart({ chartData }){
+const COLORS = ["#4caf50", "#9e9e9e", "#ff9800", "#f44336", "#2196f3"]; 
+// [positive, neutral, anxious, depressive, stressed]
 
-    const COLORS = [ "#4ade80" , "#a3a3a3" , "#fbbf24" , "#f87171" , "#60a5fa" ];
+export default function MentalHealthChart({ userId }) {
+  const [chartData, setChartData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-    const data = Object.entries(chartData).map(([key , value]) => ({
+  useEffect(() => {
 
-        name: key,
-        value,
+    if (!userId) return;
 
-    }));
+    const fetchAnalysis = async () => {
 
-    return(
+      try {
+        const res = await aiApi.analyzeUser(userId);
 
-        <div className="flex flex-col items-center mt-5">
+        if (res.chartData) {
+          // Convert AI response 
+          const formatted = Object.entries(res.chartData).map(([key, value]) => ({
 
-            <h3 className="text-lg font-semibold mb-3">Your Mental Health Overview</h3>
+            name: key,
+            value: value,
 
-            <PieChart width={350} height={300}>
+          }));
 
-                <Pie
-                
-                    data={data}
-                    dataKey="value"
-                    cx= "50%"
-                    cy= "50%"
-                    outerRadius={100}
-                    label
-            
-                >
+          setChartData(formatted);
 
-                    {data.map((entry , index) => (
+        }
 
-                        <Cell key={index} fill={COLORS[index % COLORS.length]}/>
+      } catch (err) {
 
-                    ))}
+        console.error("❌ AI Analysis error:", err);
+        setError("Failed to fetch analysis.");
 
-                </Pie>
+      } finally {
 
-                <Tooltip />
+        setLoading(false);
 
-                <Legend />
-                
-            </PieChart>
+      }
 
-        </div>
+    };
 
+    fetchAnalysis();
 
-    );
+  }, [userId]);
 
+  if (loading) return <p>Loading analysis...</p>;
+  if (error) return <p className="text-red-600">{error}</p>;
+  if (chartData.length === 0) return <p>No analysis data available.</p>;
+
+  return (
+
+    <div className="w-full h-80 bg-white p-4 rounded-xl shadow-md border">
+      <h2 className="text-xl font-semibold mb-4">Mental Health Analysis</h2>
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie
+            data={chartData}
+            cx="50%"
+            cy="50%"
+            labelLine={false}
+            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+            outerRadius={100}
+            dataKey="value"
+          >
+            {chartData.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Pie>
+          <Tooltip />
+          <Legend />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
+    
+  );
 }
