@@ -89,8 +89,14 @@ app.use("/" , home)
 const communities = require("./Routes/communities");
 app.use("/communities" , communities)
 
+//Ai analysis route for posts
+const aiAnalysisRoute = require("./Routes/AiAnalysis");
+app.use("/ai" , aiAnalysisRoute);
+
 //upload the photos and the videos
 app.use("/uploads", express.static("uploads"));
+
+
 
 
 
