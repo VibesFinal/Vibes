@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axiosInstance from "../api/axiosInstance";
 import Post from "../components/post";
 import FollowList from "../components/FollowList";
+import Badges from "../components/Badges";
 import { useParams } from "react-router-dom";
 
 export default function Profile() {
@@ -11,48 +12,29 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Get logged-in user from localStorage
   const currentUser = JSON.parse(localStorage.getItem("user"));
 
-const fetchUserProfile = async () => {
-  try {
-    const res = await axiosInstance.get(`/profile/username/${username}`);
-    setUser(res.data.user);
-    setPosts(res.data.posts);
-    setError(null);
-  } catch (error) {
-    console.error("❌ Axios Error:", error.response?.data || error.message);
-    setError("Failed to load profile. Please try again later.");
-  } finally {
-    setLoading(false);
-  }
-};
-
-  // 👇 ONLY fetch if userId is NOT undefined or empty
   useEffect(() => {
-    if (username) { // 👈 THIS IS THE KEY LINE
-      fetchUserProfile();
-    } else {
-      console.warn("⚠️ userId is undefined — waiting for route to resolve...");
-      setLoading(false); // prevent infinite loading
-    }
-  }, [username]); // 👈 This dependency is correct
+    const fetchUserProfile = async () => {
+      try {
+        const res = await axiosInstance.get(`/profile/username/${username}`);
+        setUser(res.data.user);
+        setPosts(res.data.posts);
+        setError(null);
+      } catch (error) {
+        console.error("❌ Axios Error:", error.response?.data || error.message);
+        setError("Failed to load profile. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-600 text-lg">Loading profile...</p>
-      </div>
-    );
-  }
+    if (username) fetchUserProfile();
+    else setLoading(false);
+  }, [username]);
 
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-red-600 font-medium text-lg">❌ {error}</div>
-      </div>
-    );
-  }
+  if (loading) return <p>Loading profile...</p>;
+  if (error) return <p className="text-red-600">{error}</p>;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 bg-white rounded-2xl shadow-sm border border-gray-100">
@@ -76,6 +58,9 @@ const fetchUserProfile = async () => {
 
         <p className="text-gray-600 text-sm md:text-base mb-1">📧 {user?.email || "Not provided"}</p>
         <p className="text-gray-600 text-sm md:text-base">📝 Total Posts: {posts.length}</p>
+
+        {/* ✅ Badges */}
+        {user?.id && <Badges userId={user.id} />}
       </div>
 
       {/* Followers / Following Section */}

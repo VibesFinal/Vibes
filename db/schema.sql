@@ -356,6 +356,29 @@ VALUES
   ('PTSD Healing Space', 'Trauma-informed support group for survivors. Trigger warnings enabled. Moderated 24/7.', 568, '🛡️', '["ptsd", "trauma", "safe-space"]', false);
 
 
+-- Migration: Create badge_types table
+-- Run: psql -d vibesdb -f migrations/2025_09_20_create_badge_types_table.sql
 
+CREATE TABLE IF NOT EXISTS badge_types (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) UNIQUE NOT NULL,
+    description TEXT NOT NULL,
+    image_url TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
+-- Insert initial badge 2 types 
+INSERT INTO badge_types (name, description, image_url) VALUES
+('Supportive Soul', 'Leave 20 comments on other people''s posts', '/uploads/badges/supportive_soul.jpeg'),
+('Story Teller', 'Write 10 posts', '/uploads/badges/story_teller.jpeg');
 
+-- Migration: Create user_badges table
+-- Run: psql -d vibesdb -f migrations/2025_09_20_create_user_badges_table.sql
+
+CREATE TABLE IF NOT EXISTS user_badges (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    badge_id INT NOT NULL REFERENCES badge_types(id) ON DELETE CASCADE,
+    awarded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, badge_id)
+);

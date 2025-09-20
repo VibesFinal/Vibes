@@ -73,6 +73,10 @@ app.use("/comments" , comments)
 const profileRoute = require("./Routes/profile");
 app.use("/profile", profileRoute); 
 
+// badge route
+const badgeRoute = require('./Routes/badges');
+app.use('/badges', badgeRoute);
+
 //chatbot route
 const chatRoute = require("./Routes/chatRoute");
 app.use("/api/chat" , chatRoute);
