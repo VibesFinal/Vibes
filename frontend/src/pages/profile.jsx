@@ -4,6 +4,10 @@ import Post from "../components/post";
 import FollowList from "../components/FollowList";
 import Badges from "../components/Badges";
 import { useParams } from "react-router-dom";
+import MentalHealthChart from "../components/MentalHealthChart";
+import { FaRegCommentDots } from "react-icons/fa"; // bubble/chat icon
+
+
 
 export default function Profile() {
   const { username } = useParams();
@@ -11,21 +15,30 @@ export default function Profile() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showChart , setShowChart] = useState(false);
 
   const currentUser = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
+
     const fetchUserProfile = async () => {
+
       try {
+
         const res = await axiosInstance.get(`/profile/username/${username}`);
         setUser(res.data.user);
         setPosts(res.data.posts);
         setError(null);
+
       } catch (error) {
+
         console.error("❌ Axios Error:", error.response?.data || error.message);
         setError("Failed to load profile. Please try again later.");
+
       } finally {
+
         setLoading(false);
+        
       }
     };
 
@@ -62,6 +75,32 @@ export default function Profile() {
         {/* ✅ Badges */}
         {user?.id && <Badges userId={user.id} />}
       </div>
+
+      {/* ✅ AI Analysis Bubble Icon */}
+      {user?.id && (
+
+        <button
+
+          onClick={() => setShowChart(!showChart)}
+          className="mt-4 flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition"
+
+        >
+          <FaRegCommentDots size={20} />
+
+          {showChart ? "Hide Analysis" : "Show Analysis"}
+
+        </button>
+
+      )}
+
+      {showChart && (
+
+        <div className="mt-6">
+          <MentalHealthChart userId={user.id} />
+        </div>
+
+      )}
+
 
       {/* Followers / Following Section */}
       <div className="mb-8">

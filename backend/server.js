@@ -92,6 +92,10 @@ app.use("/communities" , communities)
 //upload the photos and the videos
 app.use("/uploads", express.static("uploads"));
 
+//ai post analysis route
+const aiAnalysisRoute = require("./Routes/AiAnalysis");
+app.use("/ai", aiAnalysisRoute);
+
 
 
 //listening to the port with connecting it with the database server
