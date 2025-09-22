@@ -6,10 +6,10 @@ import FollowList from "../components/FollowList";
 import Post from "../components/post";
 import InfinitePostList from "../components/InfinitePostList";
 
+//
+
 export default function Feed() {
 
-  //const [posts, setPosts] = useState([]);
-  //const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [newPost , setNewPost] = useState(null);
   const [currentUser, setCurrentUser] = useState(null); // 👈 NEW STATE
