@@ -13,6 +13,7 @@ import Chatbot from './pages/chatBot';
 import HealthFAQ from './pages/HealthFAQ';
 import Community from './pages/community';
 import CreateCommunity from './pages/createCommunity';
+import InviteButton from "./components/InviteButton";
 
 // Helper component to handle scrolling to #faq-section
 const ScrollToFAQ = () => {
@@ -67,10 +68,14 @@ const FloatingFAQButton = () => {
   );
 };
 
+
+
+
 export default function App() {
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const currentUser = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
 
@@ -181,6 +186,10 @@ export default function App() {
           }
         />
       </Routes>
+
+           
+    {currentUser?.id && <InviteButton userId={currentUser.id} />}
+
     </Router>
   );
 }
