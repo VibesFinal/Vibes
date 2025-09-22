@@ -75,7 +75,8 @@ router.post("/", routeGuard, upload.fields([{ name: "photo" } , { name: "video" 
 
 // Get posts (optionally filter by category)
 router.get("/", async (req, res) => {
-    const { category } = req.query;
+
+    const { category , limit = 7 , offset = 0 } = req.query;  //default 7 posts per request
 
     try {
         // Updated SELECT query to fetch 'is_anonymous'
@@ -92,7 +93,10 @@ router.get("/", async (req, res) => {
             params.push(category);
         }
 
-        query += " ORDER BY posts.created_at DESC";
+        query += ` ORDER BY posts.created_at DESC, posts.id DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+
+        params.push(limit);
+        params.push(offset);
 
         const result = await pool.query(query, params);
         res.json(result.rows);
