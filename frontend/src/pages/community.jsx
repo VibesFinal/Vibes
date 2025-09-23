@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 
 const Community = () => {
@@ -7,6 +7,7 @@ const Community = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterTag, setFilterTag] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
   // 🔥 Preserve input focus across re-renders
   const searchInputRef = useRef(null);
@@ -18,7 +19,7 @@ const Community = () => {
 
   // 🔄 Fetch communities with debounce + cancellation
   useEffect(() => {
-    const controller = new AbortController(); // 🔥 Cancel previous requests
+    const controller = new AbortController();
 
     const fetchCommunities = async () => {
       try {
@@ -30,10 +31,9 @@ const Community = () => {
 
         const response = await axiosInstance.get('/communities', {
           params,
-          signal: controller.signal, // 🔥 Bind to controller
+          signal: controller.signal,
         });
 
-        // Only update if component is still mounted
         if (!controller.signal.aborted) {
           setCommunities(response.data);
         }
@@ -49,26 +49,47 @@ const Community = () => {
       }
     };
 
-    // 🔥 DEBOUNCE: Wait 300ms after user stops typing
     const debounceTimer = setTimeout(() => {
       fetchCommunities();
     }, 300);
 
-    // Cleanup: Cancel fetch + clear timer
     return () => {
       clearTimeout(debounceTimer);
-      controller.abort(); // 🔥 Cancel in-flight request
+      controller.abort();
     };
-  }, [searchTerm, filterTag]); // ✅ Depend on actual searchTerm — not debounced
+  }, [searchTerm, filterTag]);
 
   // 🔥 Refocus input after render if it was focused
   useEffect(() => {
     if (searchInputRef.current && document.activeElement !== searchInputRef.current) {
       searchInputRef.current.focus();
     }
-  }, [communities]); // Only after communities update
+  }, [communities]);
 
-  // Handle join/leave
+  // ✅ Handle explicit LEAVE
+  const handleLeaveCommunity = async (id) => {
+    if (!window.confirm("Are you sure you want to leave this community? You can join again anytime.")) {
+      return;
+    }
+
+    try {
+      const response = await axiosInstance.patch(`/communities/${id}/join`);
+      const updatedCommunity = response.data;
+
+      setCommunities(prev =>
+        prev.map(comm =>
+          comm.id === updatedCommunity.id ? { ...updatedCommunity, is_joined: false } : comm
+        )
+      );
+
+      alert(`You left the community.`);
+    } catch (err) {
+      console.error("Failed to leave community:", err);
+      alert("Failed to leave. Please try again.");
+    }
+  };
+
+  // Handle JOIN + navigate to chat
   const handleJoinCommunity = async (id) => {
     try {
       const response = await axiosInstance.patch(`/communities/${id}/join`);
@@ -80,8 +101,8 @@ const Community = () => {
         )
       );
 
-      const action = updatedCommunity.is_joined ? 'joined' : 'left';
-      alert(`You ${action} the community.`);
+      alert(`You joined the community.`);
+      navigate(`/communities/${id}/chat`);
     } catch (err) {
       console.error("Failed to update join status:", err);
       alert("Failed to update community status. Please try again.");
@@ -115,7 +136,7 @@ const Community = () => {
       <div className="max-w-5xl mx-auto mb-14 flex flex-col sm:flex-row gap-5 items-center justify-center flex-wrap">
         <div className="relative w-full sm:w-72 lg:w-96">
           <input
-            ref={searchInputRef} // 🔥 Preserve focus
+            ref={searchInputRef}
             key="search-input"
             type="text"
             placeholder="Search for support..."
@@ -187,16 +208,37 @@ const Community = () => {
                   </div>
                 </div>
 
-                <button
-                  className={`w-full py-3 px-4 rounded-xl font-medium transition-all duration-300 transform hover:scale-[1.03] hover:shadow-md ${
-                    comm.is_joined
-                      ? 'bg-gradient-to-r from-red-400 to-pink-500 hover:from-red-500 hover:to-pink-600 text-white shadow-md'
-                      : 'bg-gradient-to-r from-teal-500 to-green-500 hover:from-teal-600 hover:to-green-600 text-white shadow-md'
-                  }`}
-                  onClick={() => handleJoinCommunity(comm.id)}
-                >
-                  {comm.is_joined ? '🌸 Leave Circle' : '💚 Join Circle'}
-                </button>
+                {/* ✅ UPDATED: Dual Button System */}
+                <div className="flex flex-col gap-2">
+                  <button
+                    className={`w-full py-3 px-4 rounded-xl font-medium transition-all duration-300 transform hover:scale-[1.03] hover:shadow-md ${
+                      comm.is_joined
+                        ? 'bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white shadow-md'
+                        : 'bg-gradient-to-r from-teal-500 to-green-500 hover:from-teal-600 hover:to-green-600 text-white shadow-md'
+                    }`}
+                    onClick={() => {
+                      if (comm.is_joined) {
+                        navigate(`/communities/${comm.id}/chat`);
+                      } else {
+                        handleJoinCommunity(comm.id);
+                      }
+                    }}
+                  >
+                    {comm.is_joined ? '💬 Enter Chat' : '💚 Join Circle'}
+                  </button>
+
+                  {comm.is_joined && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleLeaveCommunity(comm.id);
+                      }}
+                      className="w-full py-2 px-4 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all duration-300 border border-red-200 hover:border-red-300"
+                    >
+                      🌸 Leave Circle
+                    </button>
+                  )}
+                </div>
               </div>
             ))}
           </div>
