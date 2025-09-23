@@ -382,3 +382,20 @@ CREATE TABLE IF NOT EXISTS user_badges (
     awarded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(user_id, badge_id)
 );
+
+
+---- Create message table ----
+
+CREATE TABLE IF NOT EXISTS messages (
+  id SERIAL PRIMARY KEY,
+  community_id INTEGER NOT NULL REFERENCES communities(id) ON DELETE CASCADE,
+  user_id INTEGER NOT NULL, -- Add REFERENCES users(id) if applicable
+  content TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+
+------ to handle edit and the delete the message through the chat -----
+ALTER TABLE messages
+ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS edited_at TIMESTAMPTZ DEFAULT NULL;

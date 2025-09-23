@@ -14,6 +14,8 @@ import HealthFAQ from './pages/HealthFAQ';
 import Community from './pages/community';
 import CreateCommunity from './pages/createCommunity';
 import InviteButton from "./components/InviteButton";
+import CommunityChat from './pages/CommunityChat'
+
 
 // Helper component to handle scrolling to #faq-section
 const ScrollToFAQ = () => {
@@ -173,6 +175,10 @@ export default function App() {
            path="/community/create" 
            element={<CreateCommunity />}
          />
+
+          <Route 
+          path="/communities/:id/chat" 
+          element={<CommunityChat />} />
 
         <Route
           path="/health-faq"
