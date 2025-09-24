@@ -14,7 +14,8 @@ import HealthFAQ from './pages/HealthFAQ';
 import Community from './pages/community';
 import CreateCommunity from './pages/createCommunity';
 import InviteButton from "./components/InviteButton";
-import CommunityChat from './pages/CommunityChat'
+import CommunityChat from './pages/CommunityChat';
+import Activate from './pages/Activate';
 
 
 // Helper component to handle scrolling to #faq-section

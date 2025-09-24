@@ -65,6 +65,10 @@ app.use('/badges', badgeRoute);
 const chatRoute = require("./Routes/chatRoute");
 app.use("/api/chat", chatRoute);
 
+// verify route
+const verify = require("./Routes/verify");
+app.use('/user/verify', verify); 
+
 const home = require("./Routes/home");
 app.use("/", home);
 
