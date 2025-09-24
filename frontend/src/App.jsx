@@ -145,6 +145,9 @@ export default function App() {
           }
         />
 
+        {/* ✅ New activation route */}
+        <Route path="/user/verify/:token" element={<Activate />} /> 
+
         <Route
            path="/profile/:username"           // this route should always navigate to the username
            element={
@@ -197,5 +200,6 @@ export default function App() {
     {currentUser?.id && <InviteButton userId={currentUser.id} />}
 
     </Router>
+
   );
 }

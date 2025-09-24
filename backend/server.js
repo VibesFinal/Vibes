@@ -37,6 +37,7 @@ app.use(cors(corsOptions));
 // ROUTES
 // --------------------------
 
+//
 const auth = require("./Routes/auth");
 app.use("/user", auth);
 

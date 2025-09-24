@@ -12,36 +12,46 @@ export default function Login({ onLogin }) {
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setWelcomeMessage("");
+  e.preventDefault();
+  setIsLoading(true);
+  setWelcomeMessage("");
 
-    try {
-      const res = await axiosInstance.post("/user/login", {
-        username,
-        password,
-      });
+  try {
+    const res = await axiosInstance.post("/user/login", {
+      username,
+      password,
+    });
 
-      // Save JWT and user info
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
+    // Save JWT and user info
+    localStorage.setItem("token", res.data.token);
+    localStorage.setItem("user", JSON.stringify(res.data.user));
 
-      const message = res.data.welcomeMessage;
-      setWelcomeMessage(message);
-      console.log("🎉 Welcome message received:", message);
-    } catch (error) {
-      console.error("Login failed", error);
-      if (error.response) {
-        alert("Login Error: " + (error.response.data || "Invalid credentials"));
-      } else if (error.request) {
-        alert("Network Error: Server not responding");
-      } else {
-        alert("Error: " + error.message);
-      }
-    } finally {
-      setIsLoading(false);
+    const message = res.data.welcomeMessage;
+    setWelcomeMessage(message);
+    console.log("🎉 Welcome message received:", message);
+  } catch (error) {
+    console.error("Login failed", error);
+
+    if (error.response) {
+      console.log("⚠️ Server error response:", error.response.data);
+
+      const errData = error.response.data;
+      const msg =
+        typeof errData === "string"
+          ? errData
+          : errData.message || JSON.stringify(errData);
+
+      alert("Login Error: " + msg);
+    } else if (error.request) {
+      alert("Network Error: Server not responding");
+    } else {
+      alert("Error: " + error.message);
     }
-  };
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-white px-4 py-8">
