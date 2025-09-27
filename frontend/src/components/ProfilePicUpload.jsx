@@ -37,24 +37,37 @@ export default function ProfileUpload({ userId , onUpload }){
     }
 
     return (
+        <div className="flex items-center justify-center py-10">
+            <div className="flex items-center gap-3">
+            {/* Hidden native file input */}
+            <input
+                id="fileInput"
+                type="file"
+                onChange={(e) => setFile(e.target.files[0])}
+                className="hidden"
+            />
 
-        <div className="mt-4">
-
-            <input type="file" onChange={(e) => setFile(e.target.files[0])}/>
-
-            <button
-            
-                onClick={handleUpload}
-                className="ml-2 px-4 py-2 bg-green-500 text-white rounded-lg"
-            
+            {/* Custom button (label for file input) */}
+            <label
+                htmlFor="fileInput"
+                className="cursor-pointer px-5 py-2 bg-blue-500 hover:bg-blue-600
+                        text-white font-medium rounded-lg shadow-md 
+                        transition duration-200"
             >
+                Choose File
+            </label>
 
-            Upload
-
+            {/* Upload button */}
+            <button
+                onClick={handleUpload}
+                className="px-5 py-2 bg-blue-500 hover:bg-blue-600 
+                        text-white font-medium rounded-lg shadow-md 
+                        transition duration-200"
+            >
+                Upload
             </button>
-
+            </div>
         </div>
-
     );
 
 }
