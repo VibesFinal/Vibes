@@ -3,13 +3,16 @@ const router = express.Router();
 const pg = require('pg');
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 
+//for the profilePic upload
+const upload = require("../middleware/uploadProfilePic");
+
 
 router.get("/username/:username", async (req, res) => {
   const { username } = req.params;
 
   try {
     const userResult = await pool.query(
-      "SELECT id, username, email FROM users WHERE username = $1",
+      "SELECT id, username, email , profile_pic FROM users WHERE username = $1",
       [username]
     );
 
@@ -29,7 +32,8 @@ router.get("/username/:username", async (req, res) => {
           posts.is_anonymous,
           posts.photo ,
            posts.video,
-          users.username AS username
+          users.username AS username,
+           users.profile_pic
         FROM posts
         JOIN users ON posts.user_id = users.id
         WHERE posts.user_id = $1
@@ -47,6 +51,28 @@ router.get("/username/:username", async (req, res) => {
     console.error("Error getting user by username:", error);
     res.status(500).json({ error: "Internal server error" });
   }
+});
+
+//upload a profile picture
+router.post("/profile-pic/:id" , upload.single("profile_pic") , async (req , res) => {
+
+
+  const userId = req.params.id;
+  const filePath = `/uploads/profilePictures/${req.file.filename}`;
+
+  try {
+    
+    await pool.query("UPDATE users SET profile_pic = $1 WHERE id = $2", [filePath, userId]);
+    res.json({ success: true , profile_pic: filePath });
+
+  } catch (error) {
+
+    console.error("Error uploading profile picture" , error);
+
+    res.status(500).json({error: "failed to upload profile picture"});
+        
+  }
+
 });
 
 

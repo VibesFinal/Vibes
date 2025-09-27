@@ -1,8 +1,8 @@
-// src/components/Navigation.jsx
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/navbar.css";
 import logo from "./images/v_logo.png";
+import { UserCircle  , House , UsersThree , Robot} from "phosphor-react";
 
 export default function Navigation({ onLogout }) {
   const navigate = useNavigate();
@@ -17,7 +17,7 @@ export default function Navigation({ onLogout }) {
     if (token) {
       const fetchUser = async () => {
         try {
-          const res = await fetch("http://localhost:7777/user/profile", {
+          const res = await fetch("http://localhost:7777/user/profile", { // 
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -63,7 +63,7 @@ export default function Navigation({ onLogout }) {
     }
 
     try {
-      const res = await fetch(`http://localhost:7777/user/search?username=${value}`, {
+      const res = await fetch(`http://localhost:7777/user/search?username=${value}`, { // 👈 USE PORT 3000!
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -80,40 +80,11 @@ export default function Navigation({ onLogout }) {
   };
 
   // Navigate to user profile when clicked
-  const handleSelectUser = (user) => {
+  const handleSelectUser = (user) => { // 👈 Accept user object
     setSearchTerm("");
     setSearchResults([]);
-    navigate(`/profile/${user.username}`);
+    navigate(`/profile/${user.username}`); // 👈 Use user.id — NUMBER!
   };
-
-  // 🔍 Shared search input component (prevents Enter → page reload)
-  const SearchInput = (
-    <li className="searchContainer">
-      <input
-        type="text"
-        placeholder="Search users..."
-        value={searchTerm}
-        onChange={handleSearch}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault(); // 🛑 Prevent form submission/page reload
-          }
-        }}
-        autoComplete="off"
-        spellCheck="false"
-        aria-label="Search users by username"
-      />
-      {searchResults.length > 0 && (
-        <ul className="searchResults">
-          {searchResults.map(user => (
-            <li key={user.id} onClick={() => handleSelectUser(user)}>
-              {user.username}
-            </li>
-          ))}
-        </ul>
-      )}
-    </li>
-  );
 
   // Show loading state while fetching user
   if (currentUser === null) {
@@ -131,8 +102,23 @@ export default function Navigation({ onLogout }) {
             <li><Link to="/chatBot">AI Listener</Link></li>
             <li><Link to="/about">About</Link></li>
             <li><button onClick={handleLogout}>Logout</button></li>
-            {/* ✅ FIXED: Search input with Enter prevention */}
-            {SearchInput}
+            <li className="searchContainer">
+              <input
+                type="text"
+                placeholder="Search users..."
+                value={searchTerm}
+                onChange={handleSearch}
+              />
+              {searchResults.length > 0 && (
+                <ul className="searchResults">
+                  {searchResults.map(user => (
+                    <li key={user.id} onClick={() => handleSelectUser(user)}>
+                      {user.username}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </li>
           </ul>
         </nav>
       </header>
@@ -140,29 +126,50 @@ export default function Navigation({ onLogout }) {
   }
 
   return (
+
     <header className="navbar">
+
       <div id="logo" onClick={() => navigate("/")}>
         <img src={logo} alt="Logo" />
+
       </div>
 
       <nav>
         <ul className="navLinks">
-          <li><Link to="/">Feed</Link></li>
+          <li><Link to="/"><House size={30} /></Link></li>
+
           <li>
             {currentUser.id ? (
-              <Link to={`/profile/${currentUser.username}`}>Profile</Link>
+              <Link to={`/profile/${currentUser.username}`}><UserCircle size={30} /></Link>
             ) : (
               <span>Profile</span>
             )}
           </li>
-          <li><Link to="/community">Community</Link></li>
-          <li><Link to="/chatBot">AI Listener</Link></li>
+          
+          <li><Link to="/community"><UsersThree size={30} /></Link></li>
+          <li><Link to="/chatBot"><Robot size={30} /></Link></li>
           <li><Link to="/about">About</Link></li>
           <li>
             <button onClick={handleLogout}>Logout</button>
           </li>
-          {/* ✅ FIXED: Search input with Enter prevention */}
-          {SearchInput}
+
+          <li className="searchContainer">
+            <input
+              type="text"
+              placeholder="Search users..."
+              value={searchTerm}
+              onChange={handleSearch}
+            />
+            {searchResults.length > 0 && (
+              <ul className="searchResults">
+                {searchResults.map(user => (
+                  <li key={user.id} onClick={() => handleSelectUser(user)}>
+                    {user.username}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </li>
         </ul>
       </nav>
     </header>

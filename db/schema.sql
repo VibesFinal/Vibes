@@ -418,6 +418,11 @@ ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE,
 ADD COLUMN IF NOT EXISTS edited_at TIMESTAMPTZ DEFAULT NULL;
 
 
--- Migration: add to users table verified column
--- Run: psql -d vibesdb -f migrations/2025_09_23_add_verified_column.sql
-ALTER TABLE users ADD COLUMN verified BOOLEAN DEFAULT false;
+
+-- add profile picture column to the posts table
+
+ALTER TABLE users ADD COLUMN profile_pic TEXT;
+
+
+
+
