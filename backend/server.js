@@ -75,7 +75,9 @@ app.use("/", home);
 const communities = require("./Routes/communities");
 app.use("/communities", communities);
 
-app.use("/uploads", express.static("uploads"));
+//app.use("/uploads", express.static("uploads"));
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 const aiAnalysisRoute = require("./Routes/AiAnalysis");
 app.use("/ai", aiAnalysisRoute);

@@ -6,6 +6,7 @@ import Badges from "../components/Badges";
 import { useParams } from "react-router-dom";
 import MentalHealthChart from "../components/MentalHealthChart";
 import { FaRegCommentDots } from "react-icons/fa"; // bubble/chat icon
+import ProfileUpload from "../components/ProfilePicUpload";
 
 
 
@@ -57,20 +58,42 @@ export default function Profile() {
           {user?.username || "User"}'s Profile
         </h1>
 
-        {user?.avatar ? (
-          <img
-            src={user.avatar}
-            alt={user.username}
-            className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-gray-100 mx-auto mb-4 shadow-md"
-          />
+      {/*Profile picture*/}
+
+        {user?.profile_pic ? (
+
+        <img 
+        
+          src={`${process.env.REACT_APP_BACKEND_URL}${user.profile_pic}`} // || "http://localhost:7777" put this inside the src if the profile picture didn't appear
+          alt={user.username}
+          className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-gray-100 mx-auto mb-4 shadow-md"
+        
+        /> 
+
+
         ) : (
+
           <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gray-200 mx-auto mb-4 flex items-center justify-center text-gray-500 text-2xl font-medium">
+
             {user?.username?.[0]?.toUpperCase() || "?"}
+
           </div>
+
         )}
 
-        <p className="text-gray-600 text-sm md:text-base mb-1">📧 {user?.email || "Not provided"}</p>
-        <p className="text-gray-600 text-sm md:text-base">📝 Total Posts: {posts.length}</p>
+          {/* Show upload only if it's the logged-in user's profile */}
+          {currentUser?.id === user?.id && (
+
+            <ProfileUpload 
+            
+            userId={user.id}
+            onUpload={(newPic) => setUser({ ...user, profile_pic: newPic })}
+            
+            />
+
+          )}
+
+
 
         {/* ✅ Badges */}
         {user?.id && <Badges userId={user.id} />}
