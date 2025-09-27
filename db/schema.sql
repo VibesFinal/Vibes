@@ -418,6 +418,10 @@ ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE,
 ADD COLUMN IF NOT EXISTS edited_at TIMESTAMPTZ DEFAULT NULL;
 
 
+-- verification 
+
+ALTER TABLE users ADD COLUMN verified BOOLEAN DEFAULT false;
+
 
 -- add profile picture column to the posts table
 
