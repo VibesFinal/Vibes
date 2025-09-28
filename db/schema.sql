@@ -427,6 +427,15 @@ ALTER TABLE users ADD COLUMN verified BOOLEAN DEFAULT false;
 
 ALTER TABLE users ADD COLUMN profile_pic TEXT;
 
-
+-- Add a notifications table to see user likes , comments and follows --
+CREATE TABLE IF NOT EXISTS notifications (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  message TEXT NOT NULL,
+  is_read BOOLEAN DEFAULT false,
+  type VARCHAR(50), -- e.g., 'new_post', 'new_comment'
+  reference_id INTEGER, -- ID of the related post/comment/etc.
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
 
