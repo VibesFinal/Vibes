@@ -16,6 +16,9 @@ import CreateCommunity from './pages/createCommunity';
 import InviteButton from "./components/InviteButton";
 import CommunityChat from './pages/CommunityChat';
 import Activate from './pages/Activate';
+import { NotificationProvider } from './context/NotificationContext';
+import NotificationBell from './components/NotificationBell';
+
 
 
 // Helper component to handle scrolling to #faq-section
@@ -75,132 +78,76 @@ const FloatingFAQButton = () => {
 
 
 export default function App() {
-
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const currentUser = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
-
     const token = localStorage.getItem("token");
-
     setIsAuthenticated(!!token);
-
     setIsLoading(false);
-
   }, []);
 
   useEffect(() => {
-
     const fetchData = async () => {
-
       try {
         const res = await axios.get('http://localhost:7777/');
         console.log(res.data);
       } catch (error) {
         console.log(error);
       }
-
     };
-
     fetchData();
-
   }, []);
 
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
+  // ✅ Extract userId safely
+  const userId = currentUser?.id;
+
   return (
     <Router>
-      {/* 👇 RE-ADDED: Navbar only shown when authenticated */}
-      {isAuthenticated && <Navigation onLogout={() => setIsAuthenticated(false)} />}
+      {/* ✅ Wrap authenticated part with NotificationProvider */}
+      {isAuthenticated && userId && (
+        <NotificationProvider userId={userId}>
+          <Navigation onLogout={() => setIsAuthenticated(false)}>
+            {/* ✅ Inject NotificationBell into Navigation */}
+            <NotificationBell />
+          </Navigation>
 
-      {/* 👇 Floating button always above content */}
-      {isAuthenticated && <FloatingFAQButton />}
+          <FloatingFAQButton />
+          <ScrollToFAQ />
 
-      {/* 👇 Scroll helper for hash navigation */}
-      <ScrollToFAQ />
+          <Routes>
+            <Route path="/" element={<Feed />} />
+            <Route path="/login" element={<Navigate to="/" />} />
+            <Route path="/register" element={<Navigate to="/" />} />
+            <Route path="/user/verify/:token" element={<Activate />} />
+            <Route path="/profile/:username" element={<Profile />} />
+            <Route path="/About" element={<About />} />
+            <Route path="/chatBot" element={<Chatbot />} />
+            <Route path="/Community" element={<Community />} />
+            <Route path="/community/create" element={<CreateCommunity />} />
+            <Route path="/communities/:id/chat" element={<CommunityChat />} />
+            <Route path="/health-faq" element={<HealthFAQ />} />
+            <Route path="*" element={<Error />} />
+          </Routes>
 
-      <Routes>
-        <Route
-          path="/"
-          element={isAuthenticated ? <Feed /> : <Navigate to="/login" />}
-        />
+          {currentUser?.id && <InviteButton userId={currentUser.id} />}
+        </NotificationProvider>
+      )}
 
-        <Route
-          path="/login"
-          element={
-            isAuthenticated ? (
-              <Navigate to="/" />
-            ) : (
-              <Login onLogin={() => setIsAuthenticated(true)} />
-            )
-          }
-        />
-
-        <Route
-          path="/register"
-          element={
-            isAuthenticated ? <Navigate to="/" /> : <Register />
-          }
-        />
-
-        {/* ✅ New activation route */}
-        <Route path="/user/verify/:token" element={<Activate />} /> 
-
-        <Route
-           path="/profile/:username"           // this route should always navigate to the username
-           element={
-           isAuthenticated ? <Profile /> : <Navigate to="/login" />
-           }
-           />
-
-        <Route
-          path="/About"
-          element={
-            isAuthenticated ? <About /> : <Navigate to="/login" />
-          }
-        />
-
-        <Route
-          path="/chatBot"
-          element={
-            isAuthenticated ? <Chatbot /> : <Navigate to="/login" />
-          }
-        />
-
-        <Route
-          path="/Community"
-          element={<Community />}
-        />
-
-          <Route 
-           path="/community/create" 
-           element={<CreateCommunity />}
-         />
-
-          <Route 
-          path="/communities/:id/chat" 
-          element={<CommunityChat />} />
-
-        <Route
-          path="/health-faq"
-          element={<HealthFAQ />}
-        />
-
-        <Route
-          path="*"
-          element={
-            isAuthenticated ? <Error /> : <Navigate to="/login" />
-          }
-        />
-      </Routes>
-
-           
-    {currentUser?.id && <InviteButton userId={currentUser.id} />}
-
+      {/* ❌ Unauthenticated routes outside provider */}
+      {!isAuthenticated && (
+        <Routes>
+          <Route path="/login" element={<Login onLogin={() => setIsAuthenticated(true)} />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/user/verify/:token" element={<Activate />} />
+          <Route path="*" element={<Navigate to="/login" />} />
+        </Routes>
+      )}
     </Router>
-
   );
 }

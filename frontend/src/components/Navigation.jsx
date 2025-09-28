@@ -1,8 +1,10 @@
+// src/components/Navigation.jsx
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/navbar.css";
 import logo from "./images/v_logo.png";
-import { UserCircle  , House , UsersThree , Robot} from "phosphor-react";
+import { UserCircle, House, UsersThree, Robot } from "phosphor-react";
+import NotificationBell from "./NotificationBell"; // ✅ Import the bell
 
 export default function Navigation({ onLogout }) {
   const navigate = useNavigate();
@@ -17,7 +19,7 @@ export default function Navigation({ onLogout }) {
     if (token) {
       const fetchUser = async () => {
         try {
-          const res = await fetch("http://localhost:7777/user/profile", { // 
+          const res = await fetch("http://localhost:7777/user/profile", {
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -63,7 +65,7 @@ export default function Navigation({ onLogout }) {
     }
 
     try {
-      const res = await fetch(`http://localhost:7777/user/search?username=${value}`, { // 👈 USE PORT 3000!
+      const res = await fetch(`http://localhost:7777/user/search?username=${value}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -80,10 +82,10 @@ export default function Navigation({ onLogout }) {
   };
 
   // Navigate to user profile when clicked
-  const handleSelectUser = (user) => { // 👈 Accept user object
+  const handleSelectUser = (user) => {
     setSearchTerm("");
     setSearchResults([]);
-    navigate(`/profile/${user.username}`); // 👈 Use user.id — NUMBER!
+    navigate(`/profile/${user.username}`);
   };
 
   // Show loading state while fetching user
@@ -126,12 +128,9 @@ export default function Navigation({ onLogout }) {
   }
 
   return (
-
     <header className="navbar">
-
       <div id="logo" onClick={() => navigate("/")}>
         <img src={logo} alt="Logo" />
-
       </div>
 
       <nav>
@@ -140,7 +139,9 @@ export default function Navigation({ onLogout }) {
 
           <li>
             {currentUser.id ? (
-              <Link to={`/profile/${currentUser.username}`}><UserCircle size={30} /></Link>
+              <Link to={`/profile/${currentUser.username}`}>
+                <UserCircle size={30} />
+              </Link>
             ) : (
               <span>Profile</span>
             )}
@@ -148,6 +149,14 @@ export default function Navigation({ onLogout }) {
           
           <li><Link to="/community"><UsersThree size={30} /></Link></li>
           <li><Link to="/chatBot"><Robot size={30} /></Link></li>
+
+          {/* ✅ Notification Bell - only show if user is loaded */}
+          {currentUser && (
+            <li>
+              <NotificationBell />
+            </li>
+          )}
+
           <li><Link to="/about">About</Link></li>
           <li>
             <button onClick={handleLogout}>Logout</button>

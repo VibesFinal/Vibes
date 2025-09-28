@@ -22,6 +22,19 @@ const io = require('socket.io')(server, {
 // PostgreSQL
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 
+// ✅ ✅ ✅ INITIALIZE SOCKET.IO MODULES FIRST ✅ ✅ ✅
+const initializeSocket = require('./socket/chat');
+initializeSocket(io, pool);
+
+const initializeNotifications = require('./socket/notifications');
+initializeNotifications(io, pool);
+
+// ✅  Attach io to req
+app.use((req, res, next) => {
+  req.io = io; // 👈 THIS IS CRITICAL
+  next();
+});
+
 // Middleware
 app.use(express.json());
 
@@ -34,10 +47,9 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // --------------------------
-// ROUTES
+// ROUTES (now safe to load)
 // --------------------------
 
-//
 const auth = require("./Routes/auth");
 app.use("/user", auth);
 
@@ -48,13 +60,13 @@ const searchRoute = require("./Routes/search");
 app.use("/user/search", searchRoute);
 
 const postRoute = require("./Routes/posts");
-app.use("/posts", postRoute);
+app.use("/posts", postRoute); // ✅ Now io.emitNotification exists!
 
 const likes = require("./Routes/likes");
-app.use("/likes", likes);
+app.use("/likes", likes); // ✅ Safe!
 
 const comments = require("./Routes/comments");
-app.use("/comments", comments);
+app.use("/comments", comments); // ✅ Safe!
 
 const profileRoute = require("./Routes/profile");
 app.use("/profile", profileRoute);
@@ -65,7 +77,6 @@ app.use('/badges', badgeRoute);
 const chatRoute = require("./Routes/chatRoute");
 app.use("/api/chat", chatRoute);
 
-// verify route
 const verify = require("./Routes/verify");
 app.use('/user/verify', verify); 
 
@@ -75,20 +86,18 @@ app.use("/", home);
 const communities = require("./Routes/communities");
 app.use("/communities", communities);
 
-//app.use("/uploads", express.static("uploads"));
-
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 const aiAnalysisRoute = require("./Routes/AiAnalysis");
 app.use("/ai", aiAnalysisRoute);
 
-// ✅ Import and initialize Socket.io logic
-const initializeSocket = require('./socket/chat'); // ← adjust path if needed
-initializeSocket(io, pool); // 👈 Pass io and pool
+// Optional: chat history
+const chatHistoryRouter = require('./Routes/chatHistory');
+app.use('/', chatHistoryRouter);
 
-// ✅ Optional: Import chat history route
-const chatHistoryRouter = require('./Routes/chatHistory'); // ← if you created it
-app.use('/', chatHistoryRouter); // mounts /communities/:id/messages
+// Notifications route
+const notifications = require('./Routes/notification');
+app.use('/notifications', notifications);
 
 // --------------------------
 // START SERVER

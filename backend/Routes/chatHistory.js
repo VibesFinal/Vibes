@@ -1,17 +1,20 @@
-// 
+// src/routes/chathistory.js
 const express = require('express');
-
 const router = express.Router();
-
 const pg = require('pg');
-
-const routeGuard = require('../middleware/verifyToken');
+//const routeGuard = require('../middleware/verifyToken'); // ← only imported, not used yet
 
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 
+// ✅ Public route (no auth needed to read messages)
 router.get('/communities/:id/messages', async (req, res) => {
   try {
     const { id } = req.params;
+    // Ensure id is a number to prevent SQL injection
+    if (isNaN(id)) {
+      return res.status(400).json({ error: 'Invalid community ID' });
+    }
+
     const result = await pool.query(
       `SELECT 
          m.id,
@@ -21,7 +24,7 @@ router.get('/communities/:id/messages', async (req, res) => {
          m.created_at AS timestamp,
          m.is_deleted,
          m.edited_at,
-         u.username AS senderName
+         u.username AS sender_name   
        FROM messages m
        JOIN users u ON m.user_id = u.id
        WHERE m.community_id = $1 AND m.is_deleted = false
