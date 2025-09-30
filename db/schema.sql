@@ -439,3 +439,5 @@ CREATE TABLE IF NOT EXISTS notifications (
 );
 
 
+--  add edited_at column to posts table 
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS edited_at TIMESTAMP DEFAULT NULL;
