@@ -135,7 +135,14 @@ const Post = forwardRef(({ post }, ref) => {
               alt={localPost.username || "Anonymous"}
               className="w-10 h-10 rounded-full object-cover border border-gray-200"
             />
+
+        {/* Username */}
+<h3 className="profileNameLink text-lg font-semibold">
+          {localPost.is_anonymous ? "Anonymous" : localPost.username}
+</h3>
+
 </div>
+
 
           {/* Post actions */}
 <PostActions
@@ -145,11 +152,6 @@ const Post = forwardRef(({ post }, ref) => {
             onDelete={() => window.location.reload()}
           />
 </div>
-
-        {/* Username */}
-<h3 className="profileNameLink text-lg font-semibold">
-          {localPost.is_anonymous ? "Anonymous" : localPost.username}
-</h3>
 
         {/* Post content */}
 <div className="space-y-1">
