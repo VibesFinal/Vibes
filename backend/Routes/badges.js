@@ -29,12 +29,14 @@ router.get('/:userId', async (req, res) => {
 /**
  * POST /badges/award/all
  * Award all badges to eligible users:
- * - "Supportive Soul" for users with 20+ comments
- * - "Story Teller" for users with 10+ posts
+ * - Supportive Soul (20+ comments)
+ * - Story Teller (10+ posts)
+ * - Cheerleader (20+ likes)
+ * - Popular (50+ comments on posts)
  */
 router.post('/award/all', async (req, res) => {
   try {
-    // Supportive Soul
+    // 🏅 Supportive Soul
     const ssResult = await pool.query(`
       INSERT INTO user_badges (user_id, badge_id)
       SELECT user_id, (SELECT id FROM badge_types WHERE name='Supportive Soul')
@@ -45,7 +47,7 @@ router.post('/award/all', async (req, res) => {
       RETURNING *;
     `);
 
-    // Story Teller
+    // 🏅 Story Teller
     const stResult = await pool.query(`
       INSERT INTO user_badges (user_id, badge_id)
       SELECT user_id, (SELECT id FROM badge_types WHERE name='Story Teller')
@@ -56,10 +58,35 @@ router.post('/award/all', async (req, res) => {
       RETURNING *;
     `);
 
+    // 🏅 Cheerleader
+    const chResult = await pool.query(`
+      INSERT INTO user_badges (user_id, badge_id)
+      SELECT l.user_id, (SELECT id FROM badge_types WHERE name='Cheerleader')
+      FROM likes l
+      GROUP BY l.user_id
+      HAVING COUNT(*) >= 20
+      ON CONFLICT (user_id, badge_id) DO NOTHING
+      RETURNING *;
+    `);
+
+    // 🏅 Popular
+    const popResult = await pool.query(`
+      INSERT INTO user_badges (user_id, badge_id)
+      SELECT p.user_id, (SELECT id FROM badge_types WHERE name='Popular')
+      FROM posts p
+      JOIN comments c ON c.post_id = p.id
+      GROUP BY p.user_id
+      HAVING COUNT(c.id) >= 50
+      ON CONFLICT (user_id, badge_id) DO NOTHING
+      RETURNING *;
+    `);
+
     res.json({
       message: 'Badges awarded successfully',
       supportSoulAdded: ssResult.rowCount,
-      storyTellerAdded: stResult.rowCount
+      storyTellerAdded: stResult.rowCount,
+      cheerleaderAdded: chResult.rowCount,
+      popularAdded: popResult.rowCount
     });
   } catch (err) {
     console.error("Error awarding badges:", err);

@@ -18,13 +18,14 @@ import CommunityChat from './pages/CommunityChat';
 import Activate from './pages/Activate';
 import { NotificationProvider } from './context/NotificationContext';
 import NotificationBell from './components/NotificationBell';
-
+import ForgotPassword from './components/ForgotPassword';
+import ResetPassword from './components/ResetPassword';
+import DeleteAccount from './pages/DeleteAccount';
 
 
 // Helper component to handle scrolling to #faq-section
 const ScrollToFAQ = () => {
   const location = useLocation();
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (location.hash === '#faq-section') {
@@ -132,6 +133,12 @@ export default function App() {
             <Route path="/community/create" element={<CreateCommunity />} />
             <Route path="/communities/:id/chat" element={<CommunityChat />} />
             <Route path="/health-faq" element={<HealthFAQ />} />
+            {/* //  New routes for password reset */}
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
+            {/* New route for account deletion */}
+            <Route path="/delete/:token" element={<DeleteAccount />} />
+
             <Route path="*" element={<Error />} />
           </Routes>
 
@@ -144,7 +151,10 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<Login onLogin={() => setIsAuthenticated(true)} />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/user/verify/:token" element={<Activate />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/delete/:token" element={<DeleteAccount />} />
           <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
       )}
