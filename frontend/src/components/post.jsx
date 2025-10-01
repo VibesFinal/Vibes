@@ -6,13 +6,13 @@ import "../styles/post.css";
 
 const Post = forwardRef(({ post }, ref) => {
   
-  const [comment, setComment] = useState("");
-  const [comments, setComments] = useState([]);
-  const [showComments, setShowComments] = useState(false);
-  const [likes, setLikes] = useState(0);
-  const [likedByUser, setLikedByUser] = useState(false);
-  const [reactionType, setReactionType] = useState(null);
-  const [reactionCount, setReactionCount] = useState({});
+  const [comment, setComment] = useState(""); // usestate("") : means I have empty string
+  const [comments, setComments] = useState([]);// usestate([]): empty array used to manage collection of items that will be added, removed, or updated over time
+  const [showComments, setShowComments] = useState(false); //usestate(fales) : I use it when I want change the value one time 
+  const [likes, setLikes] = useState(0); // usestate(0): I use it for steps like (counters)
+  const [likedByUser, setLikedByUser] = useState(false);  
+  const [reactionType, setReactionType] = useState(null); //usestate(null) : I use it when I have vlaues to change betwwen of them
+  const [reactionCount, setReactionCount] = useState({}); // usestate({}): empty object to manage collection of properites
 
   const navigate = useNavigate();
 
