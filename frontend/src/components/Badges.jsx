@@ -3,32 +3,45 @@ import axios from 'axios';
 
 function Badges({ userId }) {
   const [badges, setBadges] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!userId) return;
 
-    // 1️⃣ Award eligible badges automatically
-    axios.post('/badges/award/all')  
-      .then(res => console.log('Badges checked:', res.data))
-      .catch(err => console.error('Error awarding badges:', err));
+    const fetchBadges = async () => {
+      setLoading(true);
+      try {
+        await axios.post('/badges/award/all');
+        const res = await axios.get(`/badges/${userId}`);
+        setBadges(res.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    // 2️⃣ Fetch badges for the user
-    axios.get(`/badges/${userId}`)
-      .then(res => setBadges(res.data))
-      .catch(err => console.error(err));
+    fetchBadges();
   }, [userId]);
 
+  if (loading) return <p>Loading badges...</p>;
   if (badges.length === 0) return <p>No badges yet.</p>;
 
   return (
-    <div className="badges-container flex flex-wrap gap-4">
+    <div className="badges-container flex flex-wrap gap-8 justify-center">
       {badges.map(badge => (
-        <div key={badge.id} className="badge-card border p-3 rounded-lg shadow-sm">
-          <img src={badge.image_url} alt={badge.name} className="w-16 h-16 mb-2" />
+        <div key={badge.id} className="text-center">
+          <img
+            src={badge.image_url || '/default-badge.png'}
+            alt={badge.name}
+            className="w-20 h-20 mx-auto mb-2 object-cover"
+            onError={(e) => (e.currentTarget.src = '/default-badge.png')}
+          />
           <h4 className="font-semibold">{badge.name}</h4>
-          <p className="text-sm text-gray-600">{badge.description}</p>
-          <small className="text-gray-500">
-            Awarded: {new Date(badge.awarded_at).toLocaleDateString()}
+          <small className="text-gray-500 block">
+            {badge.awarded_at
+              ? new Date(badge.awarded_at).toLocaleDateString()
+              : 'Not awarded yet'}
           </small>
         </div>
       ))}
