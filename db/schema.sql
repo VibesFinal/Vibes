@@ -367,10 +367,12 @@ CREATE TABLE IF NOT EXISTS badge_types (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Insert initial badge 2 types 
+-- Insert initial badge 4 types 
 INSERT INTO badge_types (name, description, image_url) VALUES
-('Supportive Soul', 'Leave 20 comments on other people''s posts', '/uploads/badges/supportive_soul.jpeg'),
-('Story Teller', 'Write 10 posts', '/uploads/badges/story_teller.jpeg');
+('Cheerleader', 'Give 20 likes or reactions', '/uploads/badges/cheerleader.png'),
+('Popular', 'Receive 50 comments on your posts', '/uploads/badges/popular.png'),
+('Supportive Soul', 'Leave 20 comments on other people''s posts', '/uploads/badges/supportive_soul.png'),
+('Story Teller', 'Write 10 posts', '/uploads/badges/story_teller.png');
 
 -- Migration: Create user_badges table
 -- Run: psql -d vibesdb -f migrations/2025_09_20_create_user_badges_table.sql
@@ -382,23 +384,6 @@ CREATE TABLE IF NOT EXISTS user_badges (
     awarded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(user_id, badge_id)
 );
-
----- Create message table ----
-
-CREATE TABLE IF NOT EXISTS messages (
-  id SERIAL PRIMARY KEY,
-  community_id INTEGER NOT NULL REFERENCES communities(id) ON DELETE CASCADE,
-  user_id INTEGER NOT NULL, -- Add REFERENCES users(id) if applicable
-  content TEXT NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-
------- to handle edit and the delete the message through the chat -----
-ALTER TABLE messages
-ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE,
-ADD COLUMN IF NOT EXISTS edited_at TIMESTAMPTZ DEFAULT NULL;
-
 
 
 ---- Create message table ----
