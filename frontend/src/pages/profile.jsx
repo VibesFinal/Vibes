@@ -132,13 +132,30 @@ export default function Profile() {
 
       {/* Posts Section */}
       <div className="space-y-6">
-        {posts.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
-            <p>No posts yet. Be the first to share!</p>
-          </div>
-        ) : (
-          posts.map((post) => <Post key={post.id} post={post} />)
-        )}
+            {posts.map((post, index) => {
+                  if (index === posts.length - 1) {
+                    return (
+                      <Post
+                        key={post.id}
+                        post={post}
+                        onDelete={(postId) =>
+                          setPosts((prev) => prev.filter((p) => p.id !== postId))
+                        }
+                      />
+                    );
+                  } else {
+                    return (
+                      <Post
+                        key={post.id}
+                        post={post}
+                        onDelete={(postId) =>
+                          setPosts((prev) => prev.filter((p) => p.id !== postId))
+                        }
+                      />
+                    );
+                  }
+                })}
+
       </div>
     </div>
   );

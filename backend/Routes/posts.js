@@ -58,7 +58,11 @@ router.post("/", routeGuard, upload.fields([{ name: "photo" } , { name: "video" 
         // Updated SELECT query to fetch 'is_anonymous' , photo and video
         const fullPost = await pool.query(
 
+<<<<<<< Updated upstream
             `SELECT posts.id, posts.user_id, users.username, users.profile_pic ,posts.content, posts.created_at, posts.category, posts.is_anonymous , posts.photo , posts.video
+=======
+            `SELECT posts.id, posts.user_id ,users.username, users.profile_pic ,posts.content, posts.created_at, posts.category, posts.is_anonymous , posts.photo , posts.video
+>>>>>>> Stashed changes
             FROM posts
             JOIN users ON posts.user_id = users.id
             WHERE posts.id = $1`,
