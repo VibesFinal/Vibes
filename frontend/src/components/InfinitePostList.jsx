@@ -110,29 +110,37 @@ export default function InfinitePostList( { selectedCategory , newPost } ){
     } , [newPost]);
 
 
-    return (
+   return (
+  <div className="space-y-6">
+    {posts.map((post, index) => {
+      if (index === posts.length - 1) {
+        return (
+          <Post
+            ref={lastPostRef}
+            key={post.id}
+            post={post}
+            onDelete={(postId) =>
+              setPosts((prev) => prev.filter((p) => p.id !== postId))
+            }
+          />
+        );
+      } else {
+        return (
+          <Post
+            key={post.id}
+            post={post}
+            onDelete={(postId) =>
+              setPosts((prev) => prev.filter((p) => p.id !== postId))
+            }
+          />
+        );
+      }
+    })}
 
-        <div className="space-y-6">
+    {loading && <p className="text-center text-gray-500">loading...</p>}
+    {!hasMore && <p className="text-center text-gray-400">No more posts</p>}
+  </div>
+);
 
-            {posts.map((post , index) => {
-
-                if(index === posts.length - 1){
-
-                    return <Post ref={lastPostRef} key={post.id} post={post}/>
-
-                } else {
-
-                    return <Post key={post.id} post={post}/>
-
-                }
-
-            })}
-
-            {loading && <p className="text-center text-gray-500">loading...</p>}
-            {!hasMore && <p className="text-center text-gray-400">No more posts</p>}
-
-        </div>
-
-    );
 
 }

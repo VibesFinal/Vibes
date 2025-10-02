@@ -26,6 +26,7 @@ router.get("/username/:username", async (req, res) => {
       `
         SELECT 
           posts.id, 
+          posts.user_id,
           posts.content, 
           posts.created_at, 
           posts.category, 

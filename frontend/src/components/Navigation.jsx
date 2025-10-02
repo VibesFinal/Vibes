@@ -135,20 +135,20 @@ export default function Navigation({ onLogout }) {
 
       <nav>
         <ul className="navLinks">
-          <li><Link to="/"><House size={30} /></Link></li>
+          <li><Link to="/"><House size={25} /></Link></li>
 
           <li>
             {currentUser.id ? (
               <Link to={`/profile/${currentUser.username}`}>
-                <UserCircle size={30} />
+                <UserCircle size={25} />
               </Link>
             ) : (
               <span>Profile</span>
             )}
           </li>
           
-          <li><Link to="/community"><UsersThree size={30} /></Link></li>
-          <li><Link to="/chatBot"><Robot size={30} /></Link></li>
+          <li><Link to="/community"><UsersThree size={25} /></Link></li>
+          <li><Link to="/chatBot"><Robot size={25} /></Link></li>
 
           {/* ✅ Notification Bell - only show if user is loaded */}
           {currentUser && (
