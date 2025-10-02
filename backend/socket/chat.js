@@ -11,15 +11,17 @@ module.exports = (io, pool) => {
         console.warn(`⚠️ Socket ${socket.id} tried to join without communityId`);
         return;
       }
-      socket.join(communityId);
-      console.log(`🚪 Socket ${socket.id} joined room: ${communityId}`);
+      const roomId = String(communityId); // 🔒 Normalize to string
+      socket.join(roomId);
+      console.log(`🚪 Socket ${socket.id} joined room: "${roomId}"`);
     });
 
     // 🚪 Leave a community chat room
     socket.on('leaveCommunity', (communityId) => {
       if (!communityId) return;
-      socket.leave(communityId);
-      console.log(`🚪 Socket ${socket.id} left room: ${communityId}`);
+      const roomId = String(communityId); // 🔒 Normalize to string
+      socket.leave(roomId);
+      console.log(`🚪 Socket ${socket.id} left room: "${roomId}"`);
     });
 
     // 💬 Send message to room + save to DB
@@ -46,27 +48,28 @@ module.exports = (io, pool) => {
 
         const savedMessage = result.rows[0];
 
-// 👇 FETCH USERNAME FROM users TABLE
-const userResult = await pool.query(
-  `SELECT username FROM users WHERE id = $1`,
-  [savedMessage.user_id]
-);
+        // 👇 FETCH USERNAME FROM users TABLE
+        const userResult = await pool.query(
+          `SELECT username FROM users WHERE id = $1`,
+          [savedMessage.user_id]
+        );
 
-       const senderName = userResult.rows[0]?.username || 'Anonymous';
+        const senderName = userResult.rows[0]?.username || 'Anonymous';
+        const roomId = String(savedMessage.community_id); // 🔒 Normalize to string
 
-        // 📤 Now broadcast with real username
-        io.to(communityId).emit('receiveMessage', {
-        id: savedMessage.id,
-        communityId: savedMessage.community_id,
-        userId: savedMessage.user_id,
-        message: savedMessage.content,
-        timestamp: savedMessage.created_at,
-        senderName: senderName, // ✅ REAL USERNAME!
-        is_deleted: false,
-         edited_at: null,
-        }); 
+        // 📤 Broadcast with real username
+        io.to(roomId).emit('receiveMessage', {
+          id: savedMessage.id,
+          communityId: savedMessage.community_id,
+          userId: savedMessage.user_id,
+          message: savedMessage.content,
+          timestamp: savedMessage.created_at,
+          senderName: senderName,
+          is_deleted: false,
+          edited_at: null,
+        });
 
-        console.log(`📤 BROADCAST TO ROOM ${communityId}`);
+        console.log(`📤 BROADCAST TO ROOM "${roomId}"`);
 
       } catch (err) {
         console.error('❌ FAILED TO SAVE MESSAGE:', err.message);
@@ -97,15 +100,16 @@ const userResult = await pool.query(
         }
 
         const updated = result.rows[0];
+        const roomId = String(updated.community_id); // 🔒 Normalize to string
 
         // 📤 Broadcast edited message to room
-        io.to(updated.community_id).emit('messageEdited', {
+        io.to(roomId).emit('messageEdited', {
           id: updated.id,
           message: updated.content,
           edited_at: updated.edited_at,
         });
 
-        console.log(`✏️ Message ${messageId} edited by user ${userId}`);
+        console.log(`✏️ Message ${messageId} edited by user ${userId} in room "${roomId}"`);
 
       } catch (err) {
         console.error('❌ Failed to edit message:', err);
@@ -135,13 +139,14 @@ const userResult = await pool.query(
         }
 
         const deleted = result.rows[0];
+        const roomId = String(deleted.community_id); // 🔒 Normalize to string
 
         // 📤 Broadcast deletion to room
-        io.to(deleted.community_id).emit('messageDeleted', {
+        io.to(roomId).emit('messageDeleted', {
           id: deleted.id,
         });
 
-        console.log(`🗑️ Message ${messageId} deleted by user ${userId}`);
+        console.log(`🗑️ Message ${messageId} deleted by user ${userId} in room "${roomId}"`);
 
       } catch (err) {
         console.error('❌ Failed to delete message:', err);
@@ -150,23 +155,25 @@ const userResult = await pool.query(
     });
 
     // 🖊️ Handle typing indicator
-    socket.on('typing', ({ communityId, username }) => {
+    socket.on('typing', ({ communityId, username, isTyping }) => {
       if (!communityId || !username) {
         console.warn('⚠️ Invalid typing data:', { communityId, username });
         return;
       }
 
+      const roomId = String(communityId); // 🔒 Normalize to string
+
       // Broadcast to others in the room
-      socket.to(communityId).emit('userTyping', {
+      socket.to(roomId).emit('userTyping', {
         username,
-        isTyping: true
+        isTyping: true,
       });
 
       // Auto-stop after 3s
       setTimeout(() => {
-        socket.to(communityId).emit('userTyping', {
+        socket.to(roomId).emit('userTyping', {
           username,
-          isTyping: false
+          isTyping: false,
         });
       }, 3000);
     });

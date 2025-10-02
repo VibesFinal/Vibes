@@ -3,10 +3,10 @@ import { useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axiosInstance";
 import ReactionButton from "./Reactions";
 import PostActions from "./PostActions";
-
 import "../styles/post.css";
 
 const Post = forwardRef(({ post ,onDelete }, ref) => {
+
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState([]);
   const [showComments, setShowComments] = useState(false);
@@ -28,6 +28,7 @@ const Post = forwardRef(({ post ,onDelete }, ref) => {
     };
     fetchUser();
   }, []);
+
 
   const navigate = useNavigate();
 
@@ -219,12 +220,12 @@ const Post = forwardRef(({ post ,onDelete }, ref) => {
         {showComments &&
           comments.map((c) => (
 <p key={c.id} className="pl-12 text-sm">
-<strong>@{c.username}:</strong> {c.content}
-</p>
-          ))}
-</div>
-</div>
-  );
-});
+        <strong>@{c.username}:</strong> {c.content}
+              </p>
+             ))}
+         </div>
+        </div>
+       );
+    });
 
 export default Post;
