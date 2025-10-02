@@ -6,7 +6,7 @@ import PostActions from "./PostActions";
 
 import "../styles/post.css";
 
-const Post = forwardRef(({ post }, ref) => {
+const Post = forwardRef(({ post ,onDelete }, ref) => {
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState([]);
   const [showComments, setShowComments] = useState(false);
@@ -149,9 +149,8 @@ const Post = forwardRef(({ post }, ref) => {
             post={localPost}
             isOwner={isOwner}
             onUpdate={(updatedPost) => setLocalPost(updatedPost)}
-            onDelete={() => window.location.reload()}
-          />
-</div>
+            onDelete={onDelete} 
+/></div>
 
         {/* Post content */}
 <div className="space-y-1">
