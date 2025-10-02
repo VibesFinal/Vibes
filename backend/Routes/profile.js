@@ -26,14 +26,15 @@ router.get("/username/:username", async (req, res) => {
       `
         SELECT 
           posts.id, 
+          posts.user_id,
           posts.content, 
           posts.created_at, 
           posts.category, 
           posts.is_anonymous,
           posts.photo ,
-           posts.video,
+          posts.video,
           users.username AS username,
-           users.profile_pic
+          users.profile_pic
         FROM posts
         JOIN users ON posts.user_id = users.id
         WHERE posts.user_id = $1
