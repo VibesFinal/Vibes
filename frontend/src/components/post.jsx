@@ -2,17 +2,34 @@ import React, { useState, useEffect, forwardRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axiosInstance";
 import ReactionButton from "./Reactions";
+import PostActions from "./PostActions";
+
 import "../styles/post.css";
 
 const Post = forwardRef(({ post }, ref) => {
-  
-  const [comment, setComment] = useState(""); // usestate("") : means I have empty string
-  const [comments, setComments] = useState([]);// usestate([]): empty array used to manage collection of items that will be added, removed, or updated over time
-  const [showComments, setShowComments] = useState(false); //usestate(fales) : I use it when I want change the value one time 
-  const [likes, setLikes] = useState(0); // usestate(0): I use it for steps like (counters)
-  const [likedByUser, setLikedByUser] = useState(false);  
-  const [reactionType, setReactionType] = useState(null); //usestate(null) : I use it when I have vlaues to change betwwen of them
-  const [reactionCount, setReactionCount] = useState({}); // usestate({}): empty object to manage collection of properites
+
+  const [comment, setComment] = useState("");
+  const [comments, setComments] = useState([]);
+  const [showComments, setShowComments] = useState(false);
+  const [likes, setLikes] = useState(0);
+  const [likedByUser, setLikedByUser] = useState(false);
+  const [reactionType, setReactionType] = useState(null);
+  const [reactionCount, setReactionCount] = useState({});
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [localPost, setLocalPost] = useState(post);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await axiosInstance.get("/user/profile");
+        setCurrentUserId(Number(res.data.user.id));
+      } catch (err) {
+        console.error("Error fetching current user:", err);
+      }
+    };
+    fetchUser();
+  }, []);
+
 
   const navigate = useNavigate();
 
@@ -37,7 +54,9 @@ const Post = forwardRef(({ post }, ref) => {
       if (type === reactionType) {
         await axiosInstance.delete(`/likes/like/${post.id}`);
       } else {
-        await axiosInstance.post(`/likes/like/${post.id}`, { reaction_type: type });
+        await axiosInstance.post(`/likes/like/${post.id}`, {
+          reaction_type: type,
+        });
       }
       fetchReactions();
     } catch (error) {
@@ -90,104 +109,125 @@ const Post = forwardRef(({ post }, ref) => {
   };
 
   const goToProfile = () => {
-    if (!post.is_anonymous && post.username) {
-      navigate(`/profile/${post.username}`);
+    if (!localPost.is_anonymous && localPost.username) {
+      navigate(`/profile/${localPost.username}`);
     }
   };
 
-return (
-  <div ref={ref} className="outerCard">
-    <div className="postCard p-4 space-y-3">
-      
-      {/* Username with profile picture */}
-      <div className="flex items-center gap-3 cursor-pointer" onClick={goToProfile}>
-        {/* Profile picture */}
-      <img
-        src={
-          post.is_anonymous
-            ? "https://via.placeholder.com/40"
-            : `${process.env.REACT_APP_BACKEND_URL}${post.profile_pic}`
-        }
-        alt={post.username || "Anonymous"}
-        className="w-10 h-10 rounded-full object-cover border border-gray-200"
-      />
+  const isOwner =
+    currentUserId !== null &&
+    Number(localPost.user_id) === Number(currentUserId);
+
+  return (
+<div ref={ref} className="outerCard">
+<div className="postCard p-4 space-y-3">
+        {/* Header with username, profile picture, and actions */}
+<div className="flex items-center justify-between">
+<div
+            className="flex items-center gap-3 cursor-pointer"
+            onClick={goToProfile}
+>
+            {/* Profile picture */}
+<img
+              src={
+                localPost.is_anonymous
+                  ? "https://via.placeholder.com/40"
+                  : `${process.env.REACT_APP_BACKEND_URL}${localPost.profile_pic}`
+              }
+              alt={localPost.username || "Anonymous"}
+              className="w-10 h-10 rounded-full object-cover border border-gray-200"
+            />
 
         {/* Username */}
-        <h3 className="profileNameLink text-lg font-semibold">
-          {post.is_anonymous ? "Anonymous" : post.username}
-        </h3>
-      </div>
+<h3 className="profileNameLink text-lg font-semibold">
+          {localPost.is_anonymous ? "Anonymous" : localPost.username}
+</h3>
 
-      {/* Post content */}
-      <div className="space-y-1">
-        <p>{post.content}</p>
-        <p className="text-sm text-gray-500">{post.category || "General"}</p>
-        <small className="text-gray-400">{new Date(post.created_at).toLocaleString()}</small>
-      </div>
+</div>
 
-      {/* Media preview */}
-      <div className="mt-3 flex justify-center gap-3">
-        {post.photo && (
-          <img
-            src={`${process.env.REACT_APP_BACKEND_URL}/uploads/${post.photo}`}
-            alt="Post"
-            className="mt-3 rounded-lg shadow-sm max-h-80 object-cover"
+
+          {/* Post actions */}
+<PostActions
+            post={localPost}
+            isOwner={isOwner}
+            onUpdate={(updatedPost) => setLocalPost(updatedPost)}
+            onDelete={() => window.location.reload()}
           />
-        )}
-        {post.video && (
-          <video
-            src={`${process.env.REACT_APP_BACKEND_URL}/uploads/${post.video}`}
-            controls
-            className="mt-3 rounded-lg shadow-sm max-h-80"
-          />
-        )}
-      </div>
+</div>
 
-      {/* Reactions */}
-      <ReactionButton
-        reactionType={reactionType}
-        reactionCount={reactionCount}
-        handleReaction={handleReaction}
-      />
+        {/* Post content */}
+<div className="space-y-1">
+<p>{localPost.content}</p>
+<p className="text-sm text-gray-500">
+            {localPost.category || "General"}
+</p>
+<small className="text-gray-400">
+            {new Date(localPost.created_at).toLocaleString()}
+</small>
+</div>
 
-      {/* Comment form */}
-      <div className="mt-3">
-        <form onSubmit={handleCommentSubmit} className="flex gap-2">
-          <input
-            type="text"
-            placeholder="Write your opinion"
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            className="flex-1 border border-gray-300 rounded-lg px-3 py-1"
-          />
-          <button
-            type="submit"
-            className="px-4 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-          >
-            Comment
-          </button>
-        </form>
-      </div>
+        {/* Media preview */}
+<div className="mt-3 flex justify-center gap-3">
+          {localPost.photo && (
+<img
+              src={`${process.env.REACT_APP_BACKEND_URL}/uploads/${localPost.photo}`}
+              alt="Post"
+              className="mt-3 rounded-lg shadow-sm max-h-80 object-cover"
+            />
+          )}
+          {localPost.video && (
+<video
+              src={`${process.env.REACT_APP_BACKEND_URL}/uploads/${localPost.video}`}
+              controls
+              className="mt-3 rounded-lg shadow-sm max-h-80"
+            />
+          )}
+</div>
 
-      {/* Comments toggle */}
-      <button
-        onClick={toggleComments}
-        className="mt-2 text-sm text-blue-500 hover:underline"
-      >
-        {showComments ? "Hide comments" : "View comments"}
-      </button>
+        {/* Reactions */}
+<ReactionButton
+          reactionType={reactionType}
+          reactionCount={reactionCount}
+          handleReaction={handleReaction}
+        />
 
-      {/* Comments list */}
-      {showComments &&
-        comments.map((c) => (
-          <p key={c.id} className="pl-12 text-sm">
-            <strong>@{c.username}:</strong> {c.content}
-          </p>
-        ))}
-    </div>
-  </div>
-);
+        {/* Comment form */}
+<div className="mt-3">
+<form onSubmit={handleCommentSubmit} className="flex gap-2">
+<input
+              type="text"
+              placeholder="Write your opinion"
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              className="flex-1 border border-gray-300 rounded-lg px-3 py-1"
+            />
+<button
+              type="submit"
+              className="px-4 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+>
+              Comment
+</button>
+</form>
+</div>
 
-});
+        {/* Comments toggle */}
+<button
+          onClick={toggleComments}
+          className="mt-2 text-sm text-blue-500 hover:underline"
+>
+          {showComments ? "Hide comments" : "View comments"}
+</button>
+
+        {/* Comments list */}
+        {showComments &&
+          comments.map((c) => (
+<p key={c.id} className="pl-12 text-sm">
+        <strong>@{c.username}:</strong> {c.content}
+              </p>
+             ))}
+         </div>
+        </div>
+       );
+    });
 
 export default Post;

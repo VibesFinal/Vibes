@@ -41,7 +41,7 @@ const MessageItem = ({
             minute: '2-digit',
           })}
           {msg.edited_at && (
-            <span className="ml-1 text-[10px] text-indigo-600">✏️</span>
+            <span className="ml-1 text-[10px] text-indigo-600"></span>
           )}
         </span>
       </div>

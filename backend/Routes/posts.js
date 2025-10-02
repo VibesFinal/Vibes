@@ -106,4 +106,90 @@ router.get("/", async (req, res) => {
     }
 });
 
+// Edit a post
+router.put("/:id", routeGuard, async (req, res) => {
+    const postId = req.params.id;
+    const userId = req.user.id;
+    const { content, category, is_anonymous } = req.body;
+
+    // Validation
+    if (!content || content.trim() === '') {
+        return res.status(400).json({ error: "Content cannot be empty" });
+    }
+
+    try {
+        // First, check if the post exists and belongs to the user
+        const postCheck = await pool.query(
+            "SELECT user_id FROM posts WHERE id = $1",
+            [postId]
+        );
+
+        if (postCheck.rows.length === 0) {
+            return res.status(404).json({ error: "Post not found" });
+        }
+
+        if (postCheck.rows[0].user_id !== userId) {
+            return res.status(403).json({ error: "You can only edit your own posts" });
+        }
+
+        // Update the post
+        const updateResult = await pool.query(
+            `UPDATE posts 
+             SET content = $1, category = $2, is_anonymous = $3, edited_at = CURRENT_TIMESTAMP 
+             WHERE id = $4 
+             RETURNING *`,
+            [content, category, is_anonymous, postId]
+        );
+
+        // Fetch the updated post with user information
+        const updatedPost = await pool.query(
+            `SELECT posts.id, posts.user_id, users.username, users.profile_pic, posts.content, 
+                    posts.created_at, posts.edited_at, posts.category, posts.is_anonymous, 
+                    posts.photo, posts.video
+             FROM posts
+             JOIN users ON posts.user_id = users.id
+             WHERE posts.id = $1`,
+            [postId]
+        );
+
+        res.status(200).json(updatedPost.rows[0]);
+    } catch (error) {
+        console.error("error editing post", error);
+        res.status(500).json({ error: "Server error while editing post" });
+    }
+});
+
+// Delete a post
+router.delete("/:id", routeGuard, async (req, res) => {
+    const postId = req.params.id;
+    const userId = req.user.id;
+
+    try {
+        // First, check if the post exists and belongs to the user
+        const postCheck = await pool.query(
+            "SELECT user_id FROM posts WHERE id = $1",
+            [postId]
+        );
+
+        if (postCheck.rows.length === 0) {
+            return res.status(404).json({ error: "Post not found" });
+        }
+
+        if (postCheck.rows[0].user_id !== userId) {
+            return res.status(403).json({ error: "You can only delete your own posts" });
+        }
+
+        // Delete the post (CASCADE will handle related comments and likes)
+        await pool.query("DELETE FROM posts WHERE id = $1", [postId]);
+
+        res.status(200).json({ 
+            message: "Post deleted successfully", 
+            deletedPostId: parseInt(postId) 
+        });
+    } catch (error) {
+        console.error("error deleting post", error);
+        res.status(500).json({ error: "Server error while deleting post" });
+    }
+});
+
 module.exports = router;

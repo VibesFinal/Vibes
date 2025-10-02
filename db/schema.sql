@@ -439,3 +439,19 @@ CREATE TABLE IF NOT EXISTS notifications (
 );
 
 
+--  add edited_at column to posts table 
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS edited_at TIMESTAMP DEFAULT NULL;
+
+-- add reset_token column to users table
+ALTER TABLE users ADD COLUMN reset_token TEXT;
+
+-- create delete_tokens table
+CREATE TABLE delete_tokens (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    token TEXT NOT NULL,
+    expires_at TIMESTAMP NOT NULL
+);
+
+-- add confirmed column to delete_tokens table
+ALTER TABLE delete_tokens ADD COLUMN confirmed BOOLEAN DEFAULT FALSE;
