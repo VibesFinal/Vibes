@@ -151,13 +151,9 @@ const Post = forwardRef(({ post ,onDelete }, ref) => {
             onUpdate={(updatedPost) => setLocalPost(updatedPost)}
             onDelete={onDelete} 
 /></div>
-<<<<<<< Updated upstream
-
-=======
 <div><small className="text-gray-400">
             {new Date(localPost.created_at).toLocaleString()}
 </small> </div>
->>>>>>> Stashed changes
         {/* Post content */}
 <div className="space-y-1">
 <p>{localPost.content}</p>
