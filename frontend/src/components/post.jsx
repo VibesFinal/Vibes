@@ -126,16 +126,35 @@ const Post = forwardRef(({ post ,onDelete }, ref) => {
             className="flex items-center gap-3 cursor-pointer"
             onClick={goToProfile}
 >
-            {/* Profile picture */}
-<img
-              src={
-                localPost.is_anonymous
-                  ? "https://via.placeholder.com/40"
-                  : `${process.env.REACT_APP_BACKEND_URL}${localPost.profile_pic}`
-              }
-              alt={localPost.username || "Anonymous"}
-              className="w-10 h-10 rounded-full object-cover border border-gray-200"
-            />
+            {/* Profile picture or initial */}
+            
+            { localPost.is_anonymous ? (
+
+              <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-medium">
+
+                ?
+
+              </div>
+
+            ) : localPost.profile_pic ? (
+              
+              <img
+
+                src={`${process.env.REACT_APP_BACKEND_URL}${localPost.profile_pic}`}
+                alt={localPost.username || "User"}
+                className="w-10 h-10 rounded-full object-cover border border-gray-200"
+
+              />
+
+            ) : (
+
+              <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold text-lg">
+
+                {localPost.username?.[0]?.toUpperCase() || "U"}
+                
+              </div>
+
+            )}
 
         {/* Username */}
 <h3 className="profileNameLink text-lg font-semibold">
