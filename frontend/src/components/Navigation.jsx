@@ -152,15 +152,30 @@ export default function Navigation({ onLogout }) {
 
           {/* ✅ Notification Bell - only show if user is loaded */}
           {currentUser && (
+
             <li>
               <NotificationBell />
             </li>
           )}
 
           <li><Link to="/about">About</Link></li>
+
           <li>
             <button onClick={handleLogout}>Logout</button>
           </li>
+
+        
+{/* Admin Dashboard Link */}
+{currentUser?.role === "admin" && (
+  <li>
+    <Link
+      to="/admin/certifications"
+      className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition"
+    >
+      Admin Dashboard
+    </Link>
+  </li>
+)}
 
           <li className="searchContainer">
             <input

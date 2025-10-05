@@ -12,8 +12,13 @@ router.get("/username/:username", async (req, res) => {
 
   try {
     const userResult = await pool.query(
-      "SELECT id, username, email , profile_pic FROM users WHERE username = $1",
-      [username]
+      `SELECT id, 
+      username, 
+      email ,
+       profile_pic,
+       is_therapist::boolean as is_therapist    
+        FROM users WHERE username = $1`,
+      [username]                                   //this part of code made me crazy : Hamzeh Mehyar
     );
 
     if (userResult.rows.length === 0) {

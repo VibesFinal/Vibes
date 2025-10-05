@@ -21,6 +21,7 @@ import NotificationBell from './components/NotificationBell';
 import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
 import DeleteAccount from './pages/DeleteAccount';
+import AdminCertifications from './pages/AdminsCertifications';
 
 
 // Helper component to handle scrolling to #faq-section
@@ -108,6 +109,29 @@ export default function App() {
   // ✅ Extract userId safely
   const userId = currentUser?.id;
 
+
+  //admin route
+const AdminRoute = ({element}) => {
+
+  const user = JSON.parse(localStorage.getItem("user"));
+  const token = localStorage.getItem("token");
+
+  if(!token){
+
+    return <Navigate to="/login" />
+
+  }
+
+  if(!user || user.role !== "admin"){
+
+    return <Navigate to="/"/> //non admins go back to feed
+
+  }
+
+  return element;
+
+};
+
   return (
     <Router>
       {/* ✅ Wrap authenticated part with NotificationProvider */}
@@ -133,6 +157,14 @@ export default function App() {
             <Route path="/community/create" element={<CreateCommunity />} />
             <Route path="/communities/:id/chat" element={<CommunityChat />} />
             <Route path="/health-faq" element={<HealthFAQ />} />
+
+            <Route 
+            
+              path='/admin/certifications'
+              element={<AdminRoute element={<AdminCertifications />}/>}
+            
+            />
+
             {/* //  New routes for password reset */}
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />

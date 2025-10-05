@@ -117,6 +117,10 @@ const Post = forwardRef(({ post ,onDelete }, ref) => {
     currentUserId !== null &&
     Number(localPost.user_id) === Number(currentUserId);
 
+  // Check if user is a therapist (handle both boolean and 't'/'f' string values)
+  const isTherapist = localPost.is_therapist === true || localPost.is_therapist === 't';
+
+
   return (
 <div ref={ref} className="outerCard">
 <div className="postCard p-4 space-y-3">
@@ -151,17 +155,38 @@ const Post = forwardRef(({ post ,onDelete }, ref) => {
               <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold text-lg">
 
                 {localPost.username?.[0]?.toUpperCase() || "U"}
-                
+
               </div>
 
             )}
 
-        {/* Username */}
-<h3 className="profileNameLink text-lg font-semibold">
-          {localPost.is_anonymous ? "Anonymous" : localPost.username}
-</h3>
+            {/* Username with Therapist Badge */}
 
-</div>
+          <div className="flex items-center gap-2">
+
+              <h3 className="profileNameLink text-lg font-semibold">
+
+                {localPost.is_anonymous ? "Anonymous" : localPost.username}
+
+              </h3>
+              
+              {/* Therapist Badge - Only show if NOT anonymous and IS therapist */}
+
+              {!localPost.is_anonymous && isTherapist && (
+
+                <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-50 border border-green-500 text-green-700 rounded-full text-xs font-semibold">
+
+                  <span className="text-sm">✓</span>
+
+                  Certified Therapist
+
+                </span>
+
+              )}
+
+            </div>
+            
+          </div>
 
 
           {/* Post actions */}
