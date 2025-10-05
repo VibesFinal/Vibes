@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import axiosInstance from "../api/axiosInstance";
 import Post from "./post";
 
-export default function InfinitePostList( { selectedCategory , newPost } ){
+export default function InfinitePostList( { selectedCategory , newPost , username } ){
 
     const [ posts , setPosts ] = useState([]);
     const [ offset , setOffset ] = useState(0);
@@ -57,27 +57,47 @@ export default function InfinitePostList( { selectedCategory , newPost } ){
 
             try {
                 
-                const res = await axiosInstance.get("/posts" , {
+                let res;
 
-                    params: {
+                if(username) {
 
-                        limit, 
-                        offset,
-                        category: selectedCategory || undefined
+                    //profile request
+                    res = await axiosInstance.get(`/profile/username/${username}` , {
 
-                    },
+                        params: { limit , offset },
 
-                });
+                    });
 
-                if(res.data.length < limit){
+                    res = { data: res.data.posts }; 
 
-                    setHasMore(false); //no more posts 
+                } else {
+
+                    //feed request
+
+                    res = await axiosInstance.get("/posts" , {
+
+                        params: {
+
+                            limit,
+                            offset,
+                            category: selectedCategory || undefined,
+
+                        },
+
+                    });
 
                 }
 
-                setPosts((prev) => { 
-                const newPosts = res.data.filter(r => !prev.some(p => p.id === r.id));
-                return [...prev, ...newPosts];
+                if(res.data.length < limit){
+
+                    setHasMore(false);
+
+                }
+
+                setPosts((prev) => {
+
+                    const newPosts = res.data.filter((r) => !prev.some((p) => p.id === r.id));
+                    return [...prev , ...newPosts]
 
                 });
 

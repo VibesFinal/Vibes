@@ -27,6 +27,9 @@ router.get("/username/:username", async (req, res) => {
 
     const user = userResult.rows[0];
 
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = parseInt(req.query.offset) || 0;
+
     const postResult = await pool.query(
       `
         SELECT 
@@ -44,8 +47,9 @@ router.get("/username/:username", async (req, res) => {
         JOIN users ON posts.user_id = users.id
         WHERE posts.user_id = $1
         ORDER BY posts.created_at DESC
+        LIMIT $2 OFFSET $3
       `,
-      [user.id]
+      [user.id , limit , offset]
     );
 
     res.json({

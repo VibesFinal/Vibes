@@ -7,6 +7,8 @@ import { useParams } from "react-router-dom";
 import MentalHealthChart from "../components/MentalHealthChart";
 import { FaRegCommentDots, FaTrash } from "react-icons/fa"; // bubble/chat + trash icon
 import ProfileUpload from "../components/ProfilePicUpload";
+import InfinitePostList from "../components/InfinitePostList";
+
 
 export default function Profile() {
   const { username } = useParams();
@@ -170,33 +172,9 @@ export default function Profile() {
         <FollowList userId={user?.id} currentUserId={currentUser?.id} />
       </div>
 
-      {/* Posts Section */}
-      <div className="space-y-6">
-            {posts.map((post, index) => {
-                  if (index === posts.length - 1) {
-                    return (
-                      <Post
-                        key={post.id}
-                        post={post}
-                        onDelete={(postId) =>
-                          setPosts((prev) => prev.filter((p) => p.id !== postId))
-                        }
-                      />
-                    );
-                  } else {
-                    return (
-                      <Post
-                        key={post.id}
-                        post={post}
-                        onDelete={(postId) =>
-                          setPosts((prev) => prev.filter((p) => p.id !== postId))
-                        }
-                      />
-                    );
-                  }
-                })}
-
-      </div>
+<div className="mt-10">
+  <InfinitePostList username={username} />
+</div>
     </div>
   );
 }
