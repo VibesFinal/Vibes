@@ -34,6 +34,19 @@ export default function Feed() {
     setNewPost(post);
   }; 
 
+
+  //this use effect is important if the user has changed the route it gets him back to the top of the page
+  useEffect(() => {
+
+    window.scrollTo({
+
+      top: 0,
+      behavior: "instant",
+
+    });
+
+  } , []);
+
   // Skeleton loader for posts
   const SkeletonPost = () => (
     <div className="bg-gray-50 rounded-xl p-6 animate-pulse">
