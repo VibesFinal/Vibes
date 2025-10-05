@@ -56,9 +56,9 @@ router.post("/", routeGuard, upload.fields([{ name: "photo" } , { name: "video" 
         const postId = insertResult.rows[0].id;
 
         // Updated SELECT query to fetch 'is_anonymous' , photo and video
-        const fullPost = await pool.query(
+        const fullPost = await pool.query(                                             //
 
-            `SELECT posts.id, posts.user_id ,users.username, users.profile_pic ,posts.content, posts.created_at, posts.category, posts.is_anonymous , posts.photo , posts.video
+            `SELECT posts.id, posts.user_id ,users.username, users.profile_pic, users.is_therapist ,posts.content, posts.created_at, posts.category, posts.is_anonymous , posts.photo , posts.video
             FROM posts
             JOIN users ON posts.user_id = users.id
             WHERE posts.id = $1`,
@@ -81,7 +81,7 @@ router.get("/", async (req, res) => {
     try {
         // Updated SELECT query to fetch 'is_anonymous'
         let query = `
-            SELECT posts.id, posts.user_id, users.username, users.profile_pic ,posts.content, posts.created_at, posts.category, posts.is_anonymous , 
+            SELECT posts.id, posts.user_id, users.username, users.profile_pic, users.is_therapist ,posts.content, posts.created_at, posts.category, posts.is_anonymous , 
             posts.photo , posts.video
             FROM posts
             JOIN users ON posts.user_id = users.id
@@ -143,7 +143,7 @@ router.put("/:id", routeGuard, async (req, res) => {
 
         // Fetch the updated post with user information
         const updatedPost = await pool.query(
-            `SELECT posts.id, posts.user_id, users.username, users.profile_pic, posts.content, 
+            `SELECT posts.id, posts.user_id, users.username, users.profile_pic, users.is_therapist ,posts.content, 
                     posts.created_at, posts.edited_at, posts.category, posts.is_anonymous, 
                     posts.photo, posts.video
             FROM posts

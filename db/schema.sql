@@ -440,3 +440,29 @@ CREATE TABLE delete_tokens (
 
 -- add confirmed column to delete_tokens table
 ALTER TABLE delete_tokens ADD COLUMN confirmed BOOLEAN DEFAULT FALSE;
+
+
+-- adding is_therapist boolean column to the users table
+
+ALTER TABLE users ADD COLUMN is_therapist BOOLEAN DEFAULT false;
+
+-- creating therapist_certifications table 
+
+CREATE TABLE therapist_certifications (
+  id SERIAL PRIMARY KEY,
+  user_id INT REFERENCES users(id) ON DELETE CASCADE,
+  file_path TEXT NOT NULL,
+  status VARCHAR(20) DEFAULT 'pending',
+  submitted_at TIMESTAMP DEFAULT NOW()
+);
+
+-- adding role column to the users table to decide the admins 
+
+ALTER TABLE users ADD COLUMN role VARCHAR(10) DEFAULT 'user';
+
+-- if you want to make users as an admins you can use this query 
+
+
+UPDATE users SET role='admin' WHERE id IN (1,3,4,11);
+
+

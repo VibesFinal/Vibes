@@ -108,6 +108,10 @@ export default function Profile() {
           {user?.username || "User"}'s Profile
         </h1>
 
+
+      
+        
+
         {/* Profile picture */}
         {user?.profile_pic ? (
           <img 
@@ -120,6 +124,17 @@ export default function Profile() {
             {user?.username?.[0]?.toUpperCase() || "?"}
           </div>
         )}
+
+          {/* ------------------- CERTIFIED THERAPIST BADGE ------------------- */}
+        {user?.is_therapist && (
+          <div className="flex items-center justify-center gap-2 mt-4 mb-4">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-500 text-green-700 rounded-full">
+              <span className="text-xl font-bold">✓</span>
+              <span className="font-semibold text-sm">Certified Therapist</span>
+            </div>
+          </div>
+        )}
+
 
         {/* Show upload only if it's the logged-in user's profile */}
         {currentUser?.id === user?.id && (

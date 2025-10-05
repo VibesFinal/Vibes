@@ -2,25 +2,65 @@ import { useState } from "react";
 import axiosInstance from "../api/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import logo from "../components/images/v_logo.png";
+import TherapistCertificationUpload from "../components/TherapistCertificationUpload";
 
 export default function Register({ onRegister }) {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  //for therapists
+  const [isTherapist , setIsTherapist] = useState(false);
+  const [certification , setCertification] = useState(null);
+
+
   const navigate = useNavigate();
 
+
+  const handleTherapistChange = (checked, file) => {
+
+    setIsTherapist(checked);
+    setCertification(file);
+
+  };
+
   const handleSubmit = async (e) => {
+
     e.preventDefault();
 
     try {
+
+      //register a normal user
       await axiosInstance.post("/user/register", {
+
         username,
         email,
         password,
+
       });
 
-      alert("Registration successful! Happy login Viber");
+      //if a therapist , upload a file
+      if(isTherapist && certification){
+
+        const formData = new FormData();
+        formData.append("certification" , certification);
+        formData.append("username", username);
+
+          await axiosInstance.post("/api/therapist/upload-registration", formData, {
+
+          headers: { "Content-Type": "multipart/form-data" },
+
+        });
+
+      }
+
+      alert(
+
+        isTherapist
+          ? "Registration successful! Await admin approval for therapist role"
+          : "Registration successful! Happy login Viber"
+
+      );
       onRegister?.();
       navigate("/login");
     } catch (error) {
@@ -68,6 +108,14 @@ export default function Register({ onRegister }) {
             onChange={(e) => setPassword(e.target.value)}
             required
             className="w-full px-5 py-4 bg-gray-50 border-2 border-cyan-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-all duration-200 text-gray-800 placeholder-gray-400"
+          />
+
+          {/* Therapist upload component */}
+
+          <TherapistCertificationUpload  
+          
+            onChange={handleTherapistChange}
+          
           />
 
           <button

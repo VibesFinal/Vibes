@@ -35,7 +35,7 @@ router.post('/register', async (req, res) => {
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
     const result = await pool.query(
-      "INSERT INTO users (username, email, password, verified) VALUES ($1, $2, $3, false) RETURNING id, username, email",
+      "INSERT INTO users (username, email, password, verified) VALUES ($1, $2, $3, false) RETURNING id, username, email, role, is_therapist",
       [username, email, hashedPassword]
     );
 
@@ -95,7 +95,9 @@ router.post('/register', async (req, res) => {
       user: {
         id: newUser.id,
         username: newUser.username,
-        email: newUser.email
+        email: newUser.email,
+        role: newUser.role,
+        is_therapist: newUser.is_therapist, 
       }
     });
 
@@ -122,7 +124,10 @@ router.post("/login", async (req, res) => {
   }
 
   try {
-    const userResult = await pool.query("SELECT * FROM users WHERE username = $1", [username]);
+    const userResult = await pool.query("SELECT id, username, email, password, verified, role, is_therapist FROM users WHERE username = $1",
+      
+      [username]);
+
     const user = userResult.rows[0];
     if (!user) {
       return res.status(401).json({ error: "Invalid credentials" });
@@ -139,7 +144,7 @@ router.post("/login", async (req, res) => {
 
     // Generate session token
     const token = jwt.sign(
-      { id: user.id, username: user.username },
+      { id: user.id, username: user.username , role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "60d" }
     );
@@ -153,7 +158,9 @@ router.post("/login", async (req, res) => {
       user: {
         id: user.id,
         username: user.username,
-        email: user.email
+        email: user.email,
+        role: user.role,
+        is_therapist: user.is_therapist, 
       }
     });
 
@@ -169,8 +176,8 @@ router.get("/profile", routeGuard, async (req, res) => {
   try {
     const userId = req.user.id;
     const result = await pool.query(
-      "SELECT id, username, email, verified, profile_pic FROM users WHERE id = $1",
-      [userId]
+      "SELECT id, username, email, verified, is_therapist ,profile_pic , role FROM users WHERE id = $1", 
+      [userId]  //get back here
     );
 
     if (result.rows.length === 0) {

@@ -99,6 +99,16 @@ app.use('/', chatHistoryRouter);
 const notifications = require('./Routes/notification');
 app.use('/notifications', notifications);
 
+//therapists route
+const therapist = require("./Routes/therapist");
+app.use("/api/therapist" , therapist);
+//app.use("/api/therapist", require("./routes/therapist"));
+
+//admin route
+const adminRoute = require("./Routes/admin");
+app.use("/api/admin", adminRoute);
+
+
 // --------------------------
 // START SERVER
 // --------------------------
