@@ -261,12 +261,43 @@ const Post = forwardRef(({ post ,onDelete }, ref) => {
 </button>
 
         {/* Comments list */}
-        {showComments &&
-          comments.map((c) => (
-<p key={c.id} className="pl-12 text-sm">
-        <strong>@{c.username}:</strong> {c.content}
-              </p>
-             ))}
+{showComments &&
+  comments.map((c) => (
+    <div key={c.id} className="flex items-start gap-3 pl-12 py-2 border-b border-gray-100">
+      {/* Profile Picture */}
+      <div
+        className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center cursor-pointer"
+        onClick={() => navigate(`/profile/${c.username}`)}
+      >
+        {c.profile_pic ? (
+          <img
+            src={`${process.env.REACT_APP_BACKEND_URL}${c.profile_pic}`}
+            alt={c.username || "User"}
+            className="w-8 h-8 rounded-full object-cover"
+          />
+        ) : (
+          <span className="text-sm font-semibold text-white bg-blue-500 w-full h-full flex items-center justify-center rounded-full">
+            {c.username?.[0]?.toUpperCase() || "U"}
+          </span>
+        )}
+      </div>
+
+      {/* Comment content */}
+      <div className="flex-1">
+        <p className="text-sm">
+          <span
+            onClick={() => navigate(`/profile/${c.username}`)}
+            className="font-semibold text-blue-600 cursor-pointer hover:underline"
+          >
+            {c.username}
+          </span>
+          : {c.content}
+        </p>
+      </div>
+
+    </div>
+  ))}
+
          </div>
         </div>
        );
