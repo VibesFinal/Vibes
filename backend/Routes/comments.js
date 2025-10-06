@@ -83,7 +83,8 @@ router.get("/:postId", async (req, res) => {
   try {
     const result = await pool.query(
       `
-        SELECT comments.*, users.username
+        SELECT comments.*, users.username,
+        users.profile_pic
         FROM comments
         JOIN users ON comments.user_id = users.id
         WHERE post_id = $1
