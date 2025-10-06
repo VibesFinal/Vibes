@@ -8,35 +8,41 @@ export default function Chatbot() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSend = async () => {
-    if (!input.trim()) return;
+const handleSend = async () => {
+  if (!input.trim()) return;
 
-    const newMessage = { sender: "user", text: input };
-    setMessages((prev) => [...prev, newMessage]);
-    setInput("");
-    setLoading(true);
+  const newMessage = { sender: "user", text: input };
+  setMessages((prev) => [...prev, newMessage]);
+  setInput("");
+  setLoading(true);
 
-    try {
-      const res = await fetch("http://localhost:7777/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: input }),
-      });
+  try {
+    // Send message WITH conversation history (excluding initial greeting)
+    const conversationHistory = messages.slice(1); // Skip the first AI greeting
+    
+    const res = await fetch("http://localhost:7777/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        message: input,
+        history: conversationHistory // Send full context
+      }),
+    });
 
-      const data = await res.json();
-      const reply = data.reply || "Sorry, I couldn’t generate a response.";
+    const data = await res.json();
+    const reply = data.reply || "Sorry, I couldn't generate a response.";
 
-      setMessages((prev) => [...prev, { sender: "ai", text: reply }]);
-    } catch (error) {
-      console.error(error);
-      setMessages((prev) => [
-        ...prev,
-        { sender: "ai", text: "Error: failed to fetch response." },
-      ]);
-    }
+    setMessages((prev) => [...prev, { sender: "ai", text: reply }]);
+  } catch (error) {
+    console.error(error);
+    setMessages((prev) => [
+      ...prev,
+      { sender: "ai", text: "Error: failed to fetch response." },
+    ]);
+  }
 
-    setLoading(false);
-  };
+  setLoading(false);
+};
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-gray-50">
