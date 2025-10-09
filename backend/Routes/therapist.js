@@ -77,4 +77,66 @@ router.post("/upload", routeGuard, upload.single("certification"), async (req, r
   }
 });
 
+// GET /api/therapists
+router.get('/therapists', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT id, username, email, profile_pic
+      FROM users
+      WHERE is_therapist = true AND verified = true
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to load therapists' });
+  }
+});
+
+// GET chat/conversations
+router.get('/chat/conversations', routeGuard, async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const result = await pool.query(
+      `
+      SELECT 
+        pc.id,
+        CASE WHEN pc.user_id = $1 THEN u2.id ELSE u1.id END AS other_user_id,
+        CASE WHEN pc.user_id = $1 THEN u2.username ELSE u1.username END AS other_user_username,
+        CASE WHEN pc.user_id = $1 THEN u2.is_therapist ELSE u1.is_therapist END AS other_user_is_therapist,
+        pm.content,
+        pm.created_at
+      FROM private_conversations pc
+      JOIN users u1 ON pc.user_id = u1.id
+      JOIN users u2 ON pc.therapist_id = u2.id
+      LEFT JOIN (
+        SELECT DISTINCT ON (conversation_id) *
+        FROM private_messages
+        ORDER BY conversation_id, created_at DESC
+      ) pm ON pm.conversation_id = pc.id
+      WHERE pc.user_id = $1 OR pc.therapist_id = $1
+      ORDER BY pm.created_at DESC NULLS LAST;
+      `,
+      [userId]
+    );
+
+    const conversations = result.rows.map(row => ({
+      id: row.id,
+      other_user: {
+        id: row.other_user_id,
+        username: row.other_user_username,
+        is_therapist: row.other_user_is_therapist
+      },
+      last_message: row.content
+        ? { content: row.content }
+        : null
+    }));
+
+    res.json(conversations);
+  } catch (err) {
+    console.error('Fetch conversations error:', err);
+    res.status(500).json({ error: 'Failed to load conversations' });
+  }
+});
+
 module.exports = router;

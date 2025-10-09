@@ -144,7 +144,7 @@ router.post("/login", async (req, res) => {
 
     // Generate session token
     const token = jwt.sign(
-      { id: user.id, username: user.username , role: user.role },
+      { id: user.id, username: user.username , role: user.role , isTherapist: user.is_therapist },
       process.env.JWT_SECRET,
       { expiresIn: "60d" }
     );
