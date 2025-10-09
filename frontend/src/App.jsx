@@ -22,7 +22,7 @@ import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
 import DeleteAccount from './pages/DeleteAccount';
 import AdminCertifications from './pages/AdminsCertifications';
-
+import ChatInbox from './pages/ChatInbox'
 
 // Helper component to handle scrolling to #faq-section
 const ScrollToFAQ = () => {
@@ -157,6 +157,7 @@ const AdminRoute = ({element}) => {
             <Route path="/community/create" element={<CreateCommunity />} />
             <Route path="/communities/:id/chat" element={<CommunityChat />} />
             <Route path="/health-faq" element={<HealthFAQ />} />
+            <Route path="/chat" element={<ChatInbox />} />
 
             <Route 
             

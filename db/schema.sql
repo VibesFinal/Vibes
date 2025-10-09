@@ -466,3 +466,29 @@ ALTER TABLE users ADD COLUMN role VARCHAR(10) DEFAULT 'user';
 UPDATE users SET role='admin' WHERE id IN (1,3,4,11);
 
 
+------ chat one to one -----------
+------ add private_conversations table --------
+
+CREATE TABLE private_conversations (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    therapist_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+    -- Ensure only one conversation per user-therapist pair
+    UNIQUE (user_id, therapist_id)
+);
+
+
+--------- add private_Messages table -----
+
+CREATE TABLE private_messages (
+    id SERIAL PRIMARY KEY,
+    conversation_id INTEGER NOT NULL REFERENCES private_conversations(id) ON DELETE CASCADE,
+    sender_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    edited_at TIMESTAMP WITH TIME ZONE,
+    is_deleted BOOLEAN DEFAULT false
+);
+
+------- The privatechat feature done -----

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/navbar.css";
 import logo from "./images/v_logo.png";
-import { UserCircle, House, UsersThree, Robot } from "phosphor-react";
+import { UserCircle, House, UsersThree, Robot ,ChatCircle } from "phosphor-react";
 import NotificationBell from "./NotificationBell"; // ✅ Import the bell
 
 export default function Navigation({ onLogout }) {
@@ -145,6 +145,13 @@ export default function Navigation({ onLogout }) {
             ) : (
               <span>Profile</span>
             )}
+          </li>
+
+          {/* ✅ Add Chat Here */}
+          <li>
+          <Link to="/chat" aria-label="Messages">
+          <ChatCircle size={25} />
+          </Link>
           </li>
           
           <li><Link to="/community"><UsersThree size={25} /></Link></li>

@@ -95,6 +95,15 @@ app.use("/ai", aiAnalysisRoute);
 const chatHistoryRouter = require('./Routes/chatHistory');
 app.use('/', chatHistoryRouter);
 
+// privateChathsitory route
+const privateChatHistory = require('./Routes/privateChatHistory');
+app.use('/private',privateChatHistory)
+
+//admin route
+const adminRoute = require("./Routes/admin");
+app.use("/api/admin", adminRoute);
+
+
 // Notifications route
 const notifications = require('./Routes/notification');
 app.use('/notifications', notifications);
@@ -104,9 +113,9 @@ const therapist = require("./Routes/therapist");
 app.use("/api/therapist" , therapist);
 //app.use("/api/therapist", require("./routes/therapist"));
 
-//admin route
-const adminRoute = require("./Routes/admin");
-app.use("/api/admin", adminRoute);
+// Private 1:1 chat 
+const initializePrivateChat = require('./socket/privateChat');
+initializePrivateChat(io, pool);
 
 
 // --------------------------
