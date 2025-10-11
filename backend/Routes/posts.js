@@ -4,26 +4,12 @@ const pg = require('pg');
 const routeGuard = require('../middleware/verifyToken');
 
 const multer = require("multer");
-const path = require("path");
 
-// Set storage for uploaded files
-const storage = multer.diskStorage({
 
-  destination: (req, file, cb) => {
+const { uploadFile } = require("../middleware/uploadPostMedia"); //imagekit uploader importing
 
-    cb(null, "uploads/");
-
-  },
-
-  filename: (req, file, cb) => {
-
-    cb(null, Date.now() + path.extname(file.originalname)); // unique filename
-
-  }
-
-});
-
-const upload = multer({ storage });
+// Set storage for uploaded files 
+const upload = multer({ storage: multer.memoryStorage() }); 
 
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 
@@ -34,9 +20,29 @@ router.post("/", routeGuard, upload.fields([{ name: "photo" } , { name: "video" 
     const { content, category, is_anonymous } = req.body;
     const user_id = req.user.id;
 
-    //file paths if uploaded (ternary operators)
-    const photo = req.files?.photo ? req.files.photo[0].filename : null;
-    const video = req.files?.video ? req.files.video[0].filename : null;
+    //
+    let photoUrl = null;
+    let videoUrl = null;
+
+    try {
+        
+        if(req.files?.photo){
+
+        photoUrl = await uploadFile(req.files.photo[0] , "/postPhotos"); //optional folder
+
+    }
+
+        if(req.files?.video){
+
+        videoUrl = await uploadFile(req.files.video[0], "/postVideos"); // optional folder
+
+    }
+
+    } catch (error) {
+
+        return res.status(500).json({ error: "Failed to upload media" });
+        
+    }
 
     if (!user_id || !content) {
 
@@ -49,7 +55,7 @@ router.post("/", routeGuard, upload.fields([{ name: "photo" } , { name: "video" 
         const insertResult = await pool.query(
 
             "INSERT INTO posts (user_id, content, category, is_anonymous , photo , video) VALUES ($1, $2, $3, $4 , $5 , $6) RETURNING *",
-            [user_id, content, category, is_anonymous || false , photo , video] // Pass the value, default to false
+            [user_id, content, category, is_anonymous || false , photoUrl , videoUrl] // Pass the value, default to false
 
         );
 

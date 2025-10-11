@@ -1,42 +1,62 @@
-const multer = require("multer");
-const path = require("path");
+const pg = require("pg");
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+const ImageKit = require("imagekit");
+require("dotenv").config();
 
-//storage configurations
 
-const storage = multer.diskStorage({
+const imageKit = new ImageKit({
 
-    destination: function (req , file , cb) {
-
-        cb(null , "uploads/profilePictures");  //save the files inside the uplods inside the profilePictures
-
-    },
-
-    filename: function (req , file , cb) {
-
-        cb(null , Date.now() + path.extname(file.originalname));
-
-    }
+    publicKey: process.env.IMAGEKIT_PUBLIC_KEY,
+    privateKey: process.env.IMAGEKIT_PRIVATE_KEY,
+    urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT
 
 });
 
-//only allow images
-const fileFilter = (req , file , cb) => {
+module.exports = async function uploadProfilePic(req , res) {
+    
+    try {
+        
+        const { userId } = req.params;
+        const { fileName , fileData } = req.body;
 
-    const allowed = ["image/jpeg" , "image/png" , "image/jpg" , "image/webp"]; //all kind of images upload
+        if(!fileData){
 
-    if(allowed.includes(file.mimetype)){
+            return res.status(400).json({ error: "No Image Provided" });
 
-        cb(null , true);
+        }
 
-    } else {
+        const base64WithPrefix = fileData.startsWith('data:') 
+            ? fileData 
+            : `data:image/jpeg;base64,${fileData}`;
 
-        cb(new Error("only images are allowed") , false);
 
+        // upload image to imagekit
+        const uploadResponse = await imageKit.upload({
+
+            file: base64WithPrefix, 
+            fileName: fileName || "profile_pic.jpg",
+            folder: `/profilePictures/user_${userId}`
+
+        });
+
+        // save the url of the photo in the database
+        const updateQuery = `UPDATE users SET profile_pic = $1 WHERE id = $2 RETURNING profile_pic`;
+        const result = await pool.query(updateQuery , [uploadResponse.url , userId]);
+
+        res.status(200).json({
+
+            message: "Profile picture uploaded sucessfully",
+            profile_pic: result.rows[0].profile_pic,
+
+        });
+
+    } catch (error) {
+        
+        console.error("Upload failed" , error);
+        res.status(500).json({ error: "Image upload failed" });
+        
     }
 
 };
 
-const upload = multer( { storage , fileFilter } );
 
-
-module.exports = upload;

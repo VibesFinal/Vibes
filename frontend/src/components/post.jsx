@@ -144,7 +144,7 @@ const Post = forwardRef(({ post ,onDelete }, ref) => {
               
               <img
 
-                src={`${process.env.REACT_APP_BACKEND_URL}${localPost.profile_pic}`}
+                src={localPost.profile_pic}
                 alt={localPost.username || "User"}
                 className="w-10 h-10 rounded-full object-cover border border-gray-200"
 
@@ -212,14 +212,14 @@ const Post = forwardRef(({ post ,onDelete }, ref) => {
 <div className="mt-3 flex justify-center gap-3">
           {localPost.photo && (
 <img
-              src={`${process.env.REACT_APP_BACKEND_URL}/uploads/${localPost.photo}`}
+              src={localPost.photo}
               alt="Post"
               className="mt-3 rounded-lg shadow-sm max-h-80 object-cover"
             />
           )}
           {localPost.video && (
 <video
-              src={`${process.env.REACT_APP_BACKEND_URL}/uploads/${localPost.video}`}
+              src={localPost.video}
               controls
               className="mt-3 rounded-lg shadow-sm max-h-80"
             />
@@ -271,7 +271,7 @@ const Post = forwardRef(({ post ,onDelete }, ref) => {
       >
         {c.profile_pic ? (
           <img
-            src={`${process.env.REACT_APP_BACKEND_URL}${c.profile_pic}`}
+            src={c.profile_pic}
             alt={c.username || "User"}
             className="w-8 h-8 rounded-full object-cover"
           />

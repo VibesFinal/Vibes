@@ -34,7 +34,7 @@ export default function AdminCertifications() {
             <p><strong>User:</strong> {cert.username} ({cert.email})</p>
             <p><strong>Status:</strong> {cert.status}</p>
             <a
-              href={`${process.env.REACT_APP_BACKEND_URL}${cert.file_path}`}
+              href={cert.file_path}
               target="_blank"
               rel="noreferrer"
               className="text-blue-500 underline"
