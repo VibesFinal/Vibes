@@ -117,7 +117,7 @@ export default function Profile() {
         {/* Profile picture */}
         {user?.profile_pic ? (
           <img 
-            src={`${process.env.REACT_APP_BACKEND_URL}${user.profile_pic}`}
+            src={user.profile_pic}
             alt={user.username}
             className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-gray-100 mx-auto mb-4 shadow-md"
           /> 

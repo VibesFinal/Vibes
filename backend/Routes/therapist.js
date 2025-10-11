@@ -3,18 +3,24 @@ const router = express.Router();
 const pg = require('pg');
 const routeGuard = require('../middleware/verifyToken');
 
+const ImageKit = require("imagekit");
+
+
 const multer = require("multer");
-const path = require("path");
+
 
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 
-// multer setup
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "uploads/certifications"),
-  filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
+const upload = multer({ storage: multer.memoryStorage() });
+
+const imageKit = new ImageKit({
+
+  publicKey: process.env.IMAGEKIT_PUBLIC_KEY,
+  privateKey: process.env.IMAGEKIT_PRIVATE_KEY,
+  urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT,
+
 });
 
-const upload = multer({ storage });
 
 // ✅ NEW: Upload during registration (no auth required)
 router.post("/upload-registration", upload.single("certification"), async (req, res) => {
@@ -40,11 +46,19 @@ router.post("/upload-registration", upload.single("certification"), async (req, 
     }
     
     const userId = userResult.rows[0].id;
-    const filePath = "/uploads/certifications/" + req.file.filename;
+    
+    //
+    const uploadResponse = await imageKit.upload({
+
+      file: req.file.buffer.toString("base64"), // convert buffer to base64
+      fileName: `${username}_certification.pdf`, // or whatever the uploaded file is
+      folder: `/certifications/user_${userId}`,
+
+    });
     
     await pool.query(
       "INSERT INTO therapist_certifications (user_id, file_path, status) VALUES ($1, $2, $3)",
-      [userId, filePath, "pending"]
+      [userId, uploadResponse.url, "pending"]
     );
     
     res.json({ message: "Certification uploaded, pending approval." });
@@ -63,11 +77,18 @@ router.post("/upload", routeGuard, upload.single("certification"), async (req, r
       return res.status(400).json({ error: "Certification file is required" });
     }
     
-    const filePath = "/uploads/certifications/" + req.file.filename;
+      // Upload to ImageKit
+    const uploadResponse = await imageKit.upload({
+
+      file: req.file.buffer.toString("base64"),
+      fileName: `user_${userId}_certification.pdf`,
+      folder: `/certifications/user_${userId}`,
+
+    });
     
     await pool.query(
       "INSERT INTO therapist_certifications (user_id, file_path, status) VALUES ($1, $2, $3)",
-      [userId, filePath, "pending"]
+      [userId, uploadResponse.url, "pending"]
     );
     
     res.json({ message: "Certification uploaded, pending approval." });
