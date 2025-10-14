@@ -52,7 +52,7 @@ const FloatingFAQButton = () => {
     <button
       onClick={handleClick}
       aria-label="Open Mental Health FAQs — Your safe space"
-      className="fixed bottom-8 left-8 z-50 w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 shadow-2xl hover:shadow-blue-400/40 transform hover:scale-110 transition-all duration-300 text-white flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-blue-300/50 animate-pulse"
+      className="fixed bottom-8 left-8 z-50 w-16 h-16 rounded-full bg-[#C05299] shadow-2xl hover:shadow-pink-400/40 transform hover:scale-110 transition-all duration-300 text-white flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-pink-300/50 animate-pulse"
     >
       {/* Speech bubble icon */}
       <svg
