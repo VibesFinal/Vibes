@@ -27,6 +27,12 @@ router.get("/username/:username", async (req, res) => {
 
     const user = userResult.rows[0];
 
+    if (user.profile_pic && !user.profile_pic.startsWith("http")) {
+
+      user.profile_pic = `${process.env.BACKEND_URL || "http://localhost:7777"}/${user.profile_pic}`;
+
+    }
+
     const limit = parseInt(req.query.limit) || 10;
     const offset = parseInt(req.query.offset) || 0;
 
@@ -52,9 +58,18 @@ router.get("/username/:username", async (req, res) => {
       [user.id , limit , offset]
     );
 
+    const posts = postResult.rows.map((post) => ({
+
+      ...post,
+      profile_pic: post.profile_pic?.startsWith("http")
+        ? post.profile_pic
+        : `${process.env.BACKEND_URL || "http://localhost:7777"}/${post.profile_pic}`,
+
+    }));
+
     res.json({
       user,
-      posts: postResult.rows,
+      posts,
     });
 
   } catch (error) {

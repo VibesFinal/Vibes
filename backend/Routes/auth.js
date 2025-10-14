@@ -184,6 +184,14 @@ router.get("/profile", routeGuard, async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
+        const user = result.rows[0];
+
+
+       // ✅ Add full backend URL to profile picture if missing
+    if (user.profile_pic && !user.profile_pic.startsWith("http")) {
+      user.profile_pic = `${process.env.BACKEND_URL || "http://localhost:7777"}/${user.profile_pic}`;
+    }
+
     res.json({
       success: true,
       user: result.rows[0]

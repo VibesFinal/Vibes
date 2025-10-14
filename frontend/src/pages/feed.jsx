@@ -1,20 +1,12 @@
 import { useState, useEffect } from "react";
-import axiosInstance from "../api/axiosInstance";
 import NewPost from "./newPost";
-import { Link } from "react-router-dom";
-import FollowList from "../components/FollowList";
-import Post from "../components/post";
 import InfinitePostList from "../components/InfinitePostList";
 
-//
-
 export default function Feed() {
-
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [newPost , setNewPost] = useState(null);
-  const [currentUser, setCurrentUser] = useState(null); // 👈 NEW STATE
+  const [newPost, setNewPost] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
 
-  // Fetch current user on mount
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -22,94 +14,191 @@ export default function Feed() {
       if (storedUser) {
         try {
           setCurrentUser(JSON.parse(storedUser));
-        } catch (error) {
-          console.error("Failed to parse user from localStorage", error);
+        } catch {
+          console.error("Failed to parse user from localStorage");
         }
       }
     }
   }, []);
 
+  const handlePostCreated = (post) => setNewPost(post);
 
-  const handlePostCreated = (post) => {
-    setNewPost(post);
-  }; 
-
-
-  //this use effect is important if the user has changed the route it gets him back to the top of the page
-  useEffect(() => {
-
-    window.scrollTo({
-
-      top: 0,
-      behavior: "instant",
-
-    });
-
-  } , []);
-
-  // Skeleton loader for posts
-  const SkeletonPost = () => (
-    <div className="bg-gray-50 rounded-xl p-6 animate-pulse">
-      <div className="h-4 bg-gray-300 rounded w-3/4 mb-4"></div>
-      <div className="h-4 bg-gray-300 rounded w-full mb-3"></div>
-      <div className="h-4 bg-gray-300 rounded w-5/6 mb-3"></div>
-      <div className="flex justify-between items-center mt-4">
-        <div className="h-6 bg-gray-300 rounded w-20"></div>
-        <div className="h-6 bg-gray-300 rounded w-16"></div>
-      </div>
-    </div>
-  );
+  const categories = [
+    { name: "Mindfulness",  gradient: "from-emerald-400 to-teal-500" },
+    { name: "Self Care",  gradient: "from-pink-400 to-rose-500" },
+    { name: "Anxiety",  gradient: "from-blue-400 to-cyan-500" },
+    { name: "Depression",  gradient: "from-indigo-400 to-purple-500" },
+    { name: "Positive Vibes",  gradient: "from-amber-400 to-orange-500" },
+  ];
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
-          🌿 Your Vibes Feed
-        </h1>
-        <p className="text-gray-600 text-lg">Share your thoughts, find comfort, and grow together</p>
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-pink-50 relative">
+      
+      {/* Animated mesh gradient background */}
+      <div className="fixed inset-0 opacity-20">
+        <div className="absolute top-0 -left-4 w-96 h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl animate-blob"></div>
+        <div className="absolute top-0 -right-4 w-96 h-96 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-20 w-96 h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000"></div>
       </div>
 
-      {/* New Post Form */}
-      <div className="mb-8">
-        <NewPost onPostCreated={handlePostCreated} />
-      </div>
-
-      {/* Category Filter Bar */}
-      <div className="flex flex-wrap gap-2 mb-8 justify-center">
-        <button
-          onClick={() => setSelectedCategory("")}
-          className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-            selectedCategory === ""
-              ? "bg-cyan-600 text-white shadow-md"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-          }`}
-        >
-          All Posts
-        </button>
-        {["Mindfulness", "Self Care", "Anxiety", "Depression", "Positive Vibes"].map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setSelectedCategory(cat)}
-            className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 capitalize ${
-              selectedCategory === cat
-                ? "bg-cyan-600 text-white shadow-md"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-            }`}
-          >
-            {cat}
-          </button>
+      {/* Floating particles */}
+      <div className="fixed inset-0 pointer-events-none">
+        {[...Array(20)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-1 h-1 bg-purple-400 rounded-full opacity-30"
+            style={{
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              animation: `float ${5 + Math.random() * 10}s infinite ease-in-out`,
+              animationDelay: `${Math.random() * 5}s`
+            }}
+          />
         ))}
       </div>
 
-        <InfinitePostList 
+      <div className="relative max-w-7xl mx-auto px-4 py-8 lg:py-12">
         
-          selectedCategory={selectedCategory}
-          newPost={newPost}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          {/* Glassmorphic Sidebar */}
+          <aside className="lg:col-span-3">
+            <div className="sticky top-[80px] space-y-4">
+              
+              {/* Category Pills */}
+              <div className="bg-white/80 backdrop-blur-2xl rounded-3xl p-6 border border-from-[#C05299] to-[#D473B3] shadow-xl">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#9333EA] to-[#C05299] flex items-center justify-center shadow-lg">
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-800 text-lg">Explore</h3>
+                    <p className="text-xs text-slate-500">Find your vibe</p>
+                  </div>
+                </div>
 
-        />
+                <div className="space-y-3">
+                    {/* All Posts Button */}
+                    <button
+                      onClick={() => setSelectedCategory("")}
+                      className={`group w-full text-left px-4 py-3.5 rounded-2xl font-semibold text-sm transition-all duration-300 ${
+                        selectedCategory === ""
+                          ? "bg-gradient-to-r from-[#C05299] to-[#D473B3] text-white shadow-xl scale-105"
+                          : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800 hover:scale-105"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span>All Posts</span>
+                      </div>
+                    </button>
 
-                           
-    </div>  
+                    {/* Category Buttons */}
+                    {categories.map((cat) => (
+                      <button
+                        key={cat.name}
+                        onClick={() => setSelectedCategory(cat.name)}
+                        className={`group w-full text-left px-4 py-3.5 rounded-2xl font-semibold text-sm transition-all duration-300 ${
+                          selectedCategory === cat.name
+                            ? "bg-gradient-to-r from-[#C05299] to-[#D473B3] text-white shadow-xl scale-105"
+                            : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800 hover:scale-105"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span>{cat.name}</span>
+                        </div>
+                      </button>
+                    ))}
+
+                </div>
+              </div>
+
+              {/* Active Filter Indicator */}
+              {selectedCategory && (
+                <div className="bg-gradient-to-r from-purple-200/50 to-pink-200/50 backdrop-blur-2xl rounded-3xl p-1 border border-purple-300/50 mt-4">
+                  <div className="bg-white/90 rounded-3xl p-5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+
+                        <div>
+                          <p className="text-xs text-slate-500 uppercase tracking-wider font-bold">Filtering</p>
+                          <p className="text-slate-800 font-bold">{selectedCategory}</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setSelectedCategory("")}
+                        className="w-8 h-8 rounded-xl bg-slate-200 hover:bg-slate-300 flex items-center justify-center transition-all duration-300 hover:scale-110"
+                      >
+                        <svg className="w-4 h-4 text-slate-600" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </aside>
+
+          {/* Main Content Area */}
+          <div className="lg:col-span-9 space-y-6">
+            
+            {/* New Post Card */}
+            <div className="group bg-white/80 backdrop-blur-2xl rounded-3xl border border-purple-200/50 shadow-xl overflow-hidden hover:bg-white/90 transition-all duration-300">
+              <div className="p-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#C05299] to-[#D473B3] flex items-center justify-center shadow-lg">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-slate-800">Share Your Thoughts</h2>
+                    <p className="text-slate-500 text-sm">What's on your mind today?</p>
+                  </div>
+                </div>
+                <NewPost onPostCreated={handlePostCreated} />
+              </div>
+            </div>
+
+            {/* Posts Feed */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 px-2">
+                <div className="h-1 w-12 rounded-full bg-gradient-to-r from-purple-500 to-pink-500"></div>
+                <h2 className="text-2xl font-bold text-slate-800">
+                  {selectedCategory ? `${selectedCategory} Feed` : "Latest Posts"}
+                </h2>
+              </div>
+              
+              <div className="space-y-4">
+                <InfinitePostList selectedCategory={selectedCategory} newPost={newPost} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <style jsx>{`
+        @keyframes blob {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          33% { transform: translate(30px, -50px) scale(1.1); }
+          66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-20px); }
+        }
+        .animate-blob {
+          animation: blob 7s infinite;
+        }
+        .animation-delay-2000 {
+          animation-delay: 2s;
+        }
+        .animation-delay-4000 {
+          animation-delay: 4s;
+        }
+      `}</style>
+    </main>
   );
 }
