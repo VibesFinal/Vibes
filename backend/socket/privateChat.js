@@ -1,10 +1,10 @@
 const jwt = require('jsonwebtoken');
 
-module.exports = (io, pool) => {
+module.exports = (namespace, pool) => {
   console.log('🔐 Socket.io private chat module initialized');
 
-  // 🔑 JWT Authentication Middleware
-  io.use((socket, next) => {
+  // 🔑 JWT Authentication Middleware (applies only to this namespace)
+  namespace.use((socket, next) => {
     const token =
       socket.handshake.auth?.token ||
       socket.handshake.headers?.authorization?.split(' ')[1];
@@ -24,10 +24,11 @@ module.exports = (io, pool) => {
 
   const userSocketMap = new Map();
 
-  io.on('connection', (socket) => {
+  // ✅ Use namespace.on, NOT io.on
+  namespace.on('connection', (socket) => {
     const userId = socket.userId;
     userSocketMap.set(userId, socket.id);
-    console.log(`✅ User ${userId} connected for private chat`);
+    console.log(`✅ User ${userId} connected to private chat namespace`);
 
     // 💬 Send message
     socket.on('sendPrivateMessage', async ({ recipientId, content }) => {
@@ -39,7 +40,6 @@ module.exports = (io, pool) => {
       }
 
       try {
-        // Fetch both users' roles AND usernames in one go
         const [senderRes, recipientRes] = await Promise.all([
           pool.query('SELECT is_therapist, username FROM users WHERE id = $1', [socket.userId]),
           pool.query('SELECT is_therapist, username FROM users WHERE id = $1', [recipientId]),
@@ -52,13 +52,11 @@ module.exports = (io, pool) => {
         const senderIsTherapist = senderRes.rows[0].is_therapist;
         const recipientIsTherapist = recipientRes.rows[0].is_therapist;
         const senderUsername = senderRes.rows[0].username;
-        // recipientUsername is not needed in payload, but good to validate
 
         if (senderIsTherapist === recipientIsTherapist) {
           return socket.emit('privateMessageError', 'Chat is only allowed between a user and a therapist');
         }
 
-        // Find or create conversation
         const conv = await pool.query(
           `SELECT id, user_id, therapist_id FROM private_conversations 
            WHERE (user_id = $1 AND therapist_id = $2) 
@@ -80,7 +78,6 @@ module.exports = (io, pool) => {
           conversationId = conv.rows[0].id;
         }
 
-        // Insert message
         const msg = await pool.query(
           `INSERT INTO private_messages (conversation_id, sender_id, content)
            VALUES ($1, $2, $3) RETURNING id, created_at`,
@@ -93,14 +90,15 @@ module.exports = (io, pool) => {
           recipientId,
           content: content.trim(),
           timestamp: msg.rows[0].created_at,
-          username: senderUsername, // ✅ Real username included!
+          username: senderUsername,
         };
 
         socket.emit('privateMessageSent', payload);
 
         const recipientSocketId = userSocketMap.get(recipientId);
         if (recipientSocketId) {
-          io.to(recipientSocketId).emit('privateMessageReceived', payload);
+          // ✅ Use namespace.to, NOT io.to
+          namespace.to(recipientSocketId).emit('privateMessageReceived', payload);
         }
       } catch (err) {
         console.error('Private message error:', err);
@@ -115,7 +113,6 @@ module.exports = (io, pool) => {
       }
 
       try {
-        // Fetch message and sender's username in one query
         const msgRes = await pool.query(
           `SELECT pm.sender_id, pm.conversation_id, u.username
            FROM private_messages pm
@@ -142,12 +139,11 @@ module.exports = (io, pool) => {
           id: updated.rows[0].id,
           content: updated.rows[0].content,
           editedAt: updated.rows[0].edited_at,
-          username: senderUsername, // ✅ Include for consistency
+          username: senderUsername,
         };
 
         socket.emit('privateMessageEdited', payload);
 
-        // Notify the other participant
         const conv = await pool.query(
           'SELECT user_id, therapist_id FROM private_conversations WHERE id = $1',
           [convId]
@@ -158,7 +154,8 @@ module.exports = (io, pool) => {
           const otherId = user_id === socket.userId ? therapist_id : user_id;
           const otherSocketId = userSocketMap.get(otherId);
           if (otherSocketId) {
-            io.to(otherSocketId).emit('privateMessageEdited', payload);
+            // ✅ Use namespace.to
+            namespace.to(otherSocketId).emit('privateMessageEdited', payload);
           }
         }
       } catch (err) {
@@ -167,7 +164,7 @@ module.exports = (io, pool) => {
       }
     });
 
-    // 🗑️ Delete message (soft delete)
+    // 🗑️ Delete message
     socket.on('deletePrivateMessage', async ({ messageId }) => {
       if (!messageId) {
         return socket.emit('privateMessageError', 'Message ID required');
@@ -193,7 +190,6 @@ module.exports = (io, pool) => {
         const payload = { id: messageId };
         socket.emit('privateMessageDeleted', payload);
 
-        // Notify the other participant
         const { conversation_id: convId } = msgRes.rows[0];
         const conv = await pool.query(
           'SELECT user_id, therapist_id FROM private_conversations WHERE id = $1',
@@ -205,7 +201,8 @@ module.exports = (io, pool) => {
           const otherId = user_id === socket.userId ? therapist_id : user_id;
           const otherSocketId = userSocketMap.get(otherId);
           if (otherSocketId) {
-            io.to(otherSocketId).emit('privateMessageDeleted', payload);
+            // ✅ Use namespace.to
+            namespace.to(otherSocketId).emit('privateMessageDeleted', payload);
           }
         }
       } catch (err) {
@@ -216,7 +213,7 @@ module.exports = (io, pool) => {
 
     socket.on('disconnect', () => {
       userSocketMap.delete(userId);
-      console.log(`🔌 User ${userId} disconnected from private chat`);
+      console.log(`🔌 User ${userId} disconnected from private chat namespace`);
     });
   });
 };

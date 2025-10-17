@@ -22,16 +22,21 @@ const io = require('socket.io')(server, {
 // PostgreSQL
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 
-// ✅ ✅ ✅ INITIALIZE SOCKET.IO MODULES FIRST ✅ ✅ ✅
-const initializeSocket = require('./socket/chat');
-initializeSocket(io, pool);
+// ✅ ✅ ✅ SOCKET.IO NAMESPACES SETUP ✅ ✅ ✅
+// Public community chat (no auth)
+const communityNamespace = io.of('/community');
+require('./socket/chat')(communityNamespace, pool);
 
-const initializeNotifications = require('./socket/notifications');
-initializeNotifications(io, pool);
+// Private 1:1 chat (with auth)
+const privateNamespace = io.of('/private');
+require('./socket/privateChat')(privateNamespace, pool);
 
-// ✅  Attach io to req
+// Notifications (global namespace, no auth needed)
+require('./socket/notifications')(io, pool);
+
+// ✅ Attach io to req (for HTTP routes that emit notifications)
 app.use((req, res, next) => {
-  req.io = io; // 👈 THIS IS CRITICAL
+  req.io = io; // 👈 Still needed for HTTP-triggered notifications
   next();
 });
 
@@ -48,7 +53,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // --------------------------
-// ROUTES (now safe to load)
+// ROUTES
 // --------------------------
 
 const auth = require("./Routes/auth");
@@ -61,13 +66,13 @@ const searchRoute = require("./Routes/search");
 app.use("/user/search", searchRoute);
 
 const postRoute = require("./Routes/posts");
-app.use("/posts", postRoute); // ✅ Now io.emitNotification exists!
+app.use("/posts", postRoute);
 
 const likes = require("./Routes/likes");
-app.use("/likes", likes); // ✅ Safe!
+app.use("/likes", likes);
 
 const comments = require("./Routes/comments");
-app.use("/comments", comments); // ✅ Safe!
+app.use("/comments", comments);
 
 const profileRoute = require("./Routes/profile");
 app.use("/profile", profileRoute);
@@ -92,32 +97,25 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 const aiAnalysisRoute = require("./Routes/AiAnalysis");
 app.use("/ai", aiAnalysisRoute);
 
-// Optional: chat history
+// Chat history (public community messages)
 const chatHistoryRouter = require('./Routes/chatHistory');
 app.use('/', chatHistoryRouter);
 
-// privateChathsitory route
+// Private chat history
 const privateChatHistory = require('./Routes/privateChatHistory');
-app.use('/private',privateChatHistory)
+app.use('/private', privateChatHistory);
 
-//admin route
+// Admin route
 const adminRoute = require("./Routes/admin");
 app.use("/api/admin", adminRoute);
-
 
 // Notifications route
 const notifications = require('./Routes/notification');
 app.use('/notifications', notifications);
 
-//therapists route
+// Therapists route
 const therapist = require("./Routes/therapist");
-app.use("/api/therapist" , therapist);
-//app.use("/api/therapist", require("./routes/therapist"));
-
-// Private 1:1 chat 
-const initializePrivateChat = require('./socket/privateChat');
-initializePrivateChat(io, pool);
-
+app.use("/api/therapist", therapist);
 
 // --------------------------
 // START SERVER

@@ -17,36 +17,61 @@ const CommunityChat = () => {
   const [socket, setSocket] = useState(null);
   const typingTimeoutRef = useRef(null);
 
-  // ✅ Make currentUser reactive
   const [currentUser, setCurrentUser] = useState({ id: 1, username: 'Guest' });
+  const [userLoaded, setUserLoaded] = useState(false); // ✅ NEW: track if user is ready
 
-  // ✅ State for pending messages
   const [pendingMessages, setPendingMessages] = useState(new Map());
-
-  // ✅ State for typing indicators
   const [typingUsers, setTypingUsers] = useState(new Set());
-
-  // ✅ State for edit mode
   const [editingMessageId, setEditingMessageId] = useState(null);
   const [editContent, setEditContent] = useState('');
 
-  // 💬 Initialize socket
+  // ✅ Load user from localStorage (runs ONCE on mount)
   useEffect(() => {
-    if (!currentUser.id || currentUser.username === 'Guest') {
-      console.log("⚠️ User not ready, skipping socket connection");
+    const loadUser = () => {
+      const stored = localStorage.getItem('user');
+      if (stored) {
+        try {
+          const user = JSON.parse(stored);
+          setCurrentUser(user);
+        } catch (e) {
+          setCurrentUser({ id: 1, username: 'Guest' });
+        }
+      } else {
+        setCurrentUser({ id: 1, username: 'Guest' });
+      }
+      setUserLoaded(true); // ✅ User is now loaded
+    };
+    loadUser();
+  }, []);
+
+  // 💬 Initialize socket ONLY when user is loaded and valid
+  useEffect(() => {
+    // ✅ Wait until user is fully loaded
+    if (!userLoaded) {
+      console.log("⏳ Waiting for user to load...");
       return;
     }
 
-    const newSocket = io(SOCKET_SERVER_URL, {
-      transports: ['websocket', 'polling'],
-      reconnection: true,
-      reconnectionAttempts: 5,
-    });
+    // ✅ Skip if still Guest
+    if (!currentUser.id || currentUser.username === 'Guest') {
+      console.log("⚠️ User not ready (Guest), skipping socket connection");
+      return;
+    }
+
+    console.log(`🔌 Initializing socket for user: ${currentUser.username} (ID: ${currentUser.id})`);
+
+     // ✅ Connect to /community namespace
+  const newSocket = io(`${SOCKET_SERVER_URL}/community`, {
+    transports: ['websocket', 'polling'],
+    reconnection: true,
+    reconnectionAttempts: 5,
+  });
 
     setSocket(newSocket);
     newSocket.emit('joinCommunity', id);
     console.log(`✅ ${currentUser.username} joined room ${id}`);
 
+    // 📥 Socket listeners
     newSocket.on('userTyping', ({ username, isTyping }) => {
       setTypingUsers(prev => {
         const next = new Set(prev);
@@ -88,6 +113,7 @@ const CommunityChat = () => {
 
     newSocket.on('errorMessage', (msg) => alert(msg));
 
+    // 🧯 Cleanup
     return () => {
       if (newSocket) {
         newSocket.emit('leaveCommunity', id);
@@ -95,10 +121,11 @@ const CommunityChat = () => {
         newSocket.disconnect();
       }
     };
-  }, [id, currentUser]);
+  }, [id, currentUser, userLoaded]); // ✅ Depend on userLoaded
 
   // 📥 Fetch message history
   useEffect(() => {
+    if (!id) return;
     const fetchMessages = async () => {
       try {
         const res = await fetch(`${SOCKET_SERVER_URL}/communities/${id}/messages`);
@@ -126,16 +153,13 @@ const CommunityChat = () => {
   // 📤 Send message
   const handleSendMessage = (e) => {
     e.preventDefault();
-    if (!message.trim() || !socket) return;
+    if (!message.trim() || !socket) {
+      console.warn("⚠️ Cannot send: no message or socket not ready");
+      return;
+    }
 
     const msgContent = message.trim();
     const tempId = `temp-${Date.now()}`;
-
-    setPendingMessages(prev => {
-      const next = new Map(prev);
-      next.set(tempId, { content: msgContent, userId: currentUser.id });
-      return next;
-    });
 
     const optimisticMessage = {
       id: tempId,
@@ -192,7 +216,10 @@ const CommunityChat = () => {
   };
 
   const handleSaveEdit = (messageId) => {
-    if (!editContent.trim() || !socket) return;
+    if (!editContent.trim() || !socket) {
+      console.warn("⚠️ Cannot save edit: empty or no socket");
+      return;
+    }
 
     setMessages(prev =>
       prev.map(msg => msg.id === messageId ? { ...msg, message: editContent, edited_at: new Date().toISOString() } : msg)
@@ -227,32 +254,13 @@ const CommunityChat = () => {
     });
   };
 
-  // ✅ Load user
-  useEffect(() => {
-    const loadUser = () => {
-      const stored = localStorage.getItem('user');
-      if (stored) {
-        try {
-          const user = JSON.parse(stored);
-          setCurrentUser(user);
-        } catch (e) {
-          setCurrentUser({ id: 1, username: 'Guest' });
-        }
-      } else {
-        setCurrentUser({ id: 1, username: 'Guest' });
-      }
-    };
-    loadUser();
-    window.addEventListener('storage', loadUser);
-    return () => window.removeEventListener('storage', loadUser);
-  }, []);
-
+  // ✅ Apply safe modern styling (non-breaking)
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-pink-50 py-8 px-4 relative">
+      <div className="max-w-4xl mx-auto relative z-10">
         <ChatHeader onBack={() => navigate('/Community')} />
 
-        <div className="bg-white/70 backdrop-blur-lg rounded-3xl shadow-xl border border-white/50 p-6 mb-6 h-96 overflow-y-auto">
+        <div className="bg-white/80 backdrop-blur-2xl rounded-3xl shadow-xl border border-[#e9d5ff]/50 p-6 mb-6 h-96 overflow-y-auto">
           <MessageList
             messages={messages}
             currentUser={currentUser}
