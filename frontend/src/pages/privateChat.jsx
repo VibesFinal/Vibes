@@ -7,7 +7,30 @@ import MessageList from '../components/ChatComponents/MessageList';
 import MessageInput from '../components/ChatComponents/MessageInput';
 import DeleteConfirmationModal from '../components/ChatComponents/DeleteConfirmationModal';
 
-const SOCKET_URL = 'http://localhost:7777';
+// ✅ Use the same API_URL pattern as CommunityChat
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:7777';
+
+// Custom CSS with the color palette
+const chatStyles = {
+  container: {
+    background: 'linear-gradient(135deg, #F0F0F0 0%, #DCC6A0 50%, #9FD6E2 100%)',
+    minHeight: '100vh',
+    padding: '20px'
+  },
+  chatWrapper: {
+    background: 'rgba(255, 255, 255, 0.95)',
+    backdropFilter: 'blur(10px)',
+    borderRadius: '20px',
+    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(184, 233, 134, 0.3)',
+    overflow: 'hidden',
+    border: '1px solid rgba(184, 233, 134, 0.2)'
+  },
+  gradientBorder: {
+    background: 'linear-gradient(90deg, #B8E986, #73C174, #9FD6E2, #DCC6A0)',
+    height: '4px',
+    width: '100%'
+  }
+};
 
 const PrivateChat = ({ recipientId, onBack }) => {
   const [messages, setMessages] = useState([]);
@@ -17,6 +40,7 @@ const PrivateChat = ({ recipientId, onBack }) => {
   const [editContent, setEditContent] = useState('');
   const [deleteConfirmMessageId, setDeleteConfirmMessageId] = useState(null);
   const [recipientName, setRecipientName] = useState('Therapist');
+  const [isConnected, setIsConnected] = useState(false);
 
   const token = localStorage.getItem('token');
 
@@ -48,8 +72,25 @@ const PrivateChat = ({ recipientId, onBack }) => {
   useEffect(() => {
     if (!token || !recipientId) return;
 
-    const newSocket = io(SOCKET_URL, { auth: { token }, transports: ['websocket'] });
+    // ✅ Connect to /private namespace with auth
+    const newSocket = io(`${API_URL}/private`, { 
+      auth: { token }, 
+      transports: ['websocket', 'polling'], // ✅ Add polling as fallback
+      reconnection: true,
+      reconnectionAttempts: 5,
+    });
+    
     setSocket(newSocket);
+
+    newSocket.on('connect', () => {
+      setIsConnected(true);
+      console.log('✅ Connected to private chat namespace');
+    });
+
+    newSocket.on('disconnect', () => {
+      setIsConnected(false);
+      console.log('🔴 Disconnected from private chat namespace');
+    });
 
     const handleMessage = (payload) => {
       setMessages((prev) => [
@@ -86,11 +127,14 @@ const PrivateChat = ({ recipientId, onBack }) => {
     newSocket.on('privateMessageDeleted', handleDelete);
     newSocket.on('privateMessageError', (err) => {
       console.error('Chat error:', err);
-      alert('Failed to send message');
+      alert('Failed to send message: ' + err);
     });
 
-    return () => newSocket.close();
-  }, [recipientId, token, currentUserId, recipientName]);
+    return () => {
+      console.log('🧹 Cleaning up private chat socket');
+      newSocket.close();
+    };
+  }, [recipientId, token]);
 
   useEffect(() => {
     if (!recipientId || !token) return;
@@ -115,6 +159,13 @@ const PrivateChat = ({ recipientId, onBack }) => {
     if (!newMessage.trim() || !socket) return;
     socket.emit('sendPrivateMessage', { recipientId, content: newMessage.trim() });
     setNewMessage('');
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
   };
 
   const handleEditMessage = (msg) => {
@@ -144,34 +195,55 @@ const PrivateChat = ({ recipientId, onBack }) => {
   const cancelDelete = () => setDeleteConfirmMessageId(null);
 
   return (
-    <div className="max-w-3xl mx-auto w-full h-full">
-      <div className="flex flex-col h-full bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl shadow-lg overflow-hidden transition-all duration-300 ease-in-out">
-        <ChatHeader recipientName={recipientName} onBack={onBack} />
-        <MessageList
-          messages={messages}
-          currentUserId={currentUserId}
-          recipientName={recipientName}
-          editingMessageId={editingMessageId}
-          editContent={editContent}
-          setEditContent={setEditContent}
-          handleSaveEdit={handleSaveEdit}
-          setEditingMessageId={setEditingMessageId}
-          handleEditMessage={handleEditMessage}
-          handleDeleteMessage={handleDeleteMessage}
-        />
-        <MessageInput
-          newMessage={newMessage}
-          setNewMessage={setNewMessage}
-          handleSendMessage={handleSendMessage}
-        />
-        <DeleteConfirmationModal
-          isOpen={deleteConfirmMessageId !== null}
-          onCancel={cancelDelete}
-          onConfirm={confirmDelete}
-        />
+    <div style={chatStyles.container} className="min-h-screen p-5">
+      <div className="max-w-4xl mx-auto w-full h-full">
+        <div style={chatStyles.chatWrapper} className="flex flex-col h-[90vh]">
+          {/* Animated gradient border */}
+          <div style={chatStyles.gradientBorder}></div>
+          
+          {/* Connection status indicator */}
+          <div className={`px-4 py-1 text-xs font-medium text-center ${
+            isConnected ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+          }`}>
+            {isConnected ? '🟢 Connected' : '🔴 Disconnected'}
+          </div>
+
+          <ChatHeader 
+            recipientName={recipientName} 
+            onBack={onBack}
+            isConnected={isConnected}
+          />
+          
+          <MessageList
+            messages={messages}
+            currentUserId={currentUserId}
+            recipientName={recipientName}
+            editingMessageId={editingMessageId}
+            editContent={editContent}
+            setEditContent={setEditContent}
+            handleSaveEdit={handleSaveEdit}
+            setEditingMessageId={setEditingMessageId}
+            handleEditMessage={handleEditMessage}
+            handleDeleteMessage={handleDeleteMessage}
+          />
+          
+          <MessageInput
+            newMessage={newMessage}
+            setNewMessage={setNewMessage}
+            handleSendMessage={handleSendMessage}
+            handleKeyPress={handleKeyPress}
+            isConnected={isConnected}
+          />
+          
+          <DeleteConfirmationModal
+            isOpen={deleteConfirmMessageId !== null}
+            onCancel={cancelDelete}
+            onConfirm={confirmDelete}
+          />
+        </div>
       </div>
     </div>
   );
 };
 
-export default PrivateChat
+export default PrivateChat;

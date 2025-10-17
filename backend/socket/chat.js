@@ -1,9 +1,8 @@
-// socket/chat.js
-module.exports = (io, pool) => {
-  console.log('💬 Socket.io chat module initialized');
+module.exports = (namespace, pool) => {
+  console.log('💬 Community chat namespace initialized');
 
-  io.on('connection', (socket) => {
-    console.log('✅ New client connected:', socket.id);
+  namespace.on('connection', (socket) => {
+    console.log('✅ Community client connected:', socket.id);
 
     // 🔑 Join a community chat room
     socket.on('joinCommunity', (communityId) => {
@@ -11,7 +10,7 @@ module.exports = (io, pool) => {
         console.warn(`⚠️ Socket ${socket.id} tried to join without communityId`);
         return;
       }
-      const roomId = String(communityId); // 🔒 Normalize to string
+      const roomId = String(communityId);
       socket.join(roomId);
       console.log(`🚪 Socket ${socket.id} joined room: "${roomId}"`);
     });
@@ -19,7 +18,7 @@ module.exports = (io, pool) => {
     // 🚪 Leave a community chat room
     socket.on('leaveCommunity', (communityId) => {
       if (!communityId) return;
-      const roomId = String(communityId); // 🔒 Normalize to string
+      const roomId = String(communityId);
       socket.leave(roomId);
       console.log(`🚪 Socket ${socket.id} left room: "${roomId}"`);
     });
@@ -48,17 +47,16 @@ module.exports = (io, pool) => {
 
         const savedMessage = result.rows[0];
 
-        // 👇 FETCH USERNAME FROM users TABLE
         const userResult = await pool.query(
           `SELECT username FROM users WHERE id = $1`,
           [savedMessage.user_id]
         );
 
         const senderName = userResult.rows[0]?.username || 'Anonymous';
-        const roomId = String(savedMessage.community_id); // 🔒 Normalize to string
+        const roomId = String(savedMessage.community_id);
 
-        // 📤 Broadcast with real username
-        io.to(roomId).emit('receiveMessage', {
+        // ✅ Use namespace.to, NOT io.to
+        namespace.to(roomId).emit('receiveMessage', {
           id: savedMessage.id,
           communityId: savedMessage.community_id,
           userId: savedMessage.user_id,
@@ -100,10 +98,10 @@ module.exports = (io, pool) => {
         }
 
         const updated = result.rows[0];
-        const roomId = String(updated.community_id); // 🔒 Normalize to string
+        const roomId = String(updated.community_id);
 
-        // 📤 Broadcast edited message to room
-        io.to(roomId).emit('messageEdited', {
+        // ✅ Use namespace.to
+        namespace.to(roomId).emit('messageEdited', {
           id: updated.id,
           message: updated.content,
           edited_at: updated.edited_at,
@@ -139,10 +137,10 @@ module.exports = (io, pool) => {
         }
 
         const deleted = result.rows[0];
-        const roomId = String(deleted.community_id); // 🔒 Normalize to string
+        const roomId = String(deleted.community_id);
 
-        // 📤 Broadcast deletion to room
-        io.to(roomId).emit('messageDeleted', {
+        // ✅ Use namespace.to
+        namespace.to(roomId).emit('messageDeleted', {
           id: deleted.id,
         });
 
@@ -161,15 +159,14 @@ module.exports = (io, pool) => {
         return;
       }
 
-      const roomId = String(communityId); // 🔒 Normalize to string
+      const roomId = String(communityId);
 
-      // Broadcast to others in the room
+      // ✅ socket.to() is fine here (same namespace)
       socket.to(roomId).emit('userTyping', {
         username,
         isTyping: true,
       });
 
-      // Auto-stop after 3s
       setTimeout(() => {
         socket.to(roomId).emit('userTyping', {
           username,
@@ -178,9 +175,8 @@ module.exports = (io, pool) => {
       }, 3000);
     });
 
-    // 🧯 Handle client disconnect
     socket.on('disconnect', () => {
-      console.log(`🔴 Client disconnected: ${socket.id}`);
+      console.log(`🔴 Community client disconnected: ${socket.id}`);
     });
   });
 };
