@@ -27,11 +27,19 @@ router.get("/username/:username", async (req, res) => {
 
     const user = userResult.rows[0];
 
-    if (user.profile_pic && !user.profile_pic.startsWith("http")) {
-
-      user.profile_pic = `${process.env.BACKEND_URL || "http://localhost:7777"}/${user.profile_pic}`;
-
+   if (user.profile_pic) {
+      const trimmedPic = user.profile_pic.trim();
+      if (trimmedPic && !trimmedPic.startsWith("http")) {
+        user.profile_pic = `${process.env.BACKEND_URL || "http://localhost:7777"}/${trimmedPic}`;
+      } else if (!trimmedPic) {
+        // If it's just whitespace, set to null
+        user.profile_pic = null;
+      }
+    } else {
+      // Ensure it's explicitly null, not undefined
+      user.profile_pic = null;
     }
+
 
     const limit = parseInt(req.query.limit) || 10;
     const offset = parseInt(req.query.offset) || 0;
@@ -58,14 +66,23 @@ router.get("/username/:username", async (req, res) => {
       [user.id , limit , offset]
     );
 
-    const posts = postResult.rows.map((post) => ({
+    const posts = postResult.rows.map((post) => {
+      let profilePic = null;
+      
+      if (post.profile_pic) {
+        const trimmedPic = post.profile_pic.trim();
+        if (trimmedPic) {
+          profilePic = trimmedPic.startsWith("http")
+            ? trimmedPic
+            : `${process.env.BACKEND_URL || "http://localhost:7777"}/${trimmedPic}`;
+        }
+      }
 
-      ...post,
-      profile_pic: post.profile_pic?.startsWith("http")
-        ? post.profile_pic
-        : `${process.env.BACKEND_URL || "http://localhost:7777"}/${post.profile_pic}`,
-
-    }));
+      return {
+        ...post,
+        profile_pic: profilePic,
+      };
+    });
 
     res.json({
       user,
