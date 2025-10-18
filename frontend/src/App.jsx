@@ -40,24 +40,16 @@ const ScrollToFAQ = () => {
   return null;
 };
 
-// Floating Button Component (Reusable)
-const FloatingFAQButton = () => {
-  const navigate = useNavigate();
-
-  const handleClick = () => {
-    navigate('/health-faq#faq-section');
-  };
-
+const FloatingFAQButton = ({ onClick }) => {
   return (
     <button
-      onClick={handleClick}
-      aria-label="Open Mental Health FAQs — Your safe space"
-      className="fixed bottom-8 left-8 z-50 w-16 h-16 rounded-full bg-[#C05299] shadow-2xl hover:shadow-pink-400/40 transform hover:scale-110 transition-all duration-300 text-white flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-pink-300/50 animate-pulse"
+      onClick={onClick}
+      aria-label="Open Mental Health Chatbot"
+      className="fixed bottom-8 left-8 z-50 w-16 h-16 rounded-full bg-gradient-to-br from-[#C05299] to-[#9b3d7a] shadow-2xl hover:shadow-pink-500/50 transform hover:scale-105 transition-transform duration-150 text-white flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-pink-300/50 group"
     >
-      {/* Speech bubble icon */}
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        className="h-7 w-7"
+        className="h-8 w-8"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -69,20 +61,21 @@ const FloatingFAQButton = () => {
           d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
         />
       </svg>
-
-      {/* Subtle pulse glow effect */}
-      <span className="absolute inset-0 rounded-full bg-white/20 animate-ping"></span>
     </button>
   );
 };
 
 
 
-
 export default function App() {
+
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [showChatBot , setShowChatBot] = useState(false);
+
+
   const currentUser = JSON.parse(localStorage.getItem("user"));
+
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -142,7 +135,75 @@ const AdminRoute = ({element}) => {
             <NotificationBell />
           </Navigation>
 
-          <FloatingFAQButton />
+          <FloatingFAQButton onClick={() => setShowChatBot(true)} />
+{showChatBot && (
+  <div 
+    className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4"
+    style={{ animation: 'fadeIn 0.15s ease-out' }}
+    onClick={() => setShowChatBot(false)}
+  >
+    <div 
+      className="bg-white rounded-3xl shadow-2xl w-full max-w-md h-[600px] sm:h-[650px] relative overflow-hidden"
+      style={{ animation: 'slideUp 0.2s ease-out' }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {/* Header */}
+      <div className="bg-gradient-to-r from-[#C05299] to-[#9b3d7a] px-6 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6 text-white"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+              />
+            </svg>
+          </div>
+          <div>
+            <h3 className="text-white font-semibold text-lg">Mental Health Assistant</h3>
+            <p className="text-white/80 text-xs">Always here to help</p>
+          </div>
+        </div>
+        <button
+          onClick={() => setShowChatBot(false)}
+          className="text-white/80 hover:text-white hover:bg-white/20 rounded-full p-2 transition-colors duration-150"
+          aria-label="Close chatbot"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      </div>
+
+      {/* Chatbot Content */}
+      <div className="h-[calc(100%-72px)]">
+        <Chatbot />
+      </div>
+    </div>
+  </div>
+)}
+
+
+
+
           <ScrollToFAQ />
 
           <Routes>
@@ -152,7 +213,7 @@ const AdminRoute = ({element}) => {
             <Route path="/user/verify/:token" element={<Activate />} />
             <Route path="/profile/:username" element={<Profile />} />
             <Route path="/About" element={<About />} />
-            <Route path="/chatBot" element={<Chatbot />} />
+            
             <Route path="/Community" element={<Community />} />
             <Route path="/community/create" element={<CreateCommunity />} />
             <Route path="/communities/:id/chat" element={<CommunityChat />} />
