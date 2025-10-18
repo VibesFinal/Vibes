@@ -163,8 +163,7 @@ export default function Navigation({ onLogout }) {
                             className="h-8 w-8 rounded-full object-cover"
                           />
                         ) : (
-                          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#73C174] to-[#9FD6E2] flex items-center justify-center text-white font-semibold">
-                            {user.username[0].toUpperCase()}
+                      <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#C05299] to-[#d666ae] flex items-center justify-center text-white font-semibold">                            {user.username[0].toUpperCase()}
                           </div>
                         )}
                         <p className="font-medium text-gray-700">{user.username}</p>
@@ -193,8 +192,7 @@ export default function Navigation({ onLogout }) {
                         className="h-9 w-9 rounded-full object-cover border-2 border-transparent group-hover:border-[#C05299] transition-all"
                       />
                     ) : (
-                      <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[#73C174] to-[#9FD6E2] flex items-center justify-center text-white font-semibold border-2 border-transparent group-hover:border-[#73C174] transition-all">
-                        {currentUser?.username?.[0]?.toUpperCase() || "U"}
+                    <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[#C05299] to-[#d666ae] flex items-center justify-center text-white font-semibold border-2 border-transparent group-hover:border-[#C05299] transition-all">                        {currentUser?.username?.[0]?.toUpperCase() || "U"}
                       </div>
                     )}
                     <div className="absolute bottom-0 right-0 h-3 w-3 bg-green-500 rounded-full border-2 border-white"></div>
@@ -223,7 +221,7 @@ export default function Navigation({ onLogout }) {
                               className="h-12 w-12 rounded-full object-cover"
                             />
                           ) : (
-                            <div className="h-12 w-12 rounded-full bg-gradient-to-br from-[#73C174] to-[#9FD6E2] flex items-center justify-center text-white font-semibold text-lg">
+                            <div className="h-12 w-12 rounded-full bg-gradient-to-br from-[#C05299] to-[#d666ae] flex items-center justify-center text-white font-semibold text-lg">
                               {currentUser?.username?.[0]?.toUpperCase() || "U"}
                             </div>
                           )}
