@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation, replace } from 'react-router-dom';
 import axios from 'axios';
 import './App.css';
 import Feed from '../src/pages/feed';
@@ -23,6 +23,7 @@ import ResetPassword from './components/ResetPassword';
 import DeleteAccount from './pages/DeleteAccount';
 import AdminCertifications from './pages/AdminsCertifications';
 import ChatInbox from './pages/ChatInbox'
+import Landing from './pages/Landing';
 
 // Helper component to handle scrolling to #faq-section
 const ScrollToFAQ = () => {
@@ -207,9 +208,12 @@ const AdminRoute = ({element}) => {
           <ScrollToFAQ />
 
           <Routes>
-            <Route path="/" element={<Feed />} />
-            <Route path="/login" element={<Navigate to="/" />} />
-            <Route path="/register" element={<Navigate to="/" />} />
+            
+            <Route path="/" element={<Navigate to="/feed" replace />} />
+            <Route path="/feed" element={<Feed />} />
+
+            <Route path="/login" element={<Navigate to="/feed" replace/>} />
+            <Route path="/register" element={<Navigate to="/feed" replace/>} /> 
             <Route path="/user/verify/:token" element={<Activate />} />
             <Route path="/profile/:username" element={<Profile />} />
             <Route path="/About" element={<About />} />
@@ -243,6 +247,7 @@ const AdminRoute = ({element}) => {
       {/* ❌ Unauthenticated routes outside provider */}
       {!isAuthenticated && (
         <Routes>
+          <Route path='/' element={<Landing />} />
           <Route path="/login" element={<Login onLogin={() => setIsAuthenticated(true)} />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -250,6 +255,20 @@ const AdminRoute = ({element}) => {
           <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="/delete/:token" element={<DeleteAccount />} />
           <Route path="*" element={<Navigate to="/login" />} />
+
+          <Route 
+          
+            path='/'
+            element={
+
+              isAuthenticated
+                ? <Navigate to="/feed"/>
+                : <Landing />
+
+            }
+          
+          />
+
         </Routes>
       )}
     </Router>

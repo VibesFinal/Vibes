@@ -87,9 +87,9 @@ export default function Navigation({ onLogout }) {
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-[#9333ea] to-[#a855f7] opacity-0 group-hover:opacity-20 rounded-full blur-xl transition-opacity duration-300"></div>
               </div>
-              <span className="font-bold text-2xl text-[#C05299]">
+              {/* <span className="font-bold text-2xl text-[#C05299]">
                 ibes
-              </span>
+              </span> */}
             </div>
 
             {/* Desktop Navigation - REMOVED CHATBOT LINK */}
@@ -121,7 +121,7 @@ export default function Navigation({ onLogout }) {
                 className={`nav-btn group ${location.pathname === "/chat" ? "text-[#C05299]" : ""}`}
               >
                 <ChatCircle size={22} weight="regular" className={location.pathname === "/chat" ? "text-[#C05299]" : ""} />
-                <span className="nav-label">Chat</span>
+                <span className="nav-label">Therapists</span>
               </Link>
 
               <Link
