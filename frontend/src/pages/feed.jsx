@@ -154,7 +154,7 @@ export default function Feed() {
                     </svg>
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-slate-800">Share Your Thoughts</h2>
+                    <h2 className="text-xl font-bold text-slate-800">Share Your Vibes</h2>
                     <p className="text-slate-500 text-sm">What's on your mind today?</p>
                   </div>
                 </div>
