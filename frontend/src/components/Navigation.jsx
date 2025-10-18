@@ -5,7 +5,6 @@ import {
   UserCircle,
   House,
   UsersThree,
-  Robot,
   ChatCircle,
   CaretDown,
   MagnifyingGlass,
@@ -16,7 +15,7 @@ import NotificationBell from "./NotificationBell";
 
 export default function Navigation({ onLogout }) {
   const navigate = useNavigate();
-  const location = useLocation(); // <-- to detect active route
+  const location = useLocation();
   const [currentUser, setCurrentUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
@@ -88,12 +87,12 @@ export default function Navigation({ onLogout }) {
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-[#9333ea] to-[#a855f7] opacity-0 group-hover:opacity-20 rounded-full blur-xl transition-opacity duration-300"></div>
               </div>
-                <span className="font-bold text-2xl text-[#C05299]">
+              <span className="font-bold text-2xl text-[#C05299]">
                 ibes
               </span>
             </div>
 
-            {/* Desktop Navigation */}
+            {/* Desktop Navigation - REMOVED CHATBOT LINK */}
             <nav className="hidden md:flex items-center gap-1">
               <Link
                 to="/"
@@ -131,14 +130,6 @@ export default function Navigation({ onLogout }) {
               >
                 <UsersThree size={22} weight="regular" className={location.pathname === "/community" ? "text-[#C05299]" : ""} />
                 <span className="nav-label">Community</span>
-              </Link>
-
-              <Link
-                to="/chatBot"
-                className={`nav-btn group ${location.pathname === "/chatBot" ? "text-[#C05299]" : ""}`}
-              >
-                <Robot size={22} weight="regular" className={location.pathname === "/chatBot" ? "text-[#C05299]" : ""} />
-                <span className="nav-label">AI Bot</span>
               </Link>
             </nav>
 
@@ -261,6 +252,19 @@ export default function Navigation({ onLogout }) {
                         onClick={() => setDropdownOpen(false)}
                       >
                         <span className="text-gray-700 font-medium">About</span>
+                      </Link>
+
+                      <Link
+                      
+                        to= "/health-faq#faq-section"
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-[#F9E6F0] transition-colors"
+                        onClick={() => setDropdownOpen(false)}
+                      
+                      >
+
+                        <span className="text-gray-700 font-medium">Learn more</span>
+                      
+                      
                       </Link>
 
                       <button
