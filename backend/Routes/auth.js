@@ -57,30 +57,37 @@ router.post('/register', async (req, res) => {
       from: process.env.SENDGRID_EMAIL,
       subject: 'Activate Your Account',
       html: `
-        <div style="font-family: Arial, sans-serif; color: #333; line-height:1.6; max-width:600px; margin:0 auto; padding:20px; background-color:#f0f0f0;">
-          <div style="background-color:#ffffff; border-radius:12px; padding:30px; text-align:center; border:1px solid #e0e0e0;">
+        <div style="font-family: Arial, sans-serif; color: #333; line-height:1.6; max-width:600px; margin:0 auto; padding:20px; background-color:#F9F5FF;">
+          <div style="background-color:#ffffff; border-radius:12px; padding:30px; text-align:center; border:1px solid #E5D0F7;">
             
             <!-- Logo Image -->
             <!--<img src="https://i.postimg.cc/N0Dy4zgS/v-logo.png" 
                 alt="V Logo" 
                 style="width:120px; height:auto; margin-bottom:20px;" />-->
 
-            <h2 style="color:#333;">Welcome, ${newUser.username}!</h2>
-            <p>Thank you for registering! Click the button below to activate your account.</p>
+            <h2 style="color:#9333EA;">Welcome, ${newUser.username}!</h2>
+            <p style="color:#4C1D95;">Thank you for registering! Click the button below to activate your account.</p>
             
             <div style="margin:30px 0;">
               <a href="${activationLink}" 
-                style="display:inline-block; background:#5BC0EB; color:white; padding:14px 28px; text-decoration:none; border-radius:8px; font-weight:bold; font-size:16px;">
+                style="display:inline-block; 
+                      background: linear-gradient(90deg, #9333EA 0%, #C05299 100%);
+                      color:white; 
+                      padding:14px 28px; 
+                      text-decoration:none; 
+                      border-radius:8px; 
+                      font-weight:bold; 
+                      font-size:16px;">
                 Activate My Account
               </a>
             </div>
 
-            <p style="font-size:12px; color:#777;">
+            <p style="font-size:12px; color:#7E22CE;">
               If the button doesn’t work, copy and paste this link:<br>
               <code style="word-break:break-all;">${activationLink}</code>
             </p>
 
-            <p style="font-size:12px; color:#777;">
+            <p style="font-size:12px; color:#7E22CE;">
               This link expires in 60 hours.
             </p>
           </div>
@@ -244,36 +251,44 @@ router.post("/forgot-password", async (req, res) => {
       from: process.env.SENDGRID_EMAIL,
       subject: "Reset Your Password",
       html: `
-        <div style="font-family: Arial, sans-serif; color: #333; line-height:1.6; max-width:600px; margin:0 auto; padding:20px; background-color:#f0f0f0;">
-          <div style="background-color:#ffffff; border-radius:12px; padding:30px; text-align:center; border:1px solid #e0e0e0;">
+        <div style="font-family: Arial, sans-serif; color: #333; line-height:1.6; max-width:600px; margin:0 auto; padding:20px; background-color:#F9F5FF;">
+          <div style="background-color:#ffffff; border-radius:12px; padding:30px; text-align:center; border:1px solid #E5D0F7;">
             
             <!-- Logo Image -->
             <!--<img src="https://i.postimg.cc/N0Dy4zgS/v-logo.png" 
                 alt="V Logo" 
                 style="width:120px; height:auto; margin-bottom:20px;" />-->
 
-            <h2 style="color:#333;">Hello ${user.username},</h2>
-            <p>You requested a password reset. Click the button below to set a new password.</p>
+            <h2 style="color:#9333EA;">Hello ${user.username},</h2>
+            <p style="color:#4C1D95;">You requested a password reset. Click the button below to set a new password.</p>
             
             <div style="margin:30px 0;">
               <a href="${resetLink}" 
-                style="display:inline-block; background:#5BC0EB; color:white; padding:14px 28px; text-decoration:none; border-radius:8px; font-weight:bold; font-size:16px;">
+                style="display:inline-block; 
+                      background: linear-gradient(90deg, #9333EA 0%, #C05299 100%); 
+                      color:white; 
+                      padding:14px 28px; 
+                      text-decoration:none; 
+                      border-radius:8px; 
+                      font-weight:bold; 
+                      font-size:16px;">
                 Reset Password
               </a>
             </div>
 
-            <p style="font-size:12px; color:#777;">
+            <p style="font-size:12px; color:#7E22CE;">
               If the button doesn’t work, copy and paste this link:<br>
               <code style="word-break:break-all;">${resetLink}</code>
             </p>
 
-            <p style="font-size:12px; color:#777;">
+            <p style="font-size:12px; color:#7E22CE;">
               This link will expire in 1 hour.
             </p>
           </div>
         </div>
       `
     });
+
 
 
     res.json({ message: "Reset link sent! Check your email.📩" });
@@ -354,17 +369,24 @@ router.post('/request-delete', async (req, res) => {
       from: process.env.SENDGRID_EMAIL,
       subject: "Confirm Account Deletion",
       html: `
-        <div style="font-family: Arial, sans-serif; color: #333; line-height:1.6; max-width:600px; margin:0 auto; padding:20px; background-color:#f0f0f0;">
-          <div style="background-color:#ffffff; border-radius:12px; padding:30px; text-align:center; border:1px solid #e0e0e0;">
-            <h2>Hello ${user.username},</h2>
-            <p>Click the button below to permanently delete your account. This link will expire in 1 hour.</p>
+        <div style="font-family: Arial, sans-serif; color: #333; line-height:1.6; max-width:600px; margin:0 auto; padding:20px; background-color:#F9F5FF;">
+          <div style="background-color:#ffffff; border-radius:12px; padding:30px; text-align:center; border:1px solid #E5D0F7;">
+            <h2 style="color:#9333EA;">Hello ${user.username},</h2>
+            <p style="color:#4C1D95;">Click the button below to permanently delete your account. This link will expire in 1 hour.</p>
             <div style="margin:30px 0;">
               <a href="${deletionLink}" 
-                style="display:inline-block; background:#FF4C4C; color:white; padding:14px 28px; text-decoration:none; border-radius:8px; font-weight:bold; font-size:16px;">
+                style="display:inline-block; 
+                      background: linear-gradient(90deg, #9333EA 0%, #C05299 100%);
+                      color:white; 
+                      padding:14px 28px; 
+                      text-decoration:none; 
+                      border-radius:8px; 
+                      font-weight:bold; 
+                      font-size:16px;">
                 Delete My Account
               </a>
             </div>
-            <p style="font-size:12px; color:#777;">
+            <p style="font-size:12px; color:#7E22CE;">
               If the button doesn’t work, copy and paste this link:<br>
               <code style="word-break:break-all;">${deletionLink}</code>
             </p>
