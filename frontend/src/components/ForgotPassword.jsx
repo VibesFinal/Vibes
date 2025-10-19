@@ -31,37 +31,43 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white px-4 py-8">
-      {/* Logo */}
-      <img src={logo} alt="Logo" className="w-20 h-auto mb-4 drop-shadow-sm" />
+    <div className="min-h-screen flex items-center justify-center relative">
+      {/* Animated mesh gradient background */}
+      <div className="fixed inset-0 bg-gradient-to-br from-purple-50 to-pink-50">
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-0 -left-4 w-96 h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl animate-blob"></div>
+          <div className="absolute top-0 -right-4 w-96 h-96 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000"></div>
+          <div className="absolute -bottom-8 left-20 w-96 h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000"></div>
+        </div>
+      </div>
 
-      <div className="w-full max-w-md bg-white rounded-2xl p-8 shadow-xl border border-cyan-200">
-        <h2 className="text-2xl font-bold text-gray-800 tracking-wide text-center mb-6">
+      {/* Form container */}
+      <div className="relative z-10 w-full max-w-md p-8  flex flex-col items-center">
+        {/* Logo */}
+        <img src={logo} alt="Logo" className="w-20 h-auto mb-6 drop-shadow-sm" />
+
+        <h2 className="text-2xl font-bold text-[#C05299] tracking-wide text-center mb-6">
           Forgot Password
         </h2>
 
         {message ? (
-          <div className="text-center text-cyan-600 font-semibold bg-cyan-50 py-3 px-4 rounded-xl shadow-sm">
+          <div className="text-center text-[#C05299] font-semibold bg-white/30 py-3 px-4 rounded-xl shadow-sm mb-4">
             {message}
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="w-full space-y-5">
             <input
               type="email"
               placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-5 py-4 bg-gray-50 border border-cyan-200 rounded-xl 
-                        focus:border-cyan-400 focus:outline-none focus:ring-2 
-                        focus:ring-cyan-300 transition text-gray-800 placeholder-gray-400"
+              className="appearance-none w-full px-5 py-4 bg-purple-50/50 border-2 border-[#C05299] rounded-xl focus:border-[#C0529950] focus:outline-none focus:ring-2 focus:ring-[#C05299] transition-colors text-gray-800 placeholder:text-purple-400"
             />
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-cyan-400 hover:bg-cyan-500 disabled:bg-cyan-300 
-                        text-white font-semibold py-4 rounded-xl shadow-lg 
-                        hover:shadow-xl transition-all duration-300"
+              className="w-full bg-gradient-to-r from-[#9333EA] to-[#C05299] hover:from-[#7E22CE] hover:to-[#A74482] text-white font-semibold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 disabled:opacity-70"
             >
               {isLoading ? "Sending..." : "Send Reset Link"}
             </button>
@@ -69,11 +75,20 @@ export default function ForgotPassword() {
         )}
 
         {error && (
-          <p className="mt-6 text-red-600 text-center font-medium bg-red-50 py-2 rounded-lg">
+          <p className="mt-4 text-red-600 text-center font-medium bg-red-50 py-2 px-4 rounded-lg w-full">
             {error}
           </p>
         )}
+
+        {/* Back to Login */}
+        <button
+          onClick={() => navigate("/login")}
+          className="mt-6 w-full border-2 border-[#C05299] text-[#C05299] font-semibold py-3 rounded-xl hover:bg-gradient-to-r hover:from-[#9333EA] hover:to-[#C05299] hover:text-white hover:border-transparent transition-all duration-300 shadow-md"
+        >
+          Back to Login
+        </button>
       </div>
     </div>
   );
+
 }
