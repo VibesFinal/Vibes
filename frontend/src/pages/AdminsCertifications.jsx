@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "../api/axiosInstance";
+import { showAlert, handleError } from "../utils/alertUtils";
 
 export default function AdminCertifications() {
   const [certs, setCerts] = useState([]);
@@ -11,6 +12,7 @@ export default function AdminCertifications() {
         setCerts(res.data);
       } catch (err) {
         console.error("Error fetching certifications:", err.response?.data || err.message);
+        handleError(err);
       }
     };
     fetchCerts();
@@ -20,8 +22,10 @@ export default function AdminCertifications() {
     try {
       await axiosInstance.put(`/api/admin/certifications/${id}`, { status });
       setCerts((prev) => prev.filter((c) => c.id !== id));
+      showAlert(`Certification ${status}`);
     } catch (err) {
       console.error("Error updating certification:", err.response?.data || err.message);
+      handleError(err);
     }
   };
 

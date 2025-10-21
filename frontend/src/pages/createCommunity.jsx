@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
+import { showAlert, handleError } from '../utils/alertUtils';
 
 const CreateCommunity = () => {
   const [formData, setFormData] = useState({
@@ -52,11 +53,12 @@ const CreateCommunity = () => {
 
     try {
       const response = await axiosInstance.post('/communities', formData);
-      alert('Community created successfully!');
+      showAlert('Community created successfully!');
       navigate('/community');
     } catch (err) {
       console.error(err);
       setError('Failed to create community. Please try again.');
+      handleError(err);
     } finally {
       setIsLoading(false);
     }

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axiosInstance";
 import ReactionButton from "./Reactions";
 import PostActions from "./PostActions";
+import { showAlert, handleError } from "../utils/alertUtils";
 
 const Post = forwardRef(({ post, onDelete }, ref) => {
   const [comment, setComment] = useState("");
@@ -24,6 +25,7 @@ const Post = forwardRef(({ post, onDelete }, ref) => {
         setCurrentUserId(Number(res.data.user.id));
       } catch (err) {
         console.error("Error fetching current user:", err);
+        handleError(err);
       }
     };
     fetchUser();
@@ -42,6 +44,7 @@ const Post = forwardRef(({ post, onDelete }, ref) => {
       setLikes(Object.values(res.data.counts || {}).reduce((a, b) => a + b, 0));
     } catch (error) {
       console.error("error fetching reactions", error);
+      handleError(error);
     }
   };
 
@@ -57,7 +60,7 @@ const Post = forwardRef(({ post, onDelete }, ref) => {
       fetchReactions();
     } catch (error) {
       console.error("error reacting", error);
-      alert("you must be logged in to react");
+      showAlert("you must be logged in to react");
     }
   };
 
@@ -73,7 +76,7 @@ const Post = forwardRef(({ post, onDelete }, ref) => {
       setLikedByUser(!likedByUser);
     } catch (error) {
       console.error("like error", error);
-      alert("you must be logged in to like");
+      showAlert("you must be logged in to like");
     }
   };
 
@@ -83,6 +86,7 @@ const Post = forwardRef(({ post, onDelete }, ref) => {
       setComments(res.data);
     } catch (error) {
       console.error("error fetching comments", error);
+      handleError(error);
     }
   };
 
@@ -95,7 +99,7 @@ const Post = forwardRef(({ post, onDelete }, ref) => {
       fetchComments();
     } catch (error) {
       console.error("error adding a comment", error);
-      alert("you must be logged in to comment");
+      showAlert("you must be logged in to comment");
     }
   };
 

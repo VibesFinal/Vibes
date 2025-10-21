@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import NewPost from "./newPost";
 import InfinitePostList from "../components/InfinitePostList";
+import { showAlert, handleError } from '../utils/alertUtils';
 
 export default function Feed() {
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -16,6 +17,7 @@ export default function Feed() {
           setCurrentUser(JSON.parse(storedUser));
         } catch {
           console.error("Failed to parse user from localStorage");
+          handleError("Failed to load user data. Please log in again.");
         }
       }
     }

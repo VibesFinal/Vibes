@@ -5,6 +5,7 @@ import ChatHeader from '../components/chat/ChatHeader';
 import ChatInput from '../components/chat/ChatInput';
 import MessageList from '../components/chat/MessageList';
 import TypingIndicator from '../components/chat/TypingIndicator';
+import { showAlert, handleError } from '../utils/alertUtils';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:7777';
 const SOCKET_SERVER_URL = API_URL;
@@ -25,7 +26,7 @@ const CommunityChat = () => {
   const [editingMessageId, setEditingMessageId] = useState(null);
   const [editContent, setEditContent] = useState('');
 
-  // ✅ Load user from localStorage (runs ONCE on mount)
+  // Load user from localStorage (runs ONCE on mount)
   useEffect(() => {
     const loadUser = () => {
       const stored = localStorage.getItem('user');
@@ -35,6 +36,7 @@ const CommunityChat = () => {
           setCurrentUser(user);
         } catch (e) {
           setCurrentUser({ id: 1, username: 'Guest' });
+          handleError(e);
         }
       } else {
         setCurrentUser({ id: 1, username: 'Guest' });
@@ -44,15 +46,15 @@ const CommunityChat = () => {
     loadUser();
   }, []);
 
-  // 💬 Initialize socket ONLY when user is loaded and valid
+  // Initialize socket ONLY when user is loaded and valid
   useEffect(() => {
-    // ✅ Wait until user is fully loaded
+    // Wait until user is fully loaded
     if (!userLoaded) {
       console.log("⏳ Waiting for user to load...");
       return;
     }
 
-    // ✅ Skip if still Guest
+    // Skip if still Guest
     if (!currentUser.id || currentUser.username === 'Guest') {
       console.log("⚠️ User not ready (Guest), skipping socket connection");
       return;
@@ -60,18 +62,18 @@ const CommunityChat = () => {
 
     console.log(`🔌 Initializing socket for user: ${currentUser.username} (ID: ${currentUser.id})`);
 
-     // ✅ Connect to /community namespace
-  const newSocket = io(`${SOCKET_SERVER_URL}/community`, {
-    transports: ['websocket', 'polling'],
-    reconnection: true,
-    reconnectionAttempts: 5,
-  });
+    // Connect to /community namespace
+    const newSocket = io(`${SOCKET_SERVER_URL}/community`, {
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionAttempts: 5,
+    });
 
     setSocket(newSocket);
     newSocket.emit('joinCommunity', id);
     console.log(`✅ ${currentUser.username} joined room ${id}`);
 
-    // 📥 Socket listeners
+    // Socket listeners
     newSocket.on('userTyping', ({ username, isTyping }) => {
       setTypingUsers(prev => {
         const next = new Set(prev);
@@ -113,7 +115,7 @@ const CommunityChat = () => {
 
     newSocket.on('errorMessage', (msg) => alert(msg));
 
-    // 🧯 Cleanup
+    // Cleanup
     return () => {
       if (newSocket) {
         newSocket.emit('leaveCommunity', id);
@@ -123,7 +125,7 @@ const CommunityChat = () => {
     };
   }, [id, currentUser, userLoaded]); // ✅ Depend on userLoaded
 
-  // 📥 Fetch message history
+  // Fetch message history
   useEffect(() => {
     if (!id) return;
     const fetchMessages = async () => {
@@ -144,13 +146,14 @@ const CommunityChat = () => {
         );
       } catch (err) {
         console.error('Failed to load message history:', err);
+        handleError(err);
       }
     };
 
     fetchMessages();
   }, [id]);
 
-  // 📤 Send message
+  // Send message
   const handleSendMessage = (e) => {
     e.preventDefault();
     if (!message.trim() || !socket) {
@@ -183,7 +186,7 @@ const CommunityChat = () => {
     setMessage('');
   };
 
-  // 🖊️ Handle typing
+  // Handle typing
   const handleTyping = (value) => {
     if (!socket || !currentUser.username) return;
 
@@ -208,7 +211,7 @@ const CommunityChat = () => {
     }
   };
 
-  // ✏️ Edit
+  // Edit
   const handleEditMessage = (msg) => {
     if (msg.userId !== currentUser.id || msg.is_deleted) return;
     setEditingMessageId(msg.id);
@@ -240,7 +243,7 @@ const CommunityChat = () => {
     setEditContent('');
   };
 
-  // 🗑️ Delete
+  // Delete
   const handleDeleteMessage = (messageId) => {
     if (!window.confirm("Are you sure?")) return;
 
@@ -254,7 +257,7 @@ const CommunityChat = () => {
     });
   };
 
-  // ✅ Apply safe modern styling (non-breaking)
+  // Apply safe modern styling (non-breaking)
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-pink-50 py-8 px-4 relative">
       <div className="max-w-4xl mx-auto relative z-10">

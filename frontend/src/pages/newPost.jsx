@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import axiosInstance from "../api/axiosInstance";
+import { showAlert, handleError } from '../utils/alertUtils';
 
 const categories = ["Mindfulness", "Self Care", "Anxiety", "Depression", "Positive Vibes"];
 
@@ -46,9 +47,10 @@ export default function NewPost({ onPostCreated }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!content.trim() || !categoryInput.trim())
-      return alert("Post and category cannot be empty");
+      return showAlert("Post and category cannot be empty");
 
     setIsPosting(true);
+
     try {
       const formData = new FormData();
       formData.append("content", content);
@@ -68,30 +70,26 @@ export default function NewPost({ onPostCreated }) {
       setPhoto(null);
       setVideo(null);
       onPostCreated && onPostCreated(res.data);
+
     } catch (err) {
       console.error("Error creating post:", err);
-      alert("You must be logged in to create a post");
+      showAlert("You must be logged in to create a post");
+      handleError(err);
     } finally {
       setIsPosting(false);
     }
   };
 
   useEffect(() => {
-
     const fetchUser = async () => {
 
-      try {
-        
+      try {        
         const res = await axiosInstance.get("/user/profile");
         setUser(res.data.user);
-
       } catch (error) {
-
         console.error("error fetching user" , error);
-        
-        
+        handleError(error);       
       }
-
     }
 
     fetchUser();
@@ -103,21 +101,21 @@ export default function NewPost({ onPostCreated }) {
       {/* Main Content Area */}
       <div className="flex gap-4">
         {/* User Avatar */}
-<div className="flex-shrink-0">
-  {user?.profile_pic ? (
-    <img
-      src={user.profile_pic}
-      alt={user.username || "Profile"}
-      className="w-12 h-12 rounded-full object-cover shadow-md"
-    />
-  ) : (
-    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 to-purple-400 flex items-center justify-center shadow-md">
-      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-      </svg>
-    </div>
-  )}
-</div>
+        <div className="flex-shrink-0">
+          {user?.profile_pic ? (
+            <img
+              src={user.profile_pic}
+              alt={user.username || "Profile"}
+              className="w-12 h-12 rounded-full object-cover shadow-md"
+            />
+          ) : (
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 to-purple-400 flex items-center justify-center shadow-md">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+              </svg>
+            </div>
+          )}
+        </div>
 
 
         {/* Input Area */}

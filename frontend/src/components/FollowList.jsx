@@ -1,6 +1,7 @@
 // src/components/FollowList.jsx
 import { useEffect, useState } from "react";
 import axiosInstance from "../api/axiosInstance";
+import { handleError } from "../utils/alertUtils";
 
 export default function FollowList({ userId, currentUserId }) {
   const [followers, setFollowers] = useState([]);
@@ -21,6 +22,7 @@ export default function FollowList({ userId, currentUserId }) {
       setFollowing(followingRes.data);
     } catch (err) {
       console.error("Failed to fetch follow data", err);
+      handleError(err);
     }
   };
 
@@ -35,6 +37,7 @@ export default function FollowList({ userId, currentUserId }) {
       setFollowers(prev => [...prev, { id: currentUserId }]); // Add current user
     } catch (err) {
       console.error("Failed to follow", err);
+      handleError(err);
     }
   };
 
@@ -45,6 +48,7 @@ export default function FollowList({ userId, currentUserId }) {
       setFollowers(prev => prev.filter(f => f.id !== currentUserId));
     } catch (err) {
       console.error("Failed to unfollow", err);
+      handleError(err);
     }
   };
 

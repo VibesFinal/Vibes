@@ -1,16 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import logo from "./images/v_logo.png";
-import {
-  UserCircle,
-  House,
-  UsersThree,
-  ChatCircle,
-  CaretDown,
-  MagnifyingGlass,
-  X,
-  List,
-} from "phosphor-react";
+import { UserCircle, House, UsersThree, ChatCircle, CaretDown, MagnifyingGlass, X, List, } from "phosphor-react";
 import NotificationBell from "./NotificationBell";
 
 export default function Navigation({ onLogout }) {

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axiosInstance from "../api/axiosInstance";
+import { showAlert, handleError } from "../utils/alertUtils";
 
 export default function ProfileUpload({ userId, onUpload }) {
   const [file, setFile] = useState(null);
@@ -15,7 +16,7 @@ export default function ProfileUpload({ userId, onUpload }) {
   }, [preview]);
 
   const handleUpload = async () => {
-    if (!file) return alert("Please choose an image first");
+    if (!file) return showAlert("Please choose an image first");
 
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -33,7 +34,7 @@ export default function ProfileUpload({ userId, onUpload }) {
           fileData: fileData,
         });
 
-        alert("Profile picture uploaded successfully!");
+        showAlert("Profile picture uploaded successfully!");
 
         if (onUpload) onUpload(res.data.profile_pic);
         
@@ -43,12 +44,13 @@ export default function ProfileUpload({ userId, onUpload }) {
         setPreview(null);
       } catch (error) {
         console.error("Upload failed", error);
-        alert("Failed to upload image");
+        showAlert("Failed to upload image");
+        handleError(error);
       }
     };
 
     reader.onerror = () => {
-      alert("Failed to read file");
+      showAlert("Failed to read file");
     };
   };
 

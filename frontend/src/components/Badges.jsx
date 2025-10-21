@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import { handleError } from "../utils/alertUtils";
 
 function Badges({ userId }) {
   const [badges, setBadges] = useState([]);
@@ -16,6 +17,7 @@ function Badges({ userId }) {
         setBadges(res.data);
       } catch (err) {
         console.error(err);
+        handleError(err.response?.data?.message || "Failed to load badges. Please try again later.");
       } finally {
         setLoading(false);
       }

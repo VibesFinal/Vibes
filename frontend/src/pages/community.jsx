@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
+import { showAlert, handleError } from '../utils/alertUtils';
 
 const Community = () => {
   const [communities, setCommunities] = useState([]);
@@ -37,7 +38,8 @@ const Community = () => {
       } catch (err) {
         if (err.name !== 'CanceledError') {
           console.error("Failed to fetch communities:", err);
-          alert("Failed to load communities. Please refresh.");
+          handleError(err);  
+          showAlert("Failed to load communities. Please refresh.");
         }
       } finally {
         if (!controller.signal.aborted) {
@@ -77,10 +79,11 @@ const Community = () => {
         )
       );
 
-      alert(`You left the community.`);
+      showAlert(`You left the community.`);
     } catch (err) {
       console.error("Failed to leave community:", err);
-      alert("Failed to leave. Please try again.");
+      showAlert("Failed to leave. Please try again.");
+      handleError(err);
     }
   };
 
@@ -95,11 +98,12 @@ const Community = () => {
         )
       );
 
-      alert(`You joined the community.`);
+      showAlert(`You joined the community.`);
       navigate(`/communities/${id}/chat`);
     } catch (err) {
       console.error("Failed to update join status:", err);
-      alert("Failed to update community status. Please try again.");
+      showAlert("Failed to update community status. Please try again.");
+      handleError(err);
     }
   };
 
