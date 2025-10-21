@@ -4,6 +4,7 @@ const path = require('path');
 require('dotenv').config();
 const cors = require("cors");
 const pg = require("pg");
+const errorHandler = require("./middleware/errorHandler");
 
 // App & server setup
 const app = express();
@@ -55,6 +56,7 @@ app.use(cors(corsOptions));
 // --------------------------
 // ROUTES
 // --------------------------
+app.use(errorHandler);
 
 const auth = require("./Routes/auth");
 app.use("/user", auth);

@@ -5,7 +5,10 @@ const routeGuard = require('../middleware/verifyToken');
 
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 
-// ✅ Helper to send notification
+// Error messages
+const { ERROR_MESSAGES } = require("../utils/errorMessages.js");
+
+// Helper to send notification
 async function sendNotification({ userId, message, type, referenceId, io }) {
   try {
     // Save to DB
@@ -27,8 +30,21 @@ async function sendNotification({ userId, message, type, referenceId, io }) {
     } else {
       console.warn('⚠️ io.emitNotification is not available!');
     }
+    return {
+      success: true,
+      message: ERROR_MESSAGES.NOTIFICATION.NOTIFICATION_SUCCESS,
+      type: "success",
+      data: notif.rows[0],
+    };
+
   } catch (err) {
     console.error('❌ Notification failed:', err);
+    return {
+      success: false,
+      message: ERROR_MESSAGES.NOTIFICATION.NOTIFICATION_FAILED,
+      type: "error",
+      details: err.message,
+    };
   }
 }
 
@@ -47,24 +63,38 @@ router.post("/like/:postId", routeGuard, async (req, res) => {
       [userId, postId, reaction_type || 'like']
     );
 
-    // 2. ✅ GET POST OWNER
+    // 2. GET POST OWNER
     const postResult = await pool.query(
       'SELECT user_id FROM posts WHERE id = $1',
       [postId]
     );
 
+    // if (postResult.rows.length === 0) {
+    //   return res.status(404).json({ error: 'Post not found' });
+    // }
     if (postResult.rows.length === 0) {
-      return res.status(404).json({ error: 'Post not found' });
+      return res.status(404).json({
+        success: false,
+        message: ERROR_MESSAGES.POST.NOT_FOUND,
+        type: "error",
+      });
     }
 
     const ownerId = postResult.rows[0].user_id;
 
-    // 3. ✅ DON'T NOTIFY YOURSELF
+    // 3. DON'T NOTIFY YOURSELF
+    // if (ownerId === userId) {
+    //   return res.status(200).json({ message: "Reaction added" });
+    // }
     if (ownerId === userId) {
-      return res.status(200).json({ message: "Reaction added" });
+      return res.status(200).json({
+        success: true,
+        message: "Reaction added",
+        type: "success",
+      });
     }
 
-    // 4. ✅ SEND NOTIFICATION
+    // 4. SEND NOTIFICATION
     const likerResult = await pool.query(
       'SELECT username FROM users WHERE id = $1',
       [userId]
@@ -95,7 +125,12 @@ router.post("/like/:postId", routeGuard, async (req, res) => {
     res.status(200).json({ message: "Reaction added" });
   } catch (error) {
     console.error(error);
-    res.status(500).send("server error");
+    // res.status(500).send("server error");
+    res.status(500).json({
+      success: false,
+      message: ERROR_MESSAGES.SYSTEM.SERVER_ERROR,
+      type: "error",
+    });
   }
 });
 
@@ -109,10 +144,21 @@ router.delete("/like/:postId", routeGuard, async (req, res) => {
       "DELETE FROM likes WHERE user_id = $1 AND post_id = $2",
       [userId, postId]
     );
-    res.status(200).json({ message: "Post unliked" });
+    // res.status(200).json({ message: "Post unliked" });
+    res.status(200).json({
+      success: true,
+      message: ERROR_MESSAGES.REACTION.NOT_LIKED,
+      type: "success",
+    });
+
   } catch (error) {
     console.error(error);
-    res.status(500).send("server error");
+    // res.status(500).send("server error");
+    res.status(500).json({
+      success: false,
+      message: ERROR_MESSAGES.SYSTEM.SERVER_ERROR,
+      type: "error",
+    });
   }
 });
 
@@ -127,7 +173,12 @@ router.get("/like/count/:postId", routeGuard, async (req, res) => {
     res.status(200).json({ count: parseInt(result.rows[0].count) });
   } catch (error) {
     console.error(error);
-    res.status(500).send("server error");
+    // res.status(500).send("server error");
+    res.status(500).json({
+      success: false,
+      message: ERROR_MESSAGES.SYSTEM.SERVER_ERROR,
+      type: "error",
+    });
   }
 });
 
@@ -162,7 +213,12 @@ router.get("/like/:postId", routeGuard, async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).send("Server error");
+    // res.status(500).send("Server error");
+    res.status(500).json({
+      success: false,
+      message: ERROR_MESSAGES.SYSTEM.SERVER_ERROR,
+      type: "error",
+    });
   }
 });
 

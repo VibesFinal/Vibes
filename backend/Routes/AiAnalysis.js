@@ -1,17 +1,12 @@
 const express = require('express');
-
 const router = express.Router();
-
 const pg = require('pg');
 
 const routeGuard = require('../middleware/verifyToken');
 
-
 const pool = new pg.Pool( { connectionString: process.env.DATABASE_URL } );
 
-
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-
 
 //initialize a gemini
 const genAi = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);

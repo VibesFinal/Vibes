@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axiosInstance";
 import logo from "../components/images/v_logo.png";
+import { handleError } from "../utils/alertUtils";
 
 export default function ResetPassword() {
   const { token } = useParams(); // Get token from URL
@@ -19,8 +20,12 @@ export default function ResetPassword() {
     setError("");
 
     //Check if passwords match
+    // if (password !== confirmPassword) {
+    //   setError("Passwords do not match");
+    //   return;
+    // }
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      handleError({ message: "Passwords do not match" });
       return;
     }
 
@@ -36,7 +41,10 @@ export default function ResetPassword() {
       setTimeout(() => navigate("/login"), 3000);
     } catch (err) {
       console.error("Reset error:", err.response?.data || err.message);
-      setError(err.response?.data?.error || "Something went wrong");
+      // setError(err.response?.data?.error || "Something went wrong");
+      const message = err.response?.data?.message || err.response?.data?.error || "Something went wrong";
+      handleError({ message }); 
+
     } finally {
       setIsLoading(false);
     }

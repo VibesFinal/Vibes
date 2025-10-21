@@ -7,6 +7,9 @@ require('dotenv').config();
 // DB
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 console.log("🌐 Connecting",process.env.DATABASE_URL);
+
+// Error messages
+const { ERROR_MESSAGES } = require("../utils/errorMessages.js");
  
 // Welcome generator
 const { generateWelcomeMessage } = require('./welcome');
@@ -15,10 +18,16 @@ const { generateWelcomeMessage } = require('./welcome');
 router.get('/:token', async (req, res) => {
   const { token } = req.params;
  
+  // if (!token) {
+  //   return res.status(400).json({ error: "❌ Token missing" });
+  // }
   if (!token) {
-    return res.status(400).json({ error: "❌ Token missing" });
-  }
- 
+    return res.status(400).json({
+      success: false,
+      message: ERROR_MESSAGES.AUTH.TOKEN_MISSING,
+      type: "error",
+    });
+  } 
   console.log(`[VERIFY] 🔍 Incoming verification for token: ${token.substring(0, 20)}...`);
  
   try {
@@ -27,11 +36,18 @@ router.get('/:token', async (req, res) => {
     console.log("✅ Decoded token:", decoded);
  
     // Ensure it's an email verification token
+    // if (decoded.type !== "verify") {
+    //   console.log("❌ Invalid token type:", decoded.type);
+    //   return res.status(400).json({ error: "Invalid token type" });
+    // }
     if (decoded.type !== "verify") {
       console.log("❌ Invalid token type:", decoded.type);
-      return res.status(400).json({ error: "Invalid token type" });
-    }
- 
+      return res.status(400).json({
+        success: false,
+        message: ERROR_MESSAGES.AUTH.INVALID_TOKEN,
+        type: "error",
+      });
+    }    
     console.log("🔑 User ID from token:", decoded.id);
  
     // Fetch user from DB (whether verified or not)
@@ -40,11 +56,18 @@ router.get('/:token', async (req, res) => {
       [decoded.id]
     );
  
+    // if (userResult.rows.length === 0) {
+    //   console.log("❌ No user found with ID:", decoded.id);
+    //   return res.status(400).json({ error: "User not found" });
+    // }
     if (userResult.rows.length === 0) {
       console.log("❌ No user found with ID:", decoded.id);
-      return res.status(400).json({ error: "User not found" });
-    }
- 
+      return res.status(404).json({
+        success: false,
+        message: ERROR_MESSAGES.USER.NOT_FOUND,
+        type: "error",
+      });
+    } 
     const user = userResult.rows[0];
     console.log(`👤 Found user: ${user.username} (verified: ${user.verified})`);
  
@@ -58,6 +81,12 @@ router.get('/:token', async (req, res) => {
  
       if (updateResult.rowCount === 0) {
         console.warn("⚠️ Update returned 0 rows — possible race condition or DB issue.");
+        return res.status(500).json({
+          success: false,
+          message: ERROR_MESSAGES.SYSTEM.SERVER_ERROR,
+          type: "error",
+        });
+
         // But we continue — user exists and we’ll log them in anyway
       } else {
         console.log("✅ User successfully verified:", updateResult.rows[0]);
@@ -66,7 +95,7 @@ router.get('/:token', async (req, res) => {
       console.log("ℹ️ User was already verified.");
     }
  
-    // ✅ ALWAYS generate a session token and log user in
+    // ALWAYS generate a session token and log user in
     const sessionToken = jwt.sign(
       { id: user.id, username: user.username },
       process.env.JWT_SECRET,
@@ -93,13 +122,25 @@ router.get('/:token', async (req, res) => {
     });
  
   } catch (error) {
-    console.error("❌ Verification error:", error.message);
- 
+    console.error("❌ Verification error:", error.message); 
+    // if (error.name === "TokenExpiredError") {
+    //   return res.status(400).json({ error: "Verification token expired. Please register again or request a new link." });
+    // } 
+    // return res.status(400).json({ error: "Invalid or malformed token" });
+
     if (error.name === "TokenExpiredError") {
-      return res.status(400).json({ error: "Verification token expired. Please register again or request a new link." });
+      return res.status(400).json({
+        success: false,
+        message: "Verification token expired. Please register again or request a new link.",
+        type: "error",
+      });
     }
- 
-    return res.status(400).json({ error: "Invalid or malformed token" });
+
+    return res.status(400).json({
+      success: false,
+      message: "Invalid or malformed token",
+      type: "error",
+    });
   }
 });
  

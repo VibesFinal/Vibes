@@ -1,10 +1,11 @@
-// welcome.js — Uses Gemini AI to generate a fresh welcome message per login
-
 require('dotenv').config();
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+// Error messages
+const { ERROR_MESSAGES } = require("../utils/errorMessages.js");
 
 /**
  * Generates a personalized welcome message using Gemini AI
@@ -15,7 +16,7 @@ async function generateWelcomeMessage(username = "Valued User") {
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-    // ✅ IMPROVED PROMPT — Forces ONE clean message
+    // IMPROVED PROMPT — Forces ONE clean message
     const prompt = `
       You are Gemini, a warm, friendly, and intelligent AI assistant.
       Generate ONE personalized welcome message for a user named "${username}" who just logged in.

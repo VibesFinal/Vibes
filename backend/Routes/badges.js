@@ -5,6 +5,9 @@ const pg = require('pg');
 
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 
+// Error messages
+const { ERROR_MESSAGES } = require("../utils/errorMessages.js");
+
 /**
  * GET /badges/:userId
  * Fetch all badges awarded to a specific user.
@@ -22,7 +25,12 @@ router.get('/:userId', async (req, res) => {
     res.json(result.rows);
   } catch (err) {
     console.error("Error fetching badges:", err);
-    res.status(500).json({ error: 'Server error' });
+    // res.status(500).json({ error: 'Server error' });
+    res.status(500).json({
+      success: false,
+      message: ERROR_MESSAGES.SYSTEM.SERVER_ERROR,
+      type: "error",
+    });
   }
 });
 
@@ -36,7 +44,7 @@ router.get('/:userId', async (req, res) => {
  */
 router.post('/award/all', async (req, res) => {
   try {
-    // 🏅 Supportive Soul
+    // Supportive Soul
     const ssResult = await pool.query(`
       INSERT INTO user_badges (user_id, badge_id)
       SELECT user_id, (SELECT id FROM badge_types WHERE name='Supportive Soul')
@@ -47,7 +55,7 @@ router.post('/award/all', async (req, res) => {
       RETURNING *;
     `);
 
-    // 🏅 Story Teller
+    // Story Teller
     const stResult = await pool.query(`
       INSERT INTO user_badges (user_id, badge_id)
       SELECT user_id, (SELECT id FROM badge_types WHERE name='Story Teller')
@@ -58,7 +66,7 @@ router.post('/award/all', async (req, res) => {
       RETURNING *;
     `);
 
-    // 🏅 Cheerleader
+    // Cheerleader
     const chResult = await pool.query(`
       INSERT INTO user_badges (user_id, badge_id)
       SELECT l.user_id, (SELECT id FROM badge_types WHERE name='Cheerleader')
@@ -69,7 +77,7 @@ router.post('/award/all', async (req, res) => {
       RETURNING *;
     `);
 
-    // 🏅 Popular
+    // Popular
     const popResult = await pool.query(`
       INSERT INTO user_badges (user_id, badge_id)
       SELECT p.user_id, (SELECT id FROM badge_types WHERE name='Popular')
@@ -81,16 +89,33 @@ router.post('/award/all', async (req, res) => {
       RETURNING *;
     `);
 
+    // res.json({
+    //   message: 'Badges awarded successfully',
+    //   supportSoulAdded: ssResult.rowCount,
+    //   storyTellerAdded: stResult.rowCount,
+    //   cheerleaderAdded: chResult.rowCount,
+    //   popularAdded: popResult.rowCount
+    // });
     res.json({
-      message: 'Badges awarded successfully',
-      supportSoulAdded: ssResult.rowCount,
-      storyTellerAdded: stResult.rowCount,
-      cheerleaderAdded: chResult.rowCount,
-      popularAdded: popResult.rowCount
+      success: true,
+      message: "Badges awarded successfully.",
+      type: "success",
+      data: {
+        supportSoulAdded: ssResult.rowCount,
+        storyTellerAdded: stResult.rowCount,
+        cheerleaderAdded: chResult.rowCount,
+        popularAdded: popResult.rowCount,
+      },
     });
+
   } catch (err) {
     console.error("Error awarding badges:", err);
-    res.status(500).json({ error: 'Server error' });
+    // res.status(500).json({ error: 'Server error' });
+    res.status(500).json({
+      success: false,
+      message: ERROR_MESSAGES.SYSTEM.SERVER_ERROR,
+      type: "error",
+    });
   }
 });
 

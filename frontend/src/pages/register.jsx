@@ -3,6 +3,7 @@ import axiosInstance from "../api/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import logo from "../components/images/v_logo.png";
 import TherapistCertificationUpload from "../components/TherapistCertificationUpload";
+import { showAlert, handleError } from "../utils/alertUtils";
 
 export default function Register({ onRegister }) {
   const [username, setUsername] = useState("");
@@ -13,31 +14,19 @@ export default function Register({ onRegister }) {
   const [isTherapist , setIsTherapist] = useState(false);
   const [certification , setCertification] = useState(null);
 
-
   const navigate = useNavigate();
 
-
   const handleTherapistChange = (checked, file) => {
-
     setIsTherapist(checked);
     setCertification(file);
-
   };
 
   const handleSubmit = async (e) => {
-
     e.preventDefault();
 
     try {
-
       //register a normal user
-      await axiosInstance.post("/user/register", {
-
-        username,
-        email,
-        password,
-
-      });
+      await axiosInstance.post("/user/register", {username, email, password,});
 
       //if a therapist , upload a file
       if(isTherapist && certification){
@@ -49,23 +38,27 @@ export default function Register({ onRegister }) {
           await axiosInstance.post("/api/therapist/upload-registration", formData, {
 
           headers: { "Content-Type": "multipart/form-data" },
-
         });
-
       }
 
-      alert(
-
+      // alert(
+      //   isTherapist
+      //     ? "Registration successful! Await admin approval for therapist role"
+      //     : "Registration successful! Happy login Viber"
+      // );
+      showAlert(
         isTherapist
           ? "Registration successful! Await admin approval for therapist role"
-          : "Registration successful! Happy login Viber"
-
+          : "Registration successful! Happy login Viber",
+        "success" // type: success
       );
+
       onRegister?.();
       navigate("/login");
     } catch (error) {
       console.error("Registration failed", error);
-      alert(error.response?.data || "Error registering user");
+      // alert(error.response?.data || "Error registering user");
+      handleError(error);
     }
   };
 
