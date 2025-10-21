@@ -33,7 +33,14 @@ const Community = () => {
         });
 
         if (!controller.signal.aborted) {
-          setCommunities(response.data);
+          const sortedCommunities = (response.data.communities || []).sort((a, b) => {
+            // Sort by: joined first, then by member count descending
+            if (a.is_joined !== b.is_joined) {
+              return b.is_joined - a.is_joined;
+            }
+            return b.member_count - a.member_count;
+          });
+          setCommunities(sortedCommunities);
         }
       } catch (err) {
         if (err.name !== 'CanceledError') {
@@ -71,13 +78,23 @@ const Community = () => {
 
     try {
       const response = await axiosInstance.patch(`/communities/${id}/join`);
-      const updatedCommunity = response.data;
+      const updatedCommunity = response.data.data; // ← Access nested data
 
-      setCommunities(prev =>
-        prev.map(comm =>
-          comm.id === updatedCommunity.id ? { ...updatedCommunity, is_joined: false } : comm
-        )
-      );
+      setCommunities(prev => {
+        const updated = prev.map(comm =>
+          comm.id === updatedCommunity.id 
+            ? { ...comm, is_joined: updatedCommunity.is_joined, member_count: updatedCommunity.member_count }
+            : comm
+        );
+        
+        // Re-sort after leaving: joined first, then by member count
+        return updated.sort((a, b) => {
+          if (a.is_joined !== b.is_joined) {
+            return b.is_joined - a.is_joined;
+          }
+          return b.member_count - a.member_count;
+        });
+      });
 
       showAlert(`You left the community.`);
     } catch (err) {
@@ -90,13 +107,23 @@ const Community = () => {
   const handleJoinCommunity = async (id) => {
     try {
       const response = await axiosInstance.patch(`/communities/${id}/join`);
-      const updatedCommunity = response.data;
+      const updatedCommunity = response.data.data; // ← Access nested data
 
-      setCommunities(prev =>
-        prev.map(comm =>
-          comm.id === updatedCommunity.id ? updatedCommunity : comm
-        )
-      );
+      setCommunities(prev => {
+        const updated = prev.map(comm =>
+          comm.id === updatedCommunity.id 
+            ? { ...comm, is_joined: updatedCommunity.is_joined, member_count: updatedCommunity.member_count }
+            : comm
+        );
+        
+        // Re-sort after joining: joined first, then by member count
+        return updated.sort((a, b) => {
+          if (a.is_joined !== b.is_joined) {
+            return b.is_joined - a.is_joined;
+          }
+          return b.member_count - a.member_count;
+        });
+      });
 
       showAlert(`You joined the community.`);
       navigate(`/communities/${id}/chat`);
@@ -218,9 +245,7 @@ const Community = () => {
                   </p>
 
                   <div className="flex justify-between items-start mb-5 flex-wrap gap-2">
-                    <span className="text-xs text-[#C05299] flex items-center bg-[#fdf2f8] px-3 py-1.5 rounded-full border border-[#e9d5ff]">
-                      👥 {comm.member_count.toLocaleString()}
-                    </span>
+
                     <div className="flex flex-wrap gap-1.5">
                       {comm.tags.map((tag) => (
                         <span
