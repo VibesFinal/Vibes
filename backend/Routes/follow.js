@@ -6,7 +6,10 @@ const routeGuard = require('../middleware/verifyToken');
 
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 
-// ✅ Helper to send notification (same as in likes.js)
+// Error messages
+const { ERROR_MESSAGES } = require("../utils/errorMessages.js");
+
+// Helper to send notification (same as in likes.js)
 async function sendNotification({ userId, message, type, referenceId, io }) {
   try {
     const notif = await pool.query(
@@ -23,17 +26,31 @@ async function sendNotification({ userId, message, type, referenceId, io }) {
   }
 }
 
-// 🟢 Follow a user
+// Follow a user
 router.post("/:userId", routeGuard, async (req, res) => {
   const followerId = req.user.id;
   const followingId = parseInt(req.params.userId);
 
+  // if (isNaN(followingId)) {
+  //   return res.status(400).json({ message: "Invalid user ID" });
+  // }
   if (isNaN(followingId)) {
-    return res.status(400).json({ message: "Invalid user ID" });
+    return res.status(400).json({
+      success: false,
+      message: ERROR_MESSAGES.USER.INVALID_ID,
+      type: "error",
+    });
   }
 
+  // if (followerId === followingId) {
+  //   return res.status(400).json({ message: "You can't follow yourself" });
+  // }
   if (followerId === followingId) {
-    return res.status(400).json({ message: "You can't follow yourself" });
+    return res.status(400).json({
+      success: false,
+      message: ERROR_MESSAGES.USER.CANNOT_FRIEND_SELF,
+      type: "error",
+    });
   }
 
   try {
@@ -44,11 +61,18 @@ router.post("/:userId", routeGuard, async (req, res) => {
     );
 
     // If no row returned, it means the follow already existed → no notification
+    // if (result.rows.length === 0) {
+    //   return res.json({ message: "Already following" });
+    // }
     if (result.rows.length === 0) {
-      return res.json({ message: "Already following" });
+      return res.json({
+        success: true,
+        message: ERROR_MESSAGES.FOLLOW.ALREADY_FOLLOWING,
+        type: "info",
+      });
     }
 
-    // 2. ✅ SEND NOTIFICATION TO FOLLOWED USER
+    // 2. SEND NOTIFICATION TO FOLLOWED USER
     const follower = await pool.query(
       'SELECT username FROM users WHERE id = $1',
       [followerId]
@@ -64,14 +88,25 @@ router.post("/:userId", routeGuard, async (req, res) => {
       io: req.io
     });
 
-    res.json({ message: "Followed successfully" });
+    // res.json({ message: "Followed successfully" });
+    res.json({
+      success: true,
+      message: ERROR_MESSAGES.FOLLOW.FOLLOW_SUCCESS,
+      type: "success",
+    });
+
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Server error" });
+    // res.status(500).json({ message: "Server error" });
+    res.status(500).json({
+      success: false,
+      message: ERROR_MESSAGES.SYSTEM.SERVER_ERROR,
+      type: "error",
+    });
   }
 });
 
-// 🔴 Unfollow (no notification needed)
+// Unfollow (no notification needed)
 router.delete("/:userId", routeGuard, async (req, res) => {
   const followerId = req.user.id;
   const followingId = parseInt(req.params.userId);
@@ -81,14 +116,25 @@ router.delete("/:userId", routeGuard, async (req, res) => {
       "DELETE FROM follows WHERE follower_id = $1 AND following_id = $2",
       [followerId, followingId]
     );
-    res.json({ message: "Unfollowed successfully" });
+    // res.json({ message: "Unfollowed successfully" });
+    res.json({
+      success: true,
+      message: ERROR_MESSAGES.FOLLOW.UNFOLLOW_SUCCESS,
+      type: "success",
+    });
+
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Server error" });
+    // res.status(500).json({ message: "Server error" });
+    res.status(500).json({
+      success: false,
+      message: ERROR_MESSAGES.SYSTEM.SERVER_ERROR,
+      type: "error",
+    });
   }
 });
 
-// 👥 Get followers (no change)
+// Get followers (no change)
 router.get("/:userId/followers", routeGuard, async (req, res) => {
   const userId = parseInt(req.params.userId);
   try {
@@ -102,11 +148,16 @@ router.get("/:userId/followers", routeGuard, async (req, res) => {
     res.json(result.rows);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Server error" });
+    // res.status(500).json({ message: "Server error" });
+    res.status(500).json({
+      success: false,
+      message: ERROR_MESSAGES.SYSTEM.SERVER_ERROR,
+      type: "error",
+    });
   }
 });
 
-// ➡️ Get following (no change)
+// Get following (no change)
 router.get("/:userId/following", routeGuard, async (req, res) => {
   const userId = parseInt(req.params.userId);
   try {
@@ -120,7 +171,12 @@ router.get("/:userId/following", routeGuard, async (req, res) => {
     res.json(result.rows);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Server error" });
+    // res.status(500).json({ message: "Server error" });
+    res.status(500).json({
+      success: false,
+      message: ERROR_MESSAGES.SYSTEM.SERVER_ERROR,
+      type: "error",
+    });
   }
 });
 

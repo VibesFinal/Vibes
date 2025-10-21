@@ -3,6 +3,8 @@ import { useState } from "react";
 import axiosInstance from "../api/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import logo from "../components/images/v_logo.png";
+import { handleError } from "../utils/alertUtils";
+import { errorMapper } from "../utils/errorMapper";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -19,12 +21,18 @@ export default function ForgotPassword() {
 
     try {
       const res = await axiosInstance.post("/user/forgot-password", { email });
+      
       setMessage(res.data.message);
 
       // Redirect to login after 3 seconds
       setTimeout(() => navigate("/login"), 3000);
     } catch (err) {
-      setError(err.response?.data?.error || "Something went wrong");
+      // setError(err.response?.data?.error || "Something went wrong");
+      const originalMessage = err.response?.data?.message || err.response?.data?.error || "Something went wrong";
+      const userMessage = errorMapper[originalMessage] || originalMessage;
+
+      handleError({ response: { data: { message: userMessage, type: "error" } } });
+
     } finally {
       setIsLoading(false);
     }

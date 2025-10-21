@@ -2,6 +2,7 @@ import { useState } from "react";
 import axiosInstance from "../api/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import logo from "../components/images/v_logo.png";
+import { handleError } from "../utils/alertUtils";
 
 export default function Login({ onLogin }) {
   const [username, setUsername] = useState("");
@@ -26,18 +27,23 @@ export default function Login({ onLogin }) {
       const message = res.data.welcomeMessage;
       setWelcomeMessage(message);
       console.log("🎉 Welcome message received:", message);
+      // Show success alert
+      // showAlert("Login successful!", "success");
     } catch (error) {
       console.error("Login failed", error);
 
-      if (error.response) {
-        const errData = error.response.data;
-        const msg = typeof errData === "string" ? errData : errData.message || JSON.stringify(errData);
-        alert("Login Error: " + msg);
-      } else if (error.request) {
-        alert("Network Error: Server not responding");
-      } else {
-        alert("Error: " + error.message);
-      }
+      // if (error.response) {
+      //   const errData = error.response.data;
+      //   const msg = typeof errData === "string" ? errData : errData.message || JSON.stringify(errData);
+      //   handleError("Login Error: " + msg);
+      // } else if (error.request) {
+      //   handleError("Network Error: Server not responding");
+      // } else {
+      //   handleError("Error: " + error.message);
+      // }
+      
+      handleError(error);
+
     } finally {
       setIsLoading(false);
     }
@@ -111,7 +117,7 @@ export default function Login({ onLogin }) {
               <button
                 type="button"
                 onClick={() => navigate("/register")}
-                className="w-full border-2 border-purple-400 text-purple-600 font-semibold py-3 rounded-xl hover:bg-gradient-to-r hover:from-[#9333EA] hover:to-[#C05299] hover:text-white hover:border-transparent transition-all duration-300 shadow-md"
+                className="w-full border-2 border-[#C05299] text-purple-600 font-semibold py-3 rounded-xl hover:bg-gradient-to-r hover:from-[#9333EA] hover:to-[#C05299] hover:text-white hover:border-transparent transition-all duration-300 shadow-md"
               >
                 Create your account
               </button>

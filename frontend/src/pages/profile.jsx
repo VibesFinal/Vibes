@@ -8,6 +8,7 @@ import MentalHealthChart from "../components/MentalHealthChart";
 import { FaRegCommentDots, FaTrash } from "react-icons/fa"; // bubble/chat + trash icon
 import ProfileUpload from "../components/ProfilePicUpload";
 import InfinitePostList from "../components/InfinitePostList";
+import { handleError } from "../utils/alertUtils";
 
 
 export default function Profile() {
@@ -43,12 +44,19 @@ export default function Profile() {
     const fetchUserProfile = async () => {
       try {
         const res = await axiosInstance.get(`/profile/username/${username}`);
+
         setUser(res.data.user);
         setPosts(res.data.posts);
         setError(null);
+
       } catch (error) {
         console.error("❌ Axios Error:", error.response?.data || error.message);
-        setError("Failed to load profile. Please try again later.");
+        // setError("Failed to load profile. Please try again later.");
+        handleError(error);
+
+        // Optionally, set local error state for UI fallback
+        setError(error.response?.data?.message || "Failed to load profile. Please try again later.");
+
       } finally {
         setLoading(false);
       }

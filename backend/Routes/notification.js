@@ -6,48 +6,57 @@ const pg = require('pg');
 
 const routeGuard = require('../middleware/verifyToken');
 
-
 const pool = new pg.Pool( { connectionString: process.env.DATABASE_URL } );
+
+// Error messages
+const { ERROR_MESSAGES } = require("../utils/errorMessages.js");
 
 // GET /api/notifications/unread/:userId
 router.get('/unread/:userId', async(req,res) =>{
+  try{
+    const {userId}= req.params;
+    // Basic validation
+    // if(!userId|| isNaN(userId)){
+    //   res.status(400).json({error: "Invaild userId"})
+    // }
+    if (!userId || isNaN(userId)) {
+      return res.status(400).json({
+        success: false,
+        message: ERROR_MESSAGES.USER.INVALID_ID,
+        type: "error",
+      });
+    }
 
-    try{
-
-        const {userId}= req.params;
-
-         // Basic validation
-        if(!userId|| isNaN(userId)){
-
-          res.status(400).json({error: "Invaild userId"})
-
-        }
-
-        const result = await pool.query (
-
-        'SELECT * FROM notifications WHERE USer_Id = $1 AND is_read = false ORDER BY created_at DESC ',
-
-        [parseInt(userId,10)]
-    );
-    
+    const result = await pool.query (
+      'SELECT * FROM notifications WHERE USer_Id = $1 AND is_read = false ORDER BY created_at DESC ',
+      [parseInt(userId,10)]
+    );    
     res.json(result.rows)
     
   }catch(err){
-
-   console.error('Error fetching notifications:', err)
-
-   res.status(500).json({ error: 'Server error' })
- }
-
+    console.error('Error fetching notifications:', err);
+    // res.status(500).json({ error: 'Server error' })
+    res.status(500).json({
+      success: false,
+      message: ERROR_MESSAGES.SYSTEM.SERVER_ERROR,
+      type: "error",
+    });
+  }
 });  
 
- // PATCH /api/notifications/read/:id
+// PATCH /api/notifications/read/:id
 router.patch('/read/:id', async (req, res) => {
   try {
     const { id } = req.params;
-
+    // if (!id || isNaN(id)) {
+    //   return res.status(400).json({ error: 'Invalid notification ID' });
+    // }
     if (!id || isNaN(id)) {
-      return res.status(400).json({ error: 'Invalid notification ID' });
+      return res.status(400).json({
+        success: false,
+        message: ERROR_MESSAGES.NOTIFICATION.MARK_READ_FAILED,
+        type: "error",
+      });
     }
 
     const result = await pool.query(
@@ -55,14 +64,26 @@ router.patch('/read/:id', async (req, res) => {
       [parseInt(id, 10)]
     );
 
+    // if (result.rowCount === 0) {
+    //   return res.status(404).json({ error: 'Notification not found' });
+    // }
     if (result.rowCount === 0) {
-      return res.status(404).json({ error: 'Notification not found' });
+      return res.status(404).json({
+        success: false,
+        message: ERROR_MESSAGES.NOTIFICATION.NOTIFICATION_FAILED,
+        type: "error",
+      });
     }
 
     res.sendStatus(200);
   } catch (err) {
     console.error('Error marking notification as read:', err);
-    res.status(500).json({ error: 'Server error' });
+    // res.status(500).json({ error: 'Server error' });
+    res.status(500).json({
+      success: false,
+      message: ERROR_MESSAGES.SYSTEM.SERVER_ERROR,
+      type: "error",
+    });
   }
 });
 

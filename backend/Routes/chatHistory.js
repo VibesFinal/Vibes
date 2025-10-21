@@ -6,13 +6,23 @@ const pg = require('pg');
 
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 
-// ✅ Public route (no auth needed to read messages)
+// Error messages
+const { ERROR_MESSAGES } = require("../utils/errorMessages.js");
+
+// Public route (no auth needed to read messages)
 router.get('/communities/:id/messages', async (req, res) => {
   try {
     const { id } = req.params;
     // Ensure id is a number to prevent SQL injection
+    // if (isNaN(id)) {
+    //   return res.status(400).json({ error: 'Invalid community ID' });
+    // }
     if (isNaN(id)) {
-      return res.status(400).json({ error: 'Invalid community ID' });
+      return res.status(400).json({
+        success: false,
+        message: ERROR_MESSAGES.COMMUNITY.JOIN_FAILED,
+        type: "error",
+      });
     }
 
     const result = await pool.query(
@@ -35,7 +45,12 @@ router.get('/communities/:id/messages', async (req, res) => {
     res.json(result.rows);
   } catch (err) {
     console.error('Failed to fetch messages:', err);
-    res.status(500).json({ error: 'Failed to load messages' });
+    // res.status(500).json({ error: 'Failed to load messages' });
+    res.status(500).json({
+      success: false,
+      message: ERROR_MESSAGES.CHAT.MESSAGE_NOT_FOUND,
+      type: "error",
+    });
   }
 });
 

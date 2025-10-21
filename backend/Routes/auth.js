@@ -21,6 +21,9 @@ const routeGuard = require('../middleware/verifyToken');
 // Welcome generator
 const { generateWelcomeMessage } = require('./welcome');
 
+// Error messages
+const { ERROR_MESSAGES } = require("../utils/errorMessages.js");
+
 // Frontend URL
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 
@@ -28,9 +31,17 @@ const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 // -------------------- Register --------------------
 router.post('/register', async (req, res) => {
   const { username, email, password } = req.body;
+  // if (!username || !email || !password) {
+  //   return res.status(400).json({ error: "Username, email, and password are required" });
+  // }
   if (!username || !email || !password) {
-    return res.status(400).json({ error: "Username, email, and password are required" });
+    return res.status(400).json({
+      success: false,
+      message: ERROR_MESSAGES.AUTH.MISSING_FIELDS,
+      type: "error",
+    });
   }
+
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -110,15 +121,37 @@ router.post('/register', async (req, res) => {
 
   } catch (error) {
     console.error("❌ Error during registration:", error.message);
+    // if (error.code === '23505') {
+    //   if (error.constraint?.includes('users_username_key')) {
+    //     return res.status(409).json({ error: "Username already exists" });
+    //   }
+    //   if (error.constraint?.includes('users_email_key')) {
+    //     return res.status(409).json({ error: "Email already exists" });
+    //   }
+    // }
     if (error.code === '23505') {
       if (error.constraint?.includes('users_username_key')) {
-        return res.status(409).json({ error: "Username already exists" });
+        return res.status(409).json({
+          success: false,
+          message: ERROR_MESSAGES.USER.ALREADY_EXISTS, // username already exists
+          type: "error",
+        });
       }
       if (error.constraint?.includes('users_email_key')) {
-        return res.status(409).json({ error: "Email already exists" });
+        return res.status(409).json({
+          success: false,
+          message: ERROR_MESSAGES.USER.ALREADY_EXISTS, // email already exists
+          type: "error",
+        });
       }
     }
-    res.status(500).json({ error: "Server error during registration. Please try again." });
+    
+    // res.status(500).json({ error: "Server error during registration. Please try again." });
+    res.status(500).json({
+      success: false,
+      message: ERROR_MESSAGES.SYSTEM.SERVER_ERROR,
+      type: "error",
+    });
   }
 });
 
@@ -126,8 +159,15 @@ router.post('/register', async (req, res) => {
 // -------------------- Login --------------------
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
+  // if (!username || !password) {
+  //   return res.status(400).json({ error: "Username and password are required" });
+  // }
   if (!username || !password) {
-    return res.status(400).json({ error: "Username and password are required" });
+    return res.status(400).json({
+      success: false,
+      message: ERROR_MESSAGES.AUTH.LOGIN_FAILED,
+      type: "error",
+    });
   }
 
   try {
@@ -136,17 +176,38 @@ router.post("/login", async (req, res) => {
       [username]);
 
     const user = userResult.rows[0];
+    // if (!user) {
+    //   return res.status(401).json({ error: "Invalid credentials" });
+    // }
     if (!user) {
-      return res.status(401).json({ error: "Invalid credentials" });
+      return res.status(404).json({
+        success: false,
+        message: ERROR_MESSAGES.USER.NOT_FOUND,
+        type: "error",
+      });
     }
 
+    // if (!user.verified) {
+    //   return res.status(401).json({ error: "Please verify your email before logging in" });
+    // }
     if (!user.verified) {
-      return res.status(401).json({ error: "Please verify your email before logging in" });
+      return res.status(401).json({
+        success: false,
+        message: ERROR_MESSAGES.AUTH.EMAIL_NOT_VERIFIED,
+        type: "error",
+      });
     }
 
     const isMatched = await bcrypt.compare(password, user.password);
+    // if (!isMatched) {
+    //   return res.status(401).json({ error: "Invalid credentials" });
+    // }
     if (!isMatched) {
-      return res.status(401).json({ error: "Invalid credentials" });
+      return res.status(401).json({
+        success: false,
+        message: ERROR_MESSAGES.AUTH.LOGIN_FAILED,
+        type: "error",
+      });
     }
 
     // Generate session token
@@ -173,7 +234,12 @@ router.post("/login", async (req, res) => {
 
   } catch (error) {
     console.error("❌ Error during login:", error);
-    res.status(500).json({ error: "Server error during login. Please try again." });
+    // res.status(500).json({ error: "Server error during login. Please try again." });
+    res.status(500).json({
+      success: false,
+      message: ERROR_MESSAGES.SYSTEM.SERVER_ERROR,
+      type: "error",
+    });
   }
 });
 
@@ -187,26 +253,42 @@ router.get("/profile", routeGuard, async (req, res) => {
       [userId]  //get back here
     );
 
+    // if (result.rows.length === 0) {
+    //   return res.status(404).json({ error: "User not found" });
+    // }
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({
+        success: false,
+        message: ERROR_MESSAGES.USER.NOT_FOUND,
+        type: "error",
+      });
     }
 
-        const user = result.rows[0];
+    const user = result.rows[0];
 
-
-       // ✅ Add full backend URL to profile picture if missing
+    // Add full backend URL to profile picture if missing
     if (user.profile_pic && !user.profile_pic.startsWith("http")) {
       user.profile_pic = `${process.env.BACKEND_URL || "http://localhost:7777"}/${user.profile_pic}`;
     }
-
+    // res.json({
+    //   success: true,
+    //   user: result.rows[0]
+    // });
     res.json({
       success: true,
-      user: result.rows[0]
+      message: "User data retrieved successfully", // optional
+      type: "success",
+      user: result.rows[0],
     });
 
   } catch (error) {
     console.error("❌ Error fetching profile:", error);
-    res.status(500).json({ error: "Server error while fetching profile." });
+    // res.status(500).json({ error: "Server error while fetching profile." });
+    res.status(500).json({
+      success: false,
+      message: ERROR_MESSAGES.SYSTEM.SERVER_ERROR,
+      type: "error",
+    });
   }
 });
 
@@ -215,12 +297,17 @@ router.get("/profile", routeGuard, async (req, res) => {
 router.post("/forgot-password", async (req, res) => {
   // Trim and lowercase the email to avoid mismatch issues
   const email = (req.body.email || "").trim().toLowerCase();
-  if (!email) return res.status(400).json({ error: "1Email is required" });
+  // if (!email) return res.status(400).json({ error: "Email is required" });
+  if (!email) {
+    return res.status(400).json({
+      success: false,
+      message: ERROR_MESSAGES.AUTH.MISSING_FIELDS, 
+      type: "error",
+    });
+  }
   console.log("Received email:", email);
-  if (!email) return res.status(400).json({ error: "2Email is required" });
-
+  
   try {
-    
     // Debug: log the received email
     console.log("Received email:", email);
 
@@ -231,7 +318,15 @@ router.post("/forgot-password", async (req, res) => {
     );
     const user = userResult.rows[0];
 
-    if (!user) return res.status(404).json({ error: "No account with this email" });
+    // if (!user) return res.status(404).json({ error: "No account with this email" });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: ERROR_MESSAGES.USER.NOT_FOUND, 
+        type: "error",
+      });
+    }
+
 
     // Generate a reset token valid for 1 hour
     const resetToken = jwt.sign(
@@ -289,13 +384,21 @@ router.post("/forgot-password", async (req, res) => {
       `
     });
 
-
-
-    res.json({ message: "Reset link sent! Check your email.📩" });
+    // res.json({ message: "Reset link sent! Check your email.📩" });
+    res.json({
+      success: true,
+      message: "Reset link sent! Check your email. 📩",
+      type: "success",
+    });
 
   } catch (error) {
     console.error("Error in forgot-password:", error);
-    res.status(500).json({ error: "Server error. Try again later." });
+    // res.status(500).json({ error: "Server error. Try again later." });
+    res.status(500).json({
+      success: false,
+      message: ERROR_MESSAGES.SYSTEM.SERVER_ERROR,
+      type: "error",
+    });
   }
 });
 
@@ -306,11 +409,25 @@ router.post("/reset-password/:token", async (req, res) => {
     const { token } = req.params;
     const { password } = req.body;
 
-    if (!password) return res.status(400).json({ error: "New password is required" });
+    // if (!password) return res.status(400).json({ error: "New password is required" });
+    if (!password) {
+      return res.status(400).json({
+        success: false,
+        message: ERROR_MESSAGES.AUTH.MISSING_FIELDS, 
+        type: "error",
+      });
+    }
 
     // Verify the reset token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (decoded.type !== "reset") return res.status(400).json({ error: "Invalid token" });
+    // if (decoded.type !== "reset") return res.status(400).json({ error: "Invalid token" });
+    if (decoded.type !== "reset") {
+      return res.status(400).json({
+        success: false,
+        message: ERROR_MESSAGES.AUTH.INVALID_RESET_TOKEN,
+        type: "error",
+      });
+    }
 
     // Find the user with this token
     const userResult = await pool.query(
@@ -319,7 +436,14 @@ router.post("/reset-password/:token", async (req, res) => {
     );
     const user = userResult.rows[0];
 
-    if (!user) return res.status(400).json({ error: "Invalid or expired token" });
+    // if (!user) return res.status(400).json({ error: "Invalid or expired token" });
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: ERROR_MESSAGES.AUTH.INVALID_RESET_TOKEN,
+        type: "error",
+      });
+    }
 
     // Hash the new password
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -330,11 +454,21 @@ router.post("/reset-password/:token", async (req, res) => {
       [hashedPassword, user.id]
     );
 
-    res.json({ message: "Password has been reset successfully!🌟" });
+    // res.json({ message: "Password has been reset successfully!🌟" });
+    res.json({
+      success: true,
+      message: "Password has been reset successfully! 🌟",
+      type: "success",
+    });
 
   } catch (error) {
     console.error("Error in reset-password:", error);
-    res.status(400).json({ error: "Invalid or expired token" });
+    // res.status(400).json({ error: "Invalid or expired token" });
+    res.status(400).json({
+      success: false,
+      message: ERROR_MESSAGES.AUTH.INVALID_TOKEN,
+      type: "error",
+    });
   }
 });
 
@@ -343,13 +477,27 @@ router.post("/reset-password/:token", async (req, res) => {
 router.post('/request-delete', async (req, res) => {
   try {
     const emailInput = (req.body.email || "").trim().toLowerCase();
-    if (!emailInput) return res.status(400).json({ error: "Email is required" });
+    // if (!emailInput) return res.status(400).json({ error: "Email is required" });
+    if (!emailInput) {
+      return res.status(400).json({
+        success: false,
+        message: ERROR_MESSAGES.AUTH.MISSING_FIELDS, 
+        type: "error",
+      });
+    }
 
     const userResult = await pool.query(
       "SELECT id, username FROM users WHERE LOWER(TRIM(email)) = $1",
       [emailInput]
     );
-    if (!userResult.rows.length) return res.status(404).json({ error: "User not found" });
+    // if (!userResult.rows.length) return res.status(404).json({ error: "User not found" });
+    if (!userResult.rows.length) {
+      return res.status(404).json({
+        success: false,
+        message: ERROR_MESSAGES.USER.NOT_FOUND,
+        type: "error",
+      });
+    }
 
     const user = userResult.rows[0];
 
@@ -395,10 +543,22 @@ router.post('/request-delete', async (req, res) => {
       `
     });
 
-    res.json({ message: "Deletion confirmation link sent! Check your email.📩" });
+    // res.json({ message: "Deletion confirmation link sent! Check your email.📩" });
+    res.json({
+      success: true,
+      message: "Deletion confirmation link sent! Check your email.📩",
+      type: "success",
+    });
+
   } catch (error) {
     console.error("Error in request-delete:", error);
-    res.status(500).json({ error: "Server error. Try again later." });
+    // res.status(500).json({ error: "Server error. Try again later." });
+    res.status(500).json({
+      success: false,
+      message: ERROR_MESSAGES.SYSTEM.SERVER_ERROR,
+      type: "error",
+    });
+
   }
 });
 
@@ -412,7 +572,14 @@ router.get('/delete/:token', async (req, res) => {
       "SELECT user_id FROM delete_tokens WHERE token=$1 AND expires_at > NOW()",
       [token]
     );
-    if (!tokenResult.rows.length) return res.status(400).send("Invalid or expired token.");
+    // if (!tokenResult.rows.length) return res.status(400).send("Invalid or expired token.");
+    if (!tokenResult.rows.length) {
+      return res.status(400).json({
+        success: false,
+        message: ERROR_MESSAGES.AUTH.INVALID_TOKEN,
+        type: "error",
+      });
+    }
 
     const userId = tokenResult.rows[0].user_id;
 
@@ -420,10 +587,21 @@ router.get('/delete/:token', async (req, res) => {
     await pool.query("DELETE FROM users WHERE id=$1", [userId]);
     await pool.query("DELETE FROM delete_tokens WHERE user_id=$1", [userId]);
 
-    res.send("Your account has been permanently deleted.");
+    // res.send("Your account has been permanently deleted.");
+    res.json({
+      success: true,
+      message: "Your account has been permanently deleted.",
+      type: "success",
+    });
+    
   } catch (error) {
     console.error("Error in delete/:token:", error);
-    res.status(500).send("Server error during account deletion.");
+    // res.status(500).send("Server error during account deletion.");
+    res.status(500).json({
+      success: false,
+      message: ERROR_MESSAGES.SYSTEM.SERVER_ERROR,
+      type: "error",
+    });
   }
 });
 

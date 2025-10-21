@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import vLogo from "../components/images/v_logo.png"; 
+import { handleError } from "../utils/alertUtils";
 
 export default function DeleteAccount() {
   const [loading, setLoading] = useState(true); 
@@ -35,6 +36,7 @@ export default function DeleteAccount() {
       })
       .catch((err) => {
         console.error("Deletion error:", err);
+        handleError(err); 
         setMessage(
           err.response?.data?.message ||
           err.response?.data ||
