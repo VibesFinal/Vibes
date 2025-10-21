@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axiosInstance from "../api/axiosInstance";
+import { showAlert, handleError } from "../utils/alertUtils";
 
 const PostActions = ({ post, isOwner, onUpdate, onDelete }) => {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -29,7 +30,8 @@ const PostActions = ({ post, isOwner, onUpdate, onDelete }) => {
       setShowDropdown(false);
     } catch (error) {
       console.error("Save failed", error);
-      alert("Failed to save changes. Please try again.");
+      showAlert("Failed to save changes. Please try again.");
+      handleError(error);
     } finally {
       setIsSaving(false);
     }
@@ -52,7 +54,8 @@ const PostActions = ({ post, isOwner, onUpdate, onDelete }) => {
       onDelete(post.id);
     } catch (error) {
       console.error("Error deleting post:", error);
-      alert("Failed to delete post. Please try again.");
+      showAlert("Failed to delete post. Please try again.");
+      handleError(error);
     } finally {
       setIsDeleting(false);
     }

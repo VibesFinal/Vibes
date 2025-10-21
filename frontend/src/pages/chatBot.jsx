@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { showAlert, handleError } from "../utils/alertUtils";
  
 export default function Chatbot() {
   const [messages, setMessages] = useState([
@@ -23,6 +24,7 @@ export default function Chatbot() {
     setMessages((prev) => [...prev, newMessage]);
     setInput("");
     setLoading(true);
+    
     try {
       const conversationHistory = messages.slice(1);
       const res = await fetch("http://localhost:7777/api/chat", {
@@ -33,11 +35,15 @@ export default function Chatbot() {
           history: conversationHistory
         }),
       });
+
       const data = await res.json();
       const reply = data.reply || "Sorry, I couldn't generate a response.";
       setMessages((prev) => [...prev, { sender: "ai", text: reply }]);
+
     } catch (error) {
       console.error(error);
+      handleError(error);
+
       setMessages((prev) => [
         ...prev,
         { sender: "ai", text: "Error: failed to fetch response." },

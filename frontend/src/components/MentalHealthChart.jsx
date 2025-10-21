@@ -11,42 +11,30 @@ export default function MentalHealthChart({ userId }) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-
     if (!userId) return;
 
     const fetchAnalysis = async () => {
-
       try {
         const res = await aiApi.analyzeUser(userId);
 
         if (res.chartData) {
           // Convert AI response 
           const formatted = Object.entries(res.chartData).map(([key, value]) => ({
-
             name: key,
             value: value,
-
           }));
 
           setChartData(formatted);
-
         }
-
       } catch (err) {
-
         console.error("❌ AI Analysis error:", err);
         setError("Failed to fetch analysis.");
 
       } finally {
-
         setLoading(false);
-
       }
-
     };
-
     fetchAnalysis();
-
   }, [userId]);
 
   if (loading) return <p>Loading analysis...</p>;
@@ -54,7 +42,6 @@ export default function MentalHealthChart({ userId }) {
   if (chartData.length === 0) return <p>No analysis data available.</p>;
 
   return (
-
     <div className="w-full h-80 bg-white p-4 rounded-xl shadow-md border">
       <h2 className="text-xl font-semibold mb-4">Mental Health Analysis</h2>
       <ResponsiveContainer width="100%" height="100%">

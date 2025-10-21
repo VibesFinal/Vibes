@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../api/axiosInstance';
 import PrivateChat from './privateChat';
+import { showAlert, handleError } from '../utils/alertUtils';
 
 // Custom styles with the color palette
 const chatInboxStyles = {
@@ -60,6 +61,8 @@ export default function ChatInbox() {
         setConversations(res.data);
       } catch (err) {
         console.error('Failed to load conversations', err);
+        handleError(err);
+        showAlert('Failed to load conversations');
       } finally {
         setLoading(false);
       }
@@ -74,6 +77,7 @@ export default function ChatInbox() {
       setTherapists(res.data);
     } catch (err) {
       console.error('Failed to load therapists', err);
+      handleError(err);
     }
   };
 

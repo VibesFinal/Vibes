@@ -44,6 +44,7 @@ export default function ResetPassword() {
       // setError(err.response?.data?.error || "Something went wrong");
       const message = err.response?.data?.message || err.response?.data?.error || "Something went wrong";
       handleError({ message }); 
+      handleError(err);
 
     } finally {
       setIsLoading(false);

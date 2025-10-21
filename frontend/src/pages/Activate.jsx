@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import vLogo from "../components/images/v_logo.png"; 
+import { showAlert, handleError } from "../utils/alertUtils";
 
 export default function Activate() {
   // State to track loading, message, and success/failure
@@ -42,12 +43,18 @@ export default function Activate() {
       .catch((err) => {
         // Handle error response
         console.error("Activation error:", err);
-        setMessage(
-          err.response?.data?.message ||
-            err.response?.data ||
-            "Activation failed. Please try again."
-        );
+        // setMessage(
+        //   err.response?.data?.message ||
+        //     err.response?.data ||
+        //     "Activation failed. Please try again."
+        // );
+        // setSuccess(false);
+
+        const errMsg = err.response?.data?.message || "Activation failed. Please try again.";
+        setMessage(errMsg);
         setSuccess(false);
+        showAlert(errMsg); 
+
       })
       .finally(() => setLoading(false)); // Stop loading
   }, [token, navigate]);

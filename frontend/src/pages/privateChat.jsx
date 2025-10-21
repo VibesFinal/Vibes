@@ -6,8 +6,9 @@ import ChatHeader from '../components/ChatComponents/ChatHeader';
 import MessageList from '../components/ChatComponents/MessageList';
 import MessageInput from '../components/ChatComponents/MessageInput';
 import DeleteConfirmationModal from '../components/ChatComponents/DeleteConfirmationModal';
+import { showAlert, handleError } from '../utils/alertUtils';
 
-// ✅ Use the same API_URL pattern as CommunityChat
+// Use the same API_URL pattern as CommunityChat
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:7777';
 
 // Custom CSS with the color palette
@@ -45,12 +46,12 @@ const PrivateChat = ({ recipientId, onBack }) => {
   const token = localStorage.getItem('token');
 
   const getCurrentUserId = () => {
-    if (!token) return null;
+    if (!token) return showAlert("You must be logged in to chat");
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
       return payload.id;
     } catch (e) {
-      return null;
+      return handleError(e);
     }
   };
 
@@ -64,6 +65,7 @@ const PrivateChat = ({ recipientId, onBack }) => {
         setRecipientName(res.data.username || 'Therapist');
       } catch {
         setRecipientName('Therapist');
+        handleError("Failed to fetch recipient info");
       }
     };
     fetch();
@@ -72,10 +74,10 @@ const PrivateChat = ({ recipientId, onBack }) => {
   useEffect(() => {
     if (!token || !recipientId) return;
 
-    // ✅ Connect to /private namespace with auth
+    // Connect to /private namespace with auth
     const newSocket = io(`${API_URL}/private`, { 
       auth: { token }, 
-      transports: ['websocket', 'polling'], // ✅ Add polling as fallback
+      transports: ['websocket', 'polling'], // Add polling as fallback
       reconnection: true,
       reconnectionAttempts: 5,
     });
@@ -127,7 +129,7 @@ const PrivateChat = ({ recipientId, onBack }) => {
     newSocket.on('privateMessageDeleted', handleDelete);
     newSocket.on('privateMessageError', (err) => {
       console.error('Chat error:', err);
-      alert('Failed to send message: ' + err);
+      showAlert('Failed to send message: ' + err);
     });
 
     return () => {
@@ -150,6 +152,7 @@ const PrivateChat = ({ recipientId, onBack }) => {
         );
       } catch (err) {
         console.error('Failed to load chat history:', err);
+        handleError(err)
       }
     };
     fetchHistory();
