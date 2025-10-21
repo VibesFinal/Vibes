@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
-import { showAlert, handleError } from '../utils/alertUtils';
+import { showAlert, handleError , showConfirm } from '../utils/alertUtils';
 
 const Community = () => {
   const [communities, setCommunities] = useState([]);
@@ -70,39 +70,39 @@ const Community = () => {
       searchInputRef.current.focus();
     }
   }, [communities]);
+const handleLeaveCommunity = (id) => {
+  showConfirm(
+    "Are you sure you want to leave this community? You can join again anytime.",
+    async () => { // onConfirm
+      try {
+        const response = await axiosInstance.patch(`/communities/${id}/join`);
+        const updatedCommunity = response.data.data;
 
-  const handleLeaveCommunity = async (id) => {
-    if (!window.confirm("Are you sure you want to leave this community? You can join again anytime.")) {
-      return;
-    }
-
-    try {
-      const response = await axiosInstance.patch(`/communities/${id}/join`);
-      const updatedCommunity = response.data.data; // ← Access nested data
-
-      setCommunities(prev => {
-        const updated = prev.map(comm =>
-          comm.id === updatedCommunity.id 
-            ? { ...comm, is_joined: updatedCommunity.is_joined, member_count: updatedCommunity.member_count }
-            : comm
-        );
-        
-        // Re-sort after leaving: joined first, then by member count
-        return updated.sort((a, b) => {
-          if (a.is_joined !== b.is_joined) {
-            return b.is_joined - a.is_joined;
-          }
-          return b.member_count - a.member_count;
+        setCommunities(prev => {
+          const updated = prev.map(comm =>
+            comm.id === updatedCommunity.id 
+              ? { ...comm, is_joined: updatedCommunity.is_joined, member_count: updatedCommunity.member_count }
+              : comm
+          );
+          return updated.sort((a, b) => {
+            if (a.is_joined !== b.is_joined) return b.is_joined - a.is_joined;
+            return b.member_count - a.member_count;
+          });
         });
-      });
 
-      showAlert(`You left the community.`);
-    } catch (err) {
-      console.error("Failed to leave community:", err);
-      showAlert("Failed to leave. Please try again.");
-      handleError(err);
+        showAlert(`You left the community.`, "info");
+      } catch (err) {
+        console.error("Failed to leave community:", err);
+        showAlert("Failed to leave. Please try again.", "error");
+        handleError(err);
+      }
+    },
+    () => {
+      // onCancel — do nothing
     }
-  };
+  );
+};
+
 
   const handleJoinCommunity = async (id) => {
     try {

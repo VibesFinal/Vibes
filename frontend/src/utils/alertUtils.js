@@ -74,4 +74,42 @@ export function handleError(error) {
   console.groupEnd();
 }
 
+export function showConfirm(message, onConfirm, onCancel) {
+  const oldAlert = document.getElementById("custom-alert");
+  if (oldAlert) oldAlert.remove();
+
+  const alertBox = document.createElement("div");
+  alertBox.id = "custom-alert";
+  alertBox.innerHTML = `
+    <div class="fixed inset-0 flex items-center justify-center z-50 animate-fadeIn">
+      <div class="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
+      <div class="relative z-10 w-[90%] max-w-md bg-white/40 backdrop-blur-md rounded-2xl shadow-2xl border border-white/30 p-8 text-center flex flex-col items-center">
+        <div class="absolute inset-0 opacity-20">
+          <div class="absolute top-0 -left-4 w-60 h-60 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl animate-blob"></div>
+          <div class="absolute -bottom-8 right-0 w-60 h-60 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000"></div>
+        </div>
+        <div class="relative z-10">
+          <p class="text-gray-800 text-lg font-medium mb-6">${message}</p>
+          <div class="flex gap-4 justify-center">
+            <button id="confirm-yes" class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-5 py-2 rounded-lg shadow-md transition duration-200">Yes</button>
+            <button id="confirm-no" class="bg-white/70 hover:bg-white/90 text-purple-700 px-5 py-2 rounded-lg shadow-md transition duration-200 border border-purple-300">No</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(alertBox);
+
+  alertBox.querySelector("#confirm-yes").addEventListener("click", () => {
+    alertBox.remove();
+    if (onConfirm) onConfirm();
+  });
+
+  alertBox.querySelector("#confirm-no").addEventListener("click", () => {
+    alertBox.remove();
+    if (onCancel) onCancel();
+  });
+}
+
+
 
