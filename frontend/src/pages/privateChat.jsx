@@ -8,10 +8,8 @@ import MessageInput from '../components/ChatComponents/MessageInput';
 import DeleteConfirmationModal from '../components/ChatComponents/DeleteConfirmationModal';
 import { showAlert, handleError } from '../utils/alertUtils';
 
-// Use the same API_URL pattern as CommunityChat
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:7777';
 
-// Custom CSS with the color palette
 const chatStyles = {
   container: {
     background: 'linear-gradient(135deg, #F0F0F0 0%, #DCC6A0 50%, #9FD6E2 100%)',
@@ -46,38 +44,27 @@ const PrivateChat = ({ recipientId, onBack }) => {
   const token = localStorage.getItem('token');
 
   const getCurrentUserId = () => {
-    if (!token) return showAlert("You must be logged in to chat");
+    if (!token) {
+      showAlert("You must be logged in to chat");
+      return null;
+    }
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
       return payload.id;
     } catch (e) {
-      return handleError(e);
+      handleError(e);
+      return null;
     }
   };
 
   const currentUserId = getCurrentUserId();
 
   useEffect(() => {
-    if (!recipientId || !token) return;
-    const fetch = async () => {
-      try {
-        const res = await axiosInstance.get(`/api/users/${recipientId}`);
-        setRecipientName(res.data.username || 'Therapist');
-      } catch {
-        setRecipientName('Therapist');
-        handleError("Failed to fetch recipient info");
-      }
-    };
-    fetch();
-  }, [recipientId, token]);
-
-  useEffect(() => {
     if (!token || !recipientId) return;
 
-    // Connect to /private namespace with auth
     const newSocket = io(`${API_URL}/private`, { 
       auth: { token }, 
-      transports: ['websocket', 'polling'], // Add polling as fallback
+      transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionAttempts: 5,
     });
@@ -143,8 +130,22 @@ const PrivateChat = ({ recipientId, onBack }) => {
     const fetchHistory = async () => {
       try {
         const res = await axiosInstance.get(`/private/history/${recipientId}`);
+        
+        if (!res.data || !res.data.success) {
+          console.error('Unexpected response:', res.data);
+          handleError(res.data?.message || 'Failed to load chat history');
+          return;
+        }
+        
+        const messagesArray = res.data.data || [];
+        
+        const recipientMessage = messagesArray.find(msg => msg.sender_id === recipientId);
+        if (recipientMessage) {
+          setRecipientName(recipientMessage.username || 'Therapist');
+        }
+        
         setMessages(
-          res.data.map((msg) => ({
+          messagesArray.map((msg) => ({
             ...msg,
             is_deleted: msg.is_deleted || false,
             is_edited: !!msg.edited_at,
@@ -152,7 +153,12 @@ const PrivateChat = ({ recipientId, onBack }) => {
         );
       } catch (err) {
         console.error('Failed to load chat history:', err);
-        handleError(err)
+        
+        if (err.response?.data?.message) {
+          handleError(err.response.data.message);
+        } else {
+          handleError('Failed to load chat history');
+        }
       }
     };
     fetchHistory();
@@ -201,21 +207,28 @@ const PrivateChat = ({ recipientId, onBack }) => {
     <div style={chatStyles.container} className="min-h-screen p-5">
       <div className="max-w-4xl mx-auto w-full h-full">
         <div style={chatStyles.chatWrapper} className="flex flex-col h-[90vh]">
-          {/* Animated gradient border */}
           <div style={chatStyles.gradientBorder}></div>
           
-          {/* Connection status indicator */}
           <div className={`px-4 py-1 text-xs font-medium text-center ${
             isConnected ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
           }`}>
             {isConnected ? '🟢 Connected' : '🔴 Disconnected'}
           </div>
 
-          <ChatHeader 
-            recipientName={recipientName} 
-            onBack={onBack}
-            isConnected={isConnected}
-          />
+          {/* Simple Header - Just name and back button */}
+          <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white">
+            <button
+              onClick={onBack}
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back
+            </button>
+            <h2 className="text-xl font-semibold text-gray-800">{recipientName}</h2>
+            <div className="w-16"></div> {/* Spacer for centering */}
+          </div>
           
           <MessageList
             messages={messages}
@@ -230,13 +243,28 @@ const PrivateChat = ({ recipientId, onBack }) => {
             handleDeleteMessage={handleDeleteMessage}
           />
           
-          <MessageInput
-            newMessage={newMessage}
-            setNewMessage={setNewMessage}
-            handleSendMessage={handleSendMessage}
-            handleKeyPress={handleKeyPress}
-            isConnected={isConnected}
-          />
+          {/* Simple Input - Just textarea and send button */}
+          <div className="p-4 bg-white border-t border-gray-200">
+            <div className="flex gap-2 items-end">
+              <textarea
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Type a message..."
+                rows={1}
+                disabled={!isConnected}
+                className="flex-1 resize-none rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                style={{ minHeight: '44px', maxHeight: '120px' }}
+              />
+              <button
+                onClick={handleSendMessage}
+                disabled={!newMessage.trim() || !isConnected}
+                className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors h-[44px]"
+              >
+                Send
+              </button>
+            </div>
+          </div>
           
           <DeleteConfirmationModal
             isOpen={deleteConfirmMessageId !== null}
