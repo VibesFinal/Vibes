@@ -141,5 +141,4 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 frontend/.env
 .env
-*.env
-.env.*
+frontend/.env
