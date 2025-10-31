@@ -1,219 +1,251 @@
+// socket/privateChat.js
 const jwt = require('jsonwebtoken');
 
-module.exports = (namespace, pool) => {
-  console.log('🔐 Socket.io private chat module initialized');
-
-  // 🔑 JWT Authentication Middleware (applies only to this namespace)
-  namespace.use((socket, next) => {
-    const token =
-      socket.handshake.auth?.token ||
-      socket.handshake.headers?.authorization?.split(' ')[1];
-
+module.exports = (io, pool) => {
+  // Middleware: authenticate socket connections
+  io.use((socket, next) => {
+    const token = socket.handshake.auth.token;
     if (!token) {
-      return next(new Error('Authentication required for private chat'));
+      return next(new Error('Authentication error: No token provided'));
     }
 
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       socket.userId = decoded.id;
+      socket.username = decoded.username;
+      socket.isTherapist = decoded.isTherapist;
       next();
     } catch (err) {
-      next(new Error('Invalid or expired token'));
+      next(new Error('Authentication error: Invalid token'));
     }
   });
 
-  const userSocketMap = new Map();
+  io.on('connection', (socket) => {
+    console.log(`✅ Private chat connected: ${socket.username} (${socket.userId})`);
 
-  // ✅ Use namespace.on, NOT io.on
-  namespace.on('connection', (socket) => {
-    const userId = socket.userId;
-    userSocketMap.set(userId, socket.id);
-    console.log(`✅ User ${userId} connected to private chat namespace`);
-
-    // 💬 Send message
-    socket.on('sendPrivateMessage', async ({ recipientId, content }) => {
-      if (!recipientId || !content?.trim()) {
-        return socket.emit('privateMessageError', 'Recipient and message required');
-      }
-      if (recipientId === socket.userId) {
-        return socket.emit('privateMessageError', 'Cannot message yourself');
-      }
-
+    // Join private chat room
+    socket.on('joinPrivateChat', async ({ recipientId }) => {
       try {
-        const [senderRes, recipientRes] = await Promise.all([
-          pool.query('SELECT is_therapist, username FROM users WHERE id = $1', [socket.userId]),
-          pool.query('SELECT is_therapist, username FROM users WHERE id = $1', [recipientId]),
-        ]);
-
-        if (!senderRes.rows.length || !recipientRes.rows.length) {
-          return socket.emit('privateMessageError', 'User not found');
+        const parsedRecipientId = parseInt(recipientId, 10);
+        if (isNaN(parsedRecipientId)) {
+          socket.emit('error', { message: 'Invalid recipient ID' });
+          return;
         }
 
-        const senderIsTherapist = senderRes.rows[0].is_therapist;
-        const recipientIsTherapist = recipientRes.rows[0].is_therapist;
-        const senderUsername = senderRes.rows[0].username;
+        // Create room identifier (sorted IDs for consistency)
+        const roomId = [socket.userId, parsedRecipientId].sort((a, b) => a - b).join('-');
+        socket.join(roomId);
+        socket.currentRoom = roomId;
+        socket.recipientId = parsedRecipientId;
 
-        if (senderIsTherapist === recipientIsTherapist) {
-          return socket.emit('privateMessageError', 'Chat is only allowed between a user and a therapist');
-        }
+        console.log(`💬 ${socket.username} joined room: ${roomId}`);
 
-        const conv = await pool.query(
-          `SELECT id, user_id, therapist_id FROM private_conversations 
+        // Find or create conversation
+        let convResult = await pool.query(
+          `SELECT id FROM private_conversations 
            WHERE (user_id = $1 AND therapist_id = $2) 
               OR (user_id = $2 AND therapist_id = $1)`,
-          [socket.userId, recipientId]
+          [socket.userId, parsedRecipientId]
         );
 
         let conversationId;
-        if (conv.rows.length === 0) {
-          const userId = senderIsTherapist ? recipientId : socket.userId;
-          const therapistId = senderIsTherapist ? socket.userId : recipientId;
-          const insert = await pool.query(
+        if (convResult.rows.length === 0) {
+          // Create new conversation
+          const insertResult = await pool.query(
             `INSERT INTO private_conversations (user_id, therapist_id) 
-             VALUES ($1, $2) RETURNING id`,
-            [userId, therapistId]
+             VALUES ($1, $2) 
+             RETURNING id`,
+            [socket.userId, parsedRecipientId]
           );
-          conversationId = insert.rows[0].id;
+          conversationId = insertResult.rows[0].id;
+          console.log(`✨ Created new conversation: ${conversationId}`);
         } else {
-          conversationId = conv.rows[0].id;
+          conversationId = convResult.rows[0].id;
         }
 
-        const msg = await pool.query(
-          `INSERT INTO private_messages (conversation_id, sender_id, content)
-           VALUES ($1, $2, $3) RETURNING id, created_at`,
-          [conversationId, socket.userId, content.trim()]
-        );
-
-        const payload = {
-          id: msg.rows[0].id,
-          senderId: socket.userId,
-          recipientId,
-          content: content.trim(),
-          timestamp: msg.rows[0].created_at,
-          username: senderUsername,
-        };
-
-        socket.emit('privateMessageSent', payload);
-
-        const recipientSocketId = userSocketMap.get(recipientId);
-        if (recipientSocketId) {
-          // ✅ Use namespace.to, NOT io.to
-          namespace.to(recipientSocketId).emit('privateMessageReceived', payload);
-        }
+        socket.conversationId = conversationId;
       } catch (err) {
-        console.error('Private message error:', err);
-        socket.emit('privateMessageError', 'Failed to send message');
+        console.error('❌ Error joining private chat:', err);
+        socket.emit('error', { message: 'Failed to join chat' });
       }
     });
 
-    // 🖊️ Edit message
-    socket.on('editPrivateMessage', async ({ messageId, newContent }) => {
-      if (!messageId || !newContent?.trim()) {
-        return socket.emit('privateMessageError', 'Message ID and content required');
-      }
-
+    // Send private message
+    socket.on('sendPrivateMessage', async ({ recipientId, content }) => {
       try {
-        const msgRes = await pool.query(
-          `SELECT pm.sender_id, pm.conversation_id, u.username
-           FROM private_messages pm
-           JOIN users u ON pm.sender_id = u.id
-           WHERE pm.id = $1 AND pm.sender_id = $2`,
-          [messageId, socket.userId]
-        );
-
-        if (msgRes.rows.length === 0) {
-          return socket.emit('privateMessageError', 'Message not found or not owned by you');
+        if (!content || !content.trim()) {
+          socket.emit('error', { message: 'Message cannot be empty' });
+          return;
         }
 
-        const { conversation_id: convId, username: senderUsername } = msgRes.rows[0];
+        const parsedRecipientId = parseInt(recipientId, 10);
+        if (isNaN(parsedRecipientId)) {
+          socket.emit('error', { message: 'Invalid recipient ID' });
+          return;
+        }
 
-        const updated = await pool.query(
-          `UPDATE private_messages 
-           SET content = $1, edited_at = NOW() 
-           WHERE id = $2 
-           RETURNING id, content, edited_at`,
-          [newContent.trim(), messageId]
+        // Insert message into database
+        const result = await pool.query(
+          `INSERT INTO private_messages (conversation_id, sender_id, content) 
+           VALUES ($1, $2, $3) 
+           RETURNING id, sender_id, content, created_at, is_edited, is_deleted`,
+          [socket.conversationId, socket.userId, content.trim()]
         );
 
-        const payload = {
-          id: updated.rows[0].id,
-          content: updated.rows[0].content,
-          editedAt: updated.rows[0].edited_at,
-          username: senderUsername,
+        const message = result.rows[0];
+
+        // Get sender info
+        const userResult = await pool.query(
+          `SELECT username, profile_pic, is_therapist FROM users WHERE id = $1`,
+          [socket.userId]
+        );
+
+        const fullMessage = {
+          ...message,
+          username: userResult.rows[0].username,
+          profile_pic: userResult.rows[0].profile_pic,
+          is_therapist: userResult.rows[0].is_therapist
         };
 
-        socket.emit('privateMessageEdited', payload);
+        // Emit to sender
+        socket.emit('privateMessageSent', fullMessage);
 
-        const conv = await pool.query(
-          'SELECT user_id, therapist_id FROM private_conversations WHERE id = $1',
-          [convId]
-        );
+        // Emit to recipient (if they're in the room)
+        const roomId = socket.currentRoom;
+        socket.to(roomId).emit('privateMessageReceived', fullMessage);
 
-        if (conv.rows.length > 0) {
-          const { user_id, therapist_id } = conv.rows[0];
-          const otherId = user_id === socket.userId ? therapist_id : user_id;
-          const otherSocketId = userSocketMap.get(otherId);
-          if (otherSocketId) {
-            // ✅ Use namespace.to
-            namespace.to(otherSocketId).emit('privateMessageEdited', payload);
-          }
-        }
-      } catch (err) {
-        console.error('Edit message error:', err);
-        socket.emit('privateMessageError', 'Failed to edit message');
-      }
-    });
-
-    // 🗑️ Delete message
-    socket.on('deletePrivateMessage', async ({ messageId }) => {
-      if (!messageId) {
-        return socket.emit('privateMessageError', 'Message ID required');
-      }
-
-      try {
-        const msgRes = await pool.query(
-          `SELECT sender_id, conversation_id 
-           FROM private_messages 
-           WHERE id = $1 AND sender_id = $2`,
-          [messageId, socket.userId]
-        );
-
-        if (msgRes.rows.length === 0) {
-          return socket.emit('privateMessageError', 'Message not found or not owned by you');
-        }
-
+        // Update conversation's last_message_at
         await pool.query(
-          'UPDATE private_messages SET is_deleted = true WHERE id = $1',
-          [messageId]
+          `UPDATE private_conversations 
+           SET last_message_at = NOW() 
+           WHERE id = $1`,
+          [socket.conversationId]
         );
 
-        const payload = { id: messageId };
-        socket.emit('privateMessageDeleted', payload);
-
-        const { conversation_id: convId } = msgRes.rows[0];
-        const conv = await pool.query(
-          'SELECT user_id, therapist_id FROM private_conversations WHERE id = $1',
-          [convId]
-        );
-
-        if (conv.rows.length > 0) {
-          const { user_id, therapist_id } = conv.rows[0];
-          const otherId = user_id === socket.userId ? therapist_id : user_id;
-          const otherSocketId = userSocketMap.get(otherId);
-          if (otherSocketId) {
-            // ✅ Use namespace.to
-            namespace.to(otherSocketId).emit('privateMessageDeleted', payload);
-          }
-        }
+        console.log(`📤 Message sent from ${socket.username} to recipient ${parsedRecipientId}`);
       } catch (err) {
-        console.error('Delete message error:', err);
-        socket.emit('privateMessageError', 'Failed to delete message');
+        console.error('❌ Error sending private message:', err);
+        socket.emit('error', { message: 'Failed to send message' });
+      }
+    });
+
+    // Edit message
+    socket.on('editMessage', async ({ messageId, newContent }) => {
+      try {
+        if (!newContent || !newContent.trim()) {
+          socket.emit('error', { message: 'Message cannot be empty' });
+          return;
+        }
+
+        const parsedMessageId = parseInt(messageId, 10);
+        if (isNaN(parsedMessageId)) {
+          socket.emit('error', { message: 'Invalid message ID' });
+          return;
+        }
+
+        // Verify the message belongs to the sender
+        const checkResult = await pool.query(
+          `SELECT sender_id, conversation_id FROM private_messages WHERE id = $1`,
+          [parsedMessageId]
+        );
+
+        if (checkResult.rows.length === 0) {
+          socket.emit('error', { message: 'Message not found' });
+          return;
+        }
+
+        if (checkResult.rows[0].sender_id !== socket.userId) {
+          socket.emit('error', { message: 'Unauthorized to edit this message' });
+          return;
+        }
+
+        // Update the message in database
+        await pool.query(
+          `UPDATE private_messages 
+           SET content = $1, is_edited = true, edited_at = NOW() 
+           WHERE id = $2`,
+          [newContent.trim(), parsedMessageId]
+        );
+
+        // Broadcast to all users in the room
+        const roomId = socket.currentRoom;
+        io.to(roomId).emit('messageEdited', {
+          messageId: parsedMessageId,
+          newContent: newContent.trim()
+        });
+
+        console.log(`✏️ Message ${parsedMessageId} edited by ${socket.username}`);
+      } catch (err) {
+        console.error('❌ Error editing message:', err);
+        socket.emit('error', { message: 'Failed to edit message' });
+      }
+    });
+
+    // Delete message
+    socket.on('deleteMessage', async ({ messageId }) => {
+      try {
+        const parsedMessageId = parseInt(messageId, 10);
+        if (isNaN(parsedMessageId)) {
+          socket.emit('error', { message: 'Invalid message ID' });
+          return;
+        }
+
+        // Verify the message belongs to the sender
+        const checkResult = await pool.query(
+          `SELECT sender_id, conversation_id FROM private_messages WHERE id = $1`,
+          [parsedMessageId]
+        );
+
+        if (checkResult.rows.length === 0) {
+          socket.emit('error', { message: 'Message not found' });
+          return;
+        }
+
+        if (checkResult.rows[0].sender_id !== socket.userId) {
+          socket.emit('error', { message: 'Unauthorized to delete this message' });
+          return;
+        }
+
+        // Mark message as deleted in database
+        await pool.query(
+          `UPDATE private_messages 
+           SET is_deleted = true 
+           WHERE id = $1`,
+          [parsedMessageId]
+        );
+
+        // Broadcast to all users in the room
+        const roomId = socket.currentRoom;
+        io.to(roomId).emit('messageDeleted', { messageId: parsedMessageId });
+
+        console.log(`🗑️ Message ${parsedMessageId} deleted by ${socket.username}`);
+      } catch (err) {
+        console.error('❌ Error deleting message:', err);
+        socket.emit('error', { message: 'Failed to delete message' });
+      }
+    });
+
+    // User typing indicator
+    socket.on('userTyping', ({ recipientId }) => {
+      const roomId = socket.currentRoom;
+      socket.to(roomId).emit('userTyping', { userId: socket.userId });
+    });
+
+    socket.on('stopTyping', ({ recipientId }) => {
+      const roomId = socket.currentRoom;
+      socket.to(roomId).emit('userStoppedTyping', { userId: socket.userId });
+    });
+
+    // Leave private chat
+    socket.on('leavePrivateChat', ({ recipientId }) => {
+      if (socket.currentRoom) {
+        socket.leave(socket.currentRoom);
+        console.log(`👋 ${socket.username} left room: ${socket.currentRoom}`);
       }
     });
 
     socket.on('disconnect', () => {
-      userSocketMap.delete(userId);
-      console.log(`🔌 User ${userId} disconnected from private chat namespace`);
+      console.log(`❌ Private chat disconnected: ${socket.username}`);
     });
   });
 };

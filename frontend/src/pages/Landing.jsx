@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { MessageCircle, Users, Target, Brain, Heart, TrendingUp, Play } from "lucide-react";
+import logo from "../components/images/v_logo.png";
 
 export default function Landing() {
   const [isVisible, setIsVisible] = useState({});
@@ -70,10 +71,13 @@ export default function Landing() {
       <nav className="fixed top-0 w-full bg-white/80 backdrop-blur-lg z-50 border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Heart className="w-8 h-8 text-[#C05299]" fill="#C05299" />
-            <span className="text-2xl font-bold text-gray-900">Vibes</span>
+            <img
+            src={logo}
+            alt="Logo"
+            className="h-9 w-9 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 object-contain"
+            />
           </div>
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-8 ml-[135px]">
             <a 
               href="#features" 
               onClick={(e) => handleScrollToSection(e, 'features')}
@@ -118,24 +122,15 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto text-center">
           <div className="animate-fade-in">
             <h1 className="text-5xl md:text-7xl font-extrabold text-gray-900 mb-6 leading-tight">
-              Mental wellness,
+              Introducing
               <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#C05299] to-[#9b3d7a]">
-                simplified.
+                Vibes
               </span>
             </h1>
             <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-              Join thousands who found their safe space for growth. Track progress, connect with others, and get instant support.
+              Join a community where you can talk about your problems, and find solutions by hearing other people opinions
             </p>
-            
-            <div className="flex items-center justify-center gap-2 mb-12 animate-fade-in-delay">
-              <div className="flex">
-                {[...Array(5)].map((_, i) => (
-                  <span key={i} className="text-yellow-400 text-2xl">★</span>
-                ))}
-              </div>
-              <span className="text-gray-600 font-medium">50,000+ reviews</span>
-            </div>
 
             {/* Hero Image/Mockup */}
             <div className="relative max-w-5xl mx-auto animate-fade-in-delay-2">
@@ -144,17 +139,17 @@ export default function Landing() {
                   <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-xl">
                     <Brain className="w-12 h-12 text-[#C05299] mb-4" />
                     <h4 className="font-bold text-gray-900 mb-2">AI Support</h4>
-                    <p className="text-sm text-gray-600">24/7 emotional guidance</p>
+                    <p className="text-sm text-gray-600">emotional guidance</p>
                   </div>
                   <div className="bg-gradient-to-br from-blue-50 to-purple-50 p-6 rounded-xl">
                     <Users className="w-12 h-12 text-[#C05299] mb-4" />
                     <h4 className="font-bold text-gray-900 mb-2">Communities</h4>
-                    <p className="text-sm text-gray-600">Find your tribe</p>
+                    <p className="text-sm text-gray-600">Find your tribe and talk with people who have the same thoughts</p>
                   </div>
                   <div className="bg-gradient-to-br from-pink-50 to-orange-50 p-6 rounded-xl">
                     <Target className="w-12 h-12 text-[#C05299] mb-4" />
-                    <h4 className="font-bold text-gray-900 mb-2">Track Growth</h4>
-                    <p className="text-sm text-gray-600">Celebrate your wins</p>
+                    <h4 className="font-bold text-gray-900 mb-2">Talk with real therapists</h4>
+                    <p className="text-sm text-gray-600">Talk with a real therapist to get support</p>
                   </div>
                 </div>
               </div>
@@ -165,29 +160,11 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Social Proof */}
-      <section className="py-16 bg-white border-y border-gray-100">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-8 text-center">
-            <div className="space-y-2">
-              <div className="text-4xl font-bold text-gray-900">100K+</div>
-              <div className="text-gray-600">Active users</div>
-            </div>
-            <div className="space-y-2">
-              <div className="text-4xl font-bold text-gray-900">500K+</div>
-              <div className="text-gray-600">Conversations</div>
-            </div>
-            <div className="space-y-2 col-span-2 md:col-span-1">
-              <div className="text-4xl font-bold text-gray-900">4.9/5</div>
-              <div className="text-gray-600">User rating</div>
-            </div>
-          </div>
-        </div>
-      </section>
+
 
       {/* Feature Sections with Video Demos */}
       <section id="features" className="py-24 px-6">
-        <div className="max-w-6xl mx-auto space-y-32">
+        <div className="max-w-7xl mx-auto space-y-32">
           {/* Feature 1 */}
           <div id="section-chatbot" className="grid md:grid-cols-2 gap-16 items-center">
             <div className="space-y-6">
@@ -255,7 +232,7 @@ export default function Landing() {
 
       {/* Stats Section */}
       <section id="stats" className="py-24 bg-gradient-to-br from-[#C05299] to-[#9b3d7a] text-white">
-        <div className="max-w-6xl mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-6">
           <h2 className="text-4xl md:text-5xl font-bold text-center mb-16">
             Trusted by thousands worldwide
           </h2>
@@ -286,7 +263,7 @@ export default function Landing() {
 
       {/* Testimonials */}
       <section id="testimonials" className="py-24 px-6 bg-gray-50">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 text-gray-900">
             Stories that inspire us
           </h2>
@@ -339,10 +316,14 @@ export default function Landing() {
       {/* Footer */}
       <footer className="py-12 bg-gray-900 text-white text-center">
         <div className="flex items-center justify-center gap-2 mb-4">
-          <Heart className="w-6 h-6 text-[#C05299]" fill="#C05299" />
-          <span className="text-xl font-bold">GrowMind</span>
+            <img
+            src={logo}
+            alt="Logo"
+            className="h-9 w-9 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 object-contain"
+            />
+          <span className="text-xl font-bold">Vibes</span>
         </div>
-        <p className="text-gray-400">© {new Date().getFullYear()} GrowMind. All rights reserved.</p>
+        <p className="text-gray-400">© {new Date().getFullYear()} Vibes. All rights reserved.</p>
       </footer>
 
       <style>{`
