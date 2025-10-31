@@ -158,9 +158,9 @@ const PrivateChat = ({ recipientId, recipientName, onBack }) => {
     const loadMessages = async () => {
       try {
         const token = localStorage.getItem('token');
-        console.log('📜 Loading messages from:', `${API_URL}/private/messages/${recipientId}`);
         
-        const response = await fetch(`${API_URL}/private/messages/${recipientId}`, {
+        
+        const response = await fetch(`${API_URL}/private/history/${recipientId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
