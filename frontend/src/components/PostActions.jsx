@@ -162,7 +162,7 @@ const PostActions = ({ post, isOwner, onUpdate, onDelete }) => {
         </div>
       )}
 
-      <style jsx>{`
+      <style>{`
         @keyframes fadeIn {
           from { opacity: 0; }
           to { opacity: 1; }

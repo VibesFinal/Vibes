@@ -285,7 +285,9 @@ export default function Navigation({ onLogout }) {
         </div>
       </header>
 
-      <style jsx>{`
+      
+
+      <style>{`
         .nav-btn {
           display: flex;
           align-items: center;
