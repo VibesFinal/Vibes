@@ -492,3 +492,11 @@ CREATE TABLE private_messages (
 );
 
 ------- The privatechat feature done -----
+
+-- adding is-edited column to private messages table
+
+ALTER TABLE private_messages ADD COLUMN IF NOT EXISTS is_edited BOOLEAN DEFAULT false;
+
+-- adding last-message-at column to private conversations table
+ALTER TABLE private_conversations
+ADD COLUMN last_message_at TIMESTAMP DEFAULT NOW();

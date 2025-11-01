@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import NewPost from "./newPost";
 import InfinitePostList from "../components/InfinitePostList";
 import { showAlert, handleError } from '../utils/alertUtils';
+import WelcomeModal from "../components/welcomeModal";
 
 export default function Feed() {
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -35,6 +36,8 @@ export default function Feed() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-pink-50 relative">
+
+      <WelcomeModal />
       
       {/* Animated mesh gradient background */}
       <div className="fixed inset-0 opacity-20">
