@@ -29,7 +29,7 @@ const communityNamespace = io.of('/community');
 require('./socket/chat')(communityNamespace, pool);
 
 // Private 1:1 chat (with auth)
-const privateNamespace = io.of('/private');
+const privateNamespace = io.of('/private-chat');
 require('./socket/privateChat')(privateNamespace, pool);
 
 // Notifications (global namespace, no auth needed)
