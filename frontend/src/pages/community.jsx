@@ -305,7 +305,7 @@ const handleLeaveCommunity = (id) => {
       </div>
 
       {/* Shared blob animations */}
-      <style jsx>{`
+      <style>{`
         @keyframes blob {
           0%, 100% { transform: translate(0, 0) scale(1); }
           33% { transform: translate(30px, -50px) scale(1.1); }

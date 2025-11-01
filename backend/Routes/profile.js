@@ -16,12 +16,9 @@ router.get("/username/:username", async (req, res) => {
       `SELECT id, username, email , profile_pic,
       is_therapist::boolean as is_therapist    
       FROM users WHERE username = $1`,
-      [username]                                   //this part of code made me crazy : Hamzeh Mehyar
+      [username]
     );
 
-    // if (userResult.rows.length === 0) {
-    //   return res.status(404).json({ error: "User not found" });
-    // }
     if (userResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
@@ -32,16 +29,17 @@ router.get("/username/:username", async (req, res) => {
 
     const user = userResult.rows[0];
 
-   if (user.profile_pic) {
+    if (user.profile_pic) {
       const trimmedPic = user.profile_pic.trim();
-      if (trimmedPic && !trimmedPic.startsWith("http")) {
-        user.profile_pic = `${process.env.BACKEND_URL || "http://localhost:7777"}/${trimmedPic}`;
-      } else if (!trimmedPic) {
-        // If it's just whitespace, set to null
+      if (trimmedPic) {
+        // Only add base URL if it's not already a full URL
+        if (!trimmedPic.startsWith("http://") && !trimmedPic.startsWith("https://")) {
+          user.profile_pic = `http://localhost:7777/uploads/${trimmedPic}`;
+        }
+      } else {
         user.profile_pic = null;
       }
     } else {
-      // Ensure it's explicitly null, not undefined
       user.profile_pic = null;
     }
 
@@ -67,9 +65,10 @@ router.get("/username/:username", async (req, res) => {
       if (post.profile_pic) {
         const trimmedPic = post.profile_pic.trim();
         if (trimmedPic) {
-          profilePic = trimmedPic.startsWith("http")
+          // ✅ Fixed: Use same logic as user profile_pic above
+          profilePic = trimmedPic.startsWith("http://") || trimmedPic.startsWith("https://")
             ? trimmedPic
-            : `${process.env.BACKEND_URL || "http://localhost:7777"}/${trimmedPic}`;
+            : `http://localhost:7777/uploads/${trimmedPic}`;
         }
       }
 
@@ -86,7 +85,6 @@ router.get("/username/:username", async (req, res) => {
 
   } catch (error) {
     console.error("Error getting user by username:", error);
-    // res.status(500).json({ error: "Internal server error" });
     res.status(500).json({
       success: false,
       message: ERROR_MESSAGES.SYSTEM.SERVER_ERROR,
