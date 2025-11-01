@@ -54,7 +54,7 @@ const PrivateChat = ({ recipientId, recipientName, onBack }) => {
     console.log('Namespace: /private');
 
     // Create socket connection to /private namespace
-    const newSocket = io(`${API_URL}/private`, {
+    const newSocket = io(`${API_URL}/private-chat`, {
       auth: { token },
       transports: ['websocket', 'polling'],
       reconnection: true,

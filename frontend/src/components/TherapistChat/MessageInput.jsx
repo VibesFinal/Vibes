@@ -210,7 +210,7 @@ const MessageInput = ({ newMessage, setNewMessage, handleSendMessage, isConnecte
       </div>
 
       {/* Micro-animations */}
-      <style jsx>{`
+      <style>{`
         @keyframes gentle-pulse {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.8; }
