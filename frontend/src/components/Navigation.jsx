@@ -232,7 +232,7 @@ export default function Navigation({ onLogout }) {
                               <div className="px-4 py-3 border-b border-gray-100">
                                 <InviteButton userId={currentUser.id} />
                               </div>
-                              
+
                             )}
 
                       {currentUser?.role === "admin" && (
@@ -244,14 +244,6 @@ export default function Navigation({ onLogout }) {
                           <span className="text-gray-700 font-medium">Admin Dashboard</span>
                         </Link>
                       )}
-
-                      <Link
-                        to="/about"
-                        className="flex items-center gap-3 px-4 py-3 hover:bg-[#F9E6F0] transition-colors"
-                        onClick={() => setDropdownOpen(false)}
-                      >
-                        <span className="text-gray-700 font-medium">About</span>
-                      </Link>
 
                       <Link
                       

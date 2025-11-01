@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { MessageCircle, Users, Target, Brain, Heart, TrendingUp, Play } from "lucide-react";
+import { MessageCircle, Users, Target, Brain, Heart, TrendingUp, Play , Shield , Sparkles} from "lucide-react";
 import logo from "../components/images/v_logo.png";
+import About from "./About";
 
 export default function Landing() {
   const [isVisible, setIsVisible] = useState({});
@@ -67,55 +68,126 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Navigation */}
-      <nav className="fixed top-0 w-full bg-white/80 backdrop-blur-lg z-50 border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <img
-            src={logo}
-            alt="Logo"
-            className="h-9 w-9 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 object-contain"
-            />
-          </div>
-          <div className="hidden md:flex items-center gap-8 ml-[135px]">
-            <a 
-              href="#features" 
-              onClick={(e) => handleScrollToSection(e, 'features')}
-              className="text-gray-700 hover:text-[#C05299] transition-colors cursor-pointer"
-            >
-              Features
-            </a>
-            <a 
-              href="#testimonials" 
-              onClick={(e) => handleScrollToSection(e, 'testimonials')}
-              className="text-gray-700 hover:text-[#C05299] transition-colors cursor-pointer"
-            >
-              Testimonials
-            </a>
-            <a 
-              href="#stats" 
-              onClick={(e) => handleScrollToSection(e, 'stats')}
-              className="text-gray-700 hover:text-[#C05299] transition-colors cursor-pointer"
-            >
-              About
-            </a>
-          </div>
-          <div className="flex items-center gap-4">
-            <Link
-              to="/login"
-              className="text-gray-700 hover:text-[#C05299] transition-colors font-medium"
-            >
-              Login
-            </Link>
-            <Link
-              to="/register"
-              className="px-6 py-2.5 bg-[#C05299] text-white font-semibold rounded-lg hover:bg-[#9b3d7a] transition-all shadow-lg shadow-pink-500/30 hover:shadow-xl hover:shadow-pink-500/40 hover:-translate-y-0.5"
-            >
-              Get Started
-            </Link>
-          </div>
+{/* Navigation */}
+<nav className="fixed top-0 w-full bg-white/80 backdrop-blur-lg z-50 border-b border-gray-100">
+  <div className="max-w-7xl mx-auto px-6 py-4">
+    <div className="flex items-center justify-between">
+      {/* Logo */}
+      <div className="flex items-center gap-2">
+        <img
+          src={logo}
+          alt="Logo"
+          className="h-9 w-9 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 object-contain"
+        />
+      </div>
+
+      {/* Desktop Navigation */}
+      <div className="hidden md:flex items-center gap-8 ml-[135px]">
+        <a 
+          href="#features" 
+          onClick={(e) => handleScrollToSection(e, 'features')}
+          className="text-gray-700 hover:text-[#C05299] transition-colors cursor-pointer"
+        >
+          Features
+        </a>
+        <a 
+          href="#testimonials" 
+          onClick={(e) => handleScrollToSection(e, 'testimonials')}
+          className="text-gray-700 hover:text-[#C05299] transition-colors cursor-pointer"
+        >
+          Testimonials
+        </a>
+        <a 
+          href="#about" 
+          onClick={(e) => handleScrollToSection(e, 'about')}
+          className="text-gray-700 hover:text-[#C05299] transition-colors cursor-pointer"
+        >
+          About
+        </a>
+      </div>
+
+      {/* Desktop Auth Buttons */}
+      <div className="hidden md:flex items-center gap-4">
+        <Link
+          to="/login"
+          className="text-gray-700 hover:text-[#C05299] transition-colors font-medium"
+        >
+          Login
+        </Link>
+        <Link
+          to="/register"
+          className="px-6 py-2.5 bg-[#C05299] text-white font-semibold rounded-lg hover:bg-[#9b3d7a] transition-all shadow-lg shadow-pink-500/30 hover:shadow-xl hover:shadow-pink-500/40 hover:-translate-y-0.5"
+        >
+          Get Started
+        </Link>
+      </div>
+
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setIsVisible(prev => ({ ...prev, mobileMenu: !prev.mobileMenu }))}
+        className="md:hidden p-2 text-gray-700 hover:text-[#C05299] transition-colors"
+      >
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          {isVisible.mobileMenu ? (
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          ) : (
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          )}
+        </svg>
+      </button>
+    </div>
+
+    {/* Mobile Menu */}
+    {isVisible.mobileMenu && (
+      <div className="md:hidden mt-4 pb-4 border-t border-gray-100 pt-4 space-y-4">
+        <a 
+          href="#features" 
+          onClick={(e) => {
+            handleScrollToSection(e, 'features');
+            setIsVisible(prev => ({ ...prev, mobileMenu: false }));
+          }}
+          className="block text-gray-700 hover:text-[#C05299] transition-colors cursor-pointer py-2"
+        >
+          Features
+        </a>
+        <a 
+          href="#testimonials" 
+          onClick={(e) => {
+            handleScrollToSection(e, 'testimonials');
+            setIsVisible(prev => ({ ...prev, mobileMenu: false }));
+          }}
+          className="block text-gray-700 hover:text-[#C05299] transition-colors cursor-pointer py-2"
+        >
+          Testimonials
+        </a>
+        <a 
+          href="#about" 
+          onClick={(e) => {
+            handleScrollToSection(e, 'about');
+            setIsVisible(prev => ({ ...prev, mobileMenu: false }));
+          }}
+          className="block text-gray-700 hover:text-[#C05299] transition-colors cursor-pointer py-2"
+        >
+          About
+        </a>
+        <div className="pt-4 space-y-3 border-t border-gray-100">
+          <Link
+            to="/login"
+            className="block text-center py-2.5 text-gray-700 hover:text-[#C05299] transition-colors font-medium"
+          >
+            Login
+          </Link>
+          <Link
+            to="/register"
+            className="block text-center px-6 py-2.5 bg-[#C05299] text-white font-semibold rounded-lg hover:bg-[#9b3d7a] transition-all shadow-lg shadow-pink-500/30"
+          >
+            Get Started
+          </Link>
         </div>
-      </nav>
+      </div>
+    )}
+  </div>
+</nav>
 
       {/* Hero Section */}
       <section className="pt-32 pb-20 px-6 bg-gradient-to-b from-pink-50 to-white">
@@ -230,36 +302,9 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section id="stats" className="py-24 bg-gradient-to-br from-[#C05299] to-[#9b3d7a] text-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <h2 className="text-4xl md:text-5xl font-bold text-center mb-16">
-            Trusted by thousands worldwide
-          </h2>
-          <div className="grid md:grid-cols-4 gap-12 text-center">
-            <div className="space-y-2">
-              <TrendingUp className="w-12 h-12 mx-auto mb-4" />
-              <div className="text-5xl font-bold">98%</div>
-              <div className="text-white/80">Feel better</div>
-            </div>
-            <div className="space-y-2">
-              <MessageCircle className="w-12 h-12 mx-auto mb-4" />
-              <div className="text-5xl font-bold">1M+</div>
-              <div className="text-white/80">Conversations</div>
-            </div>
-            <div className="space-y-2">
-              <Users className="w-12 h-12 mx-auto mb-4" />
-              <div className="text-5xl font-bold">500+</div>
-              <div className="text-white/80">Communities</div>
-            </div>
-            <div className="space-y-2">
-              <Heart className="w-12 h-12 mx-auto mb-4" />
-              <div className="text-5xl font-bold">100K+</div>
-              <div className="text-white/80">Happy users</div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* About section */}
+
+      <About />
 
       {/* Testimonials */}
       <section id="testimonials" className="py-24 px-6 bg-gray-50">
@@ -269,9 +314,9 @@ export default function Landing() {
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { quote: "GrowMind helped me find hope again. The community is so supportive and understanding.", author: "Sarah M." },
-              { quote: "The chatbot feels like talking to a friend. It's there whenever I need it most.", author: "James K." },
-              { quote: "Tracking my progress showed me how far I've come. This app changed my life.", author: "Maya P." }
+              { quote: "Vibes helped me find hope again. The community is so supportive and understanding.", author: "Sarah" },
+              { quote: "The chatbot feels like talking to a friend. It's there whenever I need it most.", author: "Hamzeh" },
+              { quote: "Seeing my mental analysis really helped me to understand my emotions, This app changed my life.", author: "Omar" }
             ].map((testimonial, i) => (
               <div key={i} className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
                 <div className="flex mb-4">

@@ -1,139 +1,80 @@
 import React from 'react';
+import { Heart, Shield, Users} from "lucide-react";
 
 export default function About() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#B8E986] via-[#9FD6E2] to-[#DCC6A0] p-6 relative overflow-hidden">
-      {/* Enhanced background with all colors */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Main gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#B8E986]/30 via-[#73C174]/20 to-[#9FD6E2]/25"></div>
-        
-        {/* Animated floating shapes */}
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-[#B8E986]/20 rounded-full mix-blend-multiply filter blur-3xl animate-float"></div>
-        <div className="absolute top-1/3 right-1/4 w-80 h-80 bg-[#73C174]/15 rounded-full mix-blend-multiply filter blur-3xl animate-float" style={{animationDelay: '2s'}}></div>
-        <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-[#9FD6E2]/25 rounded-full mix-blend-multiply filter blur-3xl animate-float" style={{animationDelay: '4s'}}></div>
-        <div className="absolute bottom-1/3 right-1/3 w-60 h-60 bg-[#DCC6A0]/20 rounded-full mix-blend-multiply filter blur-3xl animate-float" style={{animationDelay: '1s'}}></div>
-        
-        {/* Geometric patterns */}
-        <div className="absolute top-20 left-20 w-32 h-32 border-4 border-[#73C174]/10 rounded-3xl rotate-45"></div>
-        <div className="absolute bottom-20 right-20 w-24 h-24 border-4 border-[#B8E986]/10 rounded-2xl -rotate-12"></div>
-        <div className="absolute top-40 right-40 w-16 h-16 border-4 border-[#DCC6A0]/10 rounded-xl rotate-30"></div>
-      </div>
-
-      <style jsx>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(180deg); }
-        }
-        .animate-float {
-          animation: float 8s ease-in-out infinite;
-        }
-      `}</style>
-
-      <div className="max-w-4xl relative z-10">
-        {/* Header section */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-[#73C174] to-[#B8E986] rounded-3xl shadow-2xl shadow-[#73C174]/30 mb-8 transform hover:scale-105 transition-transform duration-300">
-            <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-            </svg>
+    <section id="about" className="py-24 px-6 bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 relative overflow-hidden">
+      <div className="absolute top-0 left-0 w-96 h-96 bg-[#C05299]/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-400/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
+      
+      <div className="max-w-6xl mx-auto relative">
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full text-[#C05299] font-semibold mb-6 shadow-lg">
+            
+            <span>About Vibes</span>
           </div>
-          <h1 className="text-5xl font-bold text-gray-800 mb-4 drop-shadow-sm">
-            Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#73C174] via-[#B8E986] to-[#9FD6E2]">Mindful Space</span>
-          </h1>
-          <p className="text-gray-700 text-xl font-light">Your safe haven for mental wellness and personal growth</p>
+          <h2 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+            You're in a{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#C05299] to-purple-600">
+              safe place
+            </span>
+          </h2>
         </div>
 
-        {/* Main content card */}
-        <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl shadow-black/10 border border-white/40 overflow-hidden transform transition-all duration-500 hover:shadow-3xl hover:shadow-[#73C174]/20">
-          {/* Gradient progress bar */}
-          <div className="h-2 bg-gradient-to-r from-[#B8E986] via-[#73C174] to-[#9FD6E2]"></div>
-          
-          <div className="p-12">
-            <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed">
-              <p className="text-2xl mb-10 font-light tracking-wide text-center">
-                <span className="inline-block text-6xl font-black bg-gradient-to-br from-[#B8E986] to-[#73C174] bg-clip-text text-transparent mr-3 align-top leading-none mt-1">H</span>
-                ere in our community, we prioritize mental health and create a supportive environment where everyone's journey is valued and respected.
-              </p>
-
-              <div className="grid md:grid-cols-2 gap-10 mb-12">
-                <div className="space-y-8">
-                  <div className="flex items-start gap-5 p-6 bg-gradient-to-br from-white to-[#F0F0F0] rounded-2xl border border-[#B8E986]/20 hover:border-[#73C174]/30 transition-all duration-300">
-                    <div className="w-14 h-14 bg-gradient-to-br from-[#B8E986] to-[#73C174] rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#B8E986]/30">
-                      <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-gray-800 mb-3 text-lg">Community Support</h3>
-                      <p className="text-gray-600">Connect with others who understand your journey and share similar experiences in a warm, welcoming space.</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-5 p-6 bg-gradient-to-br from-white to-[#F0F0F0] rounded-2xl border border-[#9FD6E2]/20 hover:border-[#9FD6E2]/40 transition-all duration-300">
-                    <div className="w-14 h-14 bg-gradient-to-br from-[#9FD6E2] to-[#DCC6A0] rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#9FD6E2]/30">
-                      <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-gray-800 mb-3 text-lg">Safe Environment</h3>
-                      <p className="text-gray-600">Share your story in a judgment-free space where privacy, respect, and understanding are our top priorities.</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-8">
-                  <div className="flex items-start gap-5 p-6 bg-gradient-to-br from-white to-[#F0F0F0] rounded-2xl border border-[#73C174]/20 hover:border-[#B8E986]/30 transition-all duration-300">
-                    <div className="w-14 h-14 bg-gradient-to-br from-[#73C174] to-[#B8E986] rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#73C174]/30">
-                      <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-gray-800 mb-3 text-lg">Emotional Wellness</h3>
-                      <p className="text-gray-600">Focus on your mental health with personalized tools and compassionate support designed for your unique wellbeing journey.</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-5 p-6 bg-gradient-to-br from-white to-[#F0F0F0] rounded-2xl border border-[#DCC6A0]/20 hover:border-[#9FD6E2]/30 transition-all duration-300">
-                    <div className="w-14 h-14 bg-gradient-to-br from-[#DCC6A0] to-[#9FD6E2] rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#DCC6A0]/30">
-                      <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-gray-800 mb-3 text-lg">Growth & Healing</h3>
-                      <p className="text-gray-600">Move forward with your life while receiving the ongoing support and guidance you need to not just survive, but truly thrive.</p>
-                    </div>
-                  </div>
-                </div>
+        <div className="bg-white/70 backdrop-blur-lg rounded-3xl shadow-2xl p-8 md:p-12 border border-white/50">
+          <div className="grid md:grid-cols-3 gap-8 mb-12">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-[#C05299] to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <Heart className="w-8 h-8 text-white" />
               </div>
-
-              {/* Inspiration box */}
-              <div className="text-center p-8 bg-gradient-to-r from-[#F0F0F0] to-white rounded-2xl border border-[#73C174]/20 shadow-lg">
-                <p className="text-xl text-gray-700 font-medium leading-relaxed">
-                  Remember: Everything you feel right now is temporary. You have the strength to get through this, 
-                  and our community is here to help you{" "}
-                  <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#73C174] to-[#B8E986]">
-                    move forward and thrive
-                  </span>.
-                </p>
+              <h3 className="font-bold text-gray-900 text-lg mb-2">We Care</h3>
+              <p className="text-gray-600">Mental health is our priority</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <Shield className="w-8 h-8 text-white" />
               </div>
+              <h3 className="font-bold text-gray-900 text-lg mb-2">Safe Community</h3>
+              <p className="text-gray-600">Supportive and understanding</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <Users className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="font-bold text-gray-900 text-lg mb-2">Shared Experience</h3>
+              <p className="text-gray-600">People who understand you</p>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-[#C05299]/5 to-purple-500/5 rounded-2xl p-8 border-l-4 border-[#C05299]">
+            <p className="text-lg md:text-xl text-gray-700 leading-relaxed">
+              Here at <span className="font-bold text-[#C05299]">Vibes</span>, we care deeply about mental health. 
+              You're in a safe place among people who face the same issues and have gone through exactly what you're 
+              experiencing right now. Whatever you're feeling, you will get through it by hearing others' thoughts 
+              and opinions. Don't be afraid to share your story—our community is more than welcome to hear you and 
+              offer the best support so you can move forward with your life and{" "}
+              <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#C05299] to-purple-600">
+                Vibe with us!
+              </span>
+            </p>
+          </div>
+
+          <div className="mt-8 flex flex-wrap gap-4 justify-center">
+            <div className="flex items-center gap-2 px-4 py-2 bg-pink-100 rounded-full">
+              <span className="w-2 h-2 bg-[#C05299] rounded-full animate-pulse"></span>
+              <span className="text-sm font-medium text-[#C05299]">Anonymous & Safe</span>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 bg-purple-100 rounded-full">
+              <span className="w-2 h-2 bg-purple-600 rounded-full animate-pulse"></span>
+              <span className="text-sm font-medium text-purple-600">24/7 Support</span>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 bg-blue-100 rounded-full">
+              <span className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></span>
+              <span className="text-sm font-medium text-blue-600">Real Stories</span>
             </div>
           </div>
         </div>
-
-        {/* Call to action */}
-        <div className="text-center mt-10">
-          <button className="px-10 py-5 bg-gradient-to-r from-[#73C174] to-[#B8E986] text-white font-bold text-lg rounded-2xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-xl shadow-[#73C174]/40 hover:shadow-[#73C174]/60">
-            Join Our Community Today
-          </button>
-          <p className="text-gray-600 text-base mt-5 font-medium">
-            Start your journey to better mental health and personal growth
-          </p>
-        </div>
       </div>
-    </div>
+    </section>
   );
 }

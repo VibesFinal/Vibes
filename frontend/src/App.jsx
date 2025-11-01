@@ -235,7 +235,6 @@ const AdminRoute = ({element}) => {
             <Route path="/register" element={<Navigate to="/feed" replace/>} /> 
             <Route path="/user/verify/:token" element={<Activate />} />
             <Route path="/profile/:username" element={<Profile />} />
-            <Route path="/About" element={<About />} />
             
             <Route path="/Community" element={<Community />} />
             <Route path="/community/create" element={<CreateCommunity />} />
