@@ -24,7 +24,7 @@ const MessageList = ({ messages = [], currentUserId, onDeleteMessage, onEditMess
 
   // ⏬ Scroll when new messages arrive only if user is near bottom
   useEffect(() => {
-    if (isUserNearBottom) scrollToBottom('smooth');
+    if (isUserNearBottom) scrollToBottom('instant');
   }, [messages, isUserNearBottom]);
 
   // ⬇️ Initial scroll on mount

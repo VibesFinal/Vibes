@@ -136,16 +136,17 @@ const AdminRoute = ({element}) => {
             <NotificationBell />
           </Navigation>
 
-          <FloatingFAQButton onClick={() => setShowChatBot(true)} />
+<FloatingFAQButton onClick={() => setShowChatBot(true)} />
 {showChatBot && (
   <div 
-    className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4"
+    className="fixed inset-0 z-[60] bg-black/30"
     style={{ animation: 'fadeIn 0.15s ease-out' }}
     onClick={() => setShowChatBot(false)}
   >
+    {/* Position chatbot to the RIGHT of the floating button */}
     <div 
-      className="bg-white rounded-3xl shadow-2xl w-full max-w-md h-[600px] sm:h-[650px] relative overflow-hidden"
-      style={{ animation: 'slideUp 0.2s ease-out' }}
+      className="absolute bottom-8 left-28 bg-white rounded-3xl shadow-2xl w-full max-w-md h-[600px] sm:h-[650px] overflow-hidden"
+      style={{ animation: 'slideRight 0.2s ease-out' }}
       onClick={(e) => e.stopPropagation()}
     >
       {/* Header */}
@@ -199,6 +200,24 @@ const AdminRoute = ({element}) => {
         <Chatbot />
       </div>
     </div>
+
+    {/* Add animations */}
+    <style>{`
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      @keyframes slideRight {
+        from {
+          opacity: 0;
+          transform: translateX(-30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+    `}</style>
   </div>
 )}
 
@@ -240,7 +259,7 @@ const AdminRoute = ({element}) => {
             <Route path="*" element={<Error />} />
           </Routes>
 
-          {currentUser?.id && <InviteButton userId={currentUser.id} />}
+  
         </NotificationProvider>
       )}
 

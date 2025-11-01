@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import logo from "./images/v_logo.png";
 import { UserCircle, House, UsersThree, ChatCircle, CaretDown, MagnifyingGlass, X, List, } from "phosphor-react";
 import NotificationBell from "./NotificationBell";
+import InviteButton from "./InviteButton";
 
 export default function Navigation({ onLogout }) {
   const navigate = useNavigate();
@@ -164,6 +165,7 @@ export default function Navigation({ onLogout }) {
                 )}
               </div>
 
+
               {/* Notification Bell */}
               <div className="hidden sm:block">
                 <NotificationBell />
@@ -224,6 +226,14 @@ export default function Navigation({ onLogout }) {
                           </div>
                         </div>
                       </div>
+
+                            {currentUser?.id && (
+
+                              <div className="px-4 py-3 border-b border-gray-100">
+                                <InviteButton userId={currentUser.id} />
+                              </div>
+                              
+                            )}
 
                       {currentUser?.role === "admin" && (
                         <Link
