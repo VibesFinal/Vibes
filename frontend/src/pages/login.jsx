@@ -37,7 +37,7 @@ export default function Login({ onLogin }) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row relative">
+    <div className="min-h-[85vh] flex flex-col lg:flex-row relative">
       {/* Animated mesh gradient background */}
       <div className="fixed inset-0 bg-gradient-to-br from-purple-50 to-pink-50 -z-10">
         <div className="absolute inset-0 opacity-20">
@@ -48,7 +48,7 @@ export default function Login({ onLogin }) {
       </div>
 
       {/* Welcome Section (now visible on all screens) */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-center items-center text-center px-6 sm:px-12 py-10 sm:py-16 relative z-10">
+      <div className="w-full lg:w-1/2 flex flex-col justify-center items-center text-center px-6 sm:px-12 pt-20 sm:pt-20 relative z-10">
         <img src={logo} alt="Logo" className="w-16 sm:w-20 mb-6" />
         <h1 className="text-3xl sm:text-5xl font-bold text-[#C05299] mb-4 sm:mb-6">
           Welcome Back
@@ -59,53 +59,57 @@ export default function Login({ onLogin }) {
       </div>
 
       {/* Login Form */}
-      <div className="w-full lg:w-1/2 flex flex-col items-center justify-center px-4 sm:px-8 py-10 relative z-10">
+      <div className="w-full lg:w-1/2 flex flex-col items-center justify-center px-4 sm:px-8 py-10 pt-24 sm:pt-24 pb-6 relative z-10 lg:translate-y-8">
         <div className="w-full max-w-md space-y-6">
           <h2 className="text-2xl font-bold text-[#C05299] text-center">
             Login
           </h2>
+          
+          <div className="backdrop-blur-sm rounded-2xl sm:rounded-3xl px-6 sm:px-8 pt-0 lg:pt-0 pb-6 sm:pb-8">
+            <div className="space-y-5 sm:space-y-6">
+              <input
+                type="text"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+                className="appearance-none w-full px-4 sm:px-5 py-3 sm:py-4 bg-white/70 border-2 border-[#C05299] rounded-xl focus:border-[#C0529950] focus:outline-none focus:ring-2 focus:ring-[#C05299] transition-colors text-gray-800 placeholder:text-purple-400 text-base"
+              />
 
-          <input
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-            className="appearance-none w-full px-5 py-4 bg-purple-50/50 border-2 border-[#C05299] rounded-xl focus:border-[#C05299] focus:outline-none focus:ring-2 focus:ring-[#C05299] transition text-gray-800 placeholder:text-purple-400"
-          />
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="appearance-none w-full px-5 py-4 bg-purple-50/50 border-2 border-[#C05299] rounded-xl focus:border-[#C05299] focus:outline-none focus:ring-2 focus:ring-[#C05299] transition text-gray-800 placeholder:text-purple-400"
+              />
 
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="appearance-none w-full px-5 py-4 bg-purple-50/50 border-2 border-[#C05299] rounded-xl focus:border-[#C05299] focus:outline-none focus:ring-2 focus:ring-[#C05299] transition text-gray-800 placeholder:text-purple-400"
-          />
+              <button
+                onClick={handleSubmit}
+                disabled={isLoading}
+                className="w-full bg-gradient-to-r from-[#9333EA] to-[#C05299] hover:from-[#7E22CE] hover:to-[#A74482] text-white font-semibold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+              >
+                {isLoading ? "Logging in..." : "Login"}
+              </button>
 
-          <button
-            onClick={handleSubmit}
-            disabled={isLoading}
-            className="w-full bg-gradient-to-r from-[#9333EA] to-[#C05299] hover:from-[#7E22CE] hover:to-[#A74482] text-white font-semibold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
-          >
-            {isLoading ? "Logging in..." : "Login"}
-          </button>
+              <button
+                type="button"
+                onClick={() => navigate("/register")}
+                className="w-full border-2 border-[#C05299] text-[#C05299] font-semibold py-3 rounded-xl hover:bg-gradient-to-r hover:from-[#9333EA] hover:to-[#C05299] hover:text-white hover:border-transparent transition-all duration-300 shadow-md"
+              >
+                Create your account
+              </button>
 
-          <button
-            type="button"
-            onClick={() => navigate("/register")}
-            className="w-full border-2 border-[#C05299] text-[#C05299] font-semibold py-3 rounded-xl hover:bg-gradient-to-r hover:from-[#9333EA] hover:to-[#C05299] hover:text-white hover:border-transparent transition-all duration-300 shadow-md"
-          >
-            Create your account
-          </button>
-
-          <button
-            type="button"
-            onClick={() => navigate("/forgot-password")}
-            className="w-full text-purple-600 font-semibold py-2 rounded-xl hover:bg-purple-100 transition-colors"
-          >
-            Forgot Password?
-          </button>
+              <button
+                type="button"
+                onClick={() => navigate("/forgot-password")}
+                className="w-full text-purple-600 font-semibold py-2 rounded-xl hover:bg-purple-100 transition-colors"
+              >
+                Forgot Password?
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
