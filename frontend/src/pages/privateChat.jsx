@@ -1,278 +1,312 @@
-// pages/PrivateChat.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
 import axiosInstance from '../api/axiosInstance';
-import ChatHeader from '../components/ChatComponents/ChatHeader';
-import MessageList from '../components/ChatComponents/MessageList';
-import MessageInput from '../components/ChatComponents/MessageInput';
-import DeleteConfirmationModal from '../components/ChatComponents/DeleteConfirmationModal';
-import { showAlert, handleError } from '../utils/alertUtils';
+import ChatHeader from '../components/TherapistChat/ChatHeader';
+import MessageList from '../components/TherapistChat/MessageList';
+import MessageInput from '../components/TherapistChat/MessageInput';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:7777';
 
-const chatStyles = {
-  container: {
-    background: 'linear-gradient(135deg, #F0F0F0 0%, #DCC6A0 50%, #9FD6E2 100%)',
-    minHeight: '100vh',
-    padding: '20px'
-  },
-  chatWrapper: {
-    background: 'rgba(255, 255, 255, 0.95)',
-    backdropFilter: 'blur(10px)',
-    borderRadius: '20px',
-    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(184, 233, 134, 0.3)',
-    overflow: 'hidden',
-    border: '1px solid rgba(184, 233, 134, 0.2)'
-  },
-  gradientBorder: {
-    background: 'linear-gradient(90deg, #B8E986, #73C174, #9FD6E2, #DCC6A0)',
-    height: '4px',
-    width: '100%'
-  }
-};
-
-const PrivateChat = ({ recipientId, onBack }) => {
+const PrivateChat = ({ recipientId, recipientName, onBack }) => {
+  const [socket, setSocket] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
-  const [socket, setSocket] = useState(null);
-  const [editingMessageId, setEditingMessageId] = useState(null);
-  const [editContent, setEditContent] = useState('');
-  const [deleteConfirmMessageId, setDeleteConfirmMessageId] = useState(null);
-  const [recipientName, setRecipientName] = useState('Therapist');
   const [isConnected, setIsConnected] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [error, setError] = useState(null);
+  
+  const socketRef = useRef(null);
 
-  const token = localStorage.getItem('token');
-
-  const getCurrentUserId = () => {
-    if (!token) {
-      showAlert("You must be logged in to chat");
-      return null;
-    }
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.id;
-    } catch (e) {
-      handleError(e);
-      return null;
-    }
-  };
-
-  const currentUserId = getCurrentUserId();
-
+  // Get current user ID from token
   useEffect(() => {
-    if (!token || !recipientId) return;
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        setCurrentUserId(payload.id);
+        console.log('✅ Current user ID:', payload.id);
+      } catch (e) {
+        console.error('❌ Error parsing token:', e);
+        setError('Invalid token');
+      }
+    } else {
+      console.error('❌ No token found');
+      setError('Not authenticated');
+    }
+  }, []);
 
-    const newSocket = io(`${API_URL}/private`, { 
-      auth: { token }, 
+  // Initialize socket connection
+  useEffect(() => {
+    if (!currentUserId || !recipientId) {
+      console.log('⏳ Waiting for user IDs...', { currentUserId, recipientId });
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('❌ No token');
+      setError('Not authenticated');
+      return;
+    }
+
+    console.log('🔌 Connecting to socket...');
+    console.log('API URL:', API_URL);
+    console.log('Namespace: /private');
+
+    // Create socket connection to /private namespace
+    const newSocket = io(`${API_URL}/private`, {
+      auth: { token },
       transports: ['websocket', 'polling'],
       reconnection: true,
+      reconnectionDelay: 1000,
       reconnectionAttempts: 5,
+      timeout: 20000
     });
-    
+
+    socketRef.current = newSocket;
     setSocket(newSocket);
 
+    // Connection events
     newSocket.on('connect', () => {
+      console.log('✅ Socket connected:', newSocket.id);
       setIsConnected(true);
-      console.log('✅ Connected to private chat namespace');
+      setError(null);
+      
+      // Join private chat room
+      newSocket.emit('joinPrivateChat', { recipientId });
+      console.log('💬 Joined private chat with:', recipientId);
     });
 
-    newSocket.on('disconnect', () => {
+    newSocket.on('disconnect', (reason) => {
+      console.log('❌ Socket disconnected:', reason);
       setIsConnected(false);
-      console.log('🔴 Disconnected from private chat namespace');
     });
 
-    const handleMessage = (payload) => {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: payload.id,
-          sender_id: payload.senderId,
-          content: payload.content,
-          created_at: payload.timestamp || new Date().toISOString(),
-          is_deleted: false,
-          is_edited: false,
-          username: payload.username,
-        },
-      ]);
-    };
-
-    const handleEdit = ({ id, content, editedAt }) => {
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === id ? { ...msg, content, edited_at: editedAt, is_edited: true } : msg
-        )
-      );
-    };
-
-    const handleDelete = ({ id }) => {
-      setMessages((prev) =>
-        prev.map((msg) => (msg.id === id ? { ...msg, is_deleted: true, content: '' } : msg))
-      );
-    };
-
-    newSocket.on('privateMessageReceived', handleMessage);
-    newSocket.on('privateMessageSent', handleMessage);
-    newSocket.on('privateMessageEdited', handleEdit);
-    newSocket.on('privateMessageDeleted', handleDelete);
-    newSocket.on('privateMessageError', (err) => {
-      console.error('Chat error:', err);
-      showAlert('Failed to send message: ' + err);
+    newSocket.on('connect_error', (error) => {
+      console.error('❌ Connection error:', error);
+      setIsConnected(false);
+      setError('Connection failed. Check if server is running.');
     });
 
+    newSocket.on('connect_timeout', () => {
+      console.error('❌ Connection timeout');
+      setError('Connection timeout. Check server.');
+    });
+
+    // Message events
+    newSocket.on('privateMessageReceived', (message) => {
+      console.log('📨 Received message:', message);
+      
+      // Add message to list
+      setMessages(prev => {
+        // Avoid duplicates
+        const exists = prev.some(m => m.id === message.id);
+        if (exists) return prev;
+        return [...prev, message];
+      });
+    });
+
+    newSocket.on('privateMessageSent', (message) => {
+      console.log('✅ Message sent:', message);
+      
+      // Add message to list
+      setMessages(prev => {
+        // Avoid duplicates
+        const exists = prev.some(m => m.id === message.id);
+        if (exists) return prev;
+        return [...prev, message];
+      });
+    });
+
+    // Message edited event
+    newSocket.on('messageEdited', ({ messageId, newContent }) => {
+      console.log('✏️ Message edited:', messageId);
+      
+      setMessages(prev => prev.map(msg => 
+        msg.id === messageId 
+          ? { ...msg, content: newContent, is_edited: true, isEdited: true }
+          : msg
+      ));
+    });
+
+    // Message deleted event
+    newSocket.on('messageDeleted', ({ messageId }) => {
+      console.log('🗑️ Message deleted:', messageId);
+      
+      setMessages(prev => prev.filter(msg => msg.id !== messageId));
+    });
+
+    // Typing indicator
+    newSocket.on('userTyping', ({ userId }) => {
+      console.log('⌨️ User typing:', userId);
+    });
+
+    // Cleanup on unmount
     return () => {
-      console.log('🧹 Cleaning up private chat socket');
-      newSocket.close();
-    };
-  }, [recipientId, token]);
-
-  useEffect(() => {
-    if (!recipientId || !token) return;
-    const fetchHistory = async () => {
-      try {
-        const res = await axiosInstance.get(`/private/history/${recipientId}`);
-        
-        if (!res.data || !res.data.success) {
-          console.error('Unexpected response:', res.data);
-          handleError(res.data?.message || 'Failed to load chat history');
-          return;
-        }
-        
-        const messagesArray = res.data.data || [];
-        
-        const recipientMessage = messagesArray.find(msg => msg.sender_id === recipientId);
-        if (recipientMessage) {
-          setRecipientName(recipientMessage.username || 'Therapist');
-        }
-        
-        setMessages(
-          messagesArray.map((msg) => ({
-            ...msg,
-            is_deleted: msg.is_deleted || false,
-            is_edited: !!msg.edited_at,
-          }))
-        );
-      } catch (err) {
-        console.error('Failed to load chat history:', err);
-        
-        if (err.response?.data?.message) {
-          handleError(err.response.data.message);
-        } else {
-          handleError('Failed to load chat history');
-        }
+      console.log('🧹 Cleaning up socket connection');
+      if (newSocket) {
+        newSocket.emit('leavePrivateChat', { recipientId });
+        newSocket.close();
       }
     };
-    fetchHistory();
-  }, [recipientId, token]);
+  }, [currentUserId, recipientId]);
+
+  // Load message history
+  useEffect(() => {
+    if (!recipientId || !currentUserId) return;
+
+    const loadMessages = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        
+        
+        const response = await fetch(`${API_URL}/private/history/${recipientId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        console.log('📜 Response status:', response.status);
+        
+        if (response.ok) {
+          const data = await response.json();
+          
+          // Handle different response formats
+          const messageList = data.messages || data.data || [];
+          
+          console.log('✅ Loaded messages:', messageList.length);
+          setMessages(messageList);
+        } else {
+          console.warn('⚠️ Failed to load messages:', response.status);
+          // Don't show error, just log it
+        }
+      } catch (error) {
+        console.error('❌ Error loading messages:', error);
+        // Don't show error, just log it
+      }
+    };
+
+    loadMessages();
+  }, [recipientId, currentUserId]);
 
   const handleSendMessage = () => {
-    if (!newMessage.trim() || !socket) return;
-    socket.emit('sendPrivateMessage', { recipientId, content: newMessage.trim() });
+    if (!newMessage.trim() || !socket || !isConnected) {
+      console.warn('Cannot send message:', { 
+        hasMessage: !!newMessage.trim(), 
+        hasSocket: !!socket, 
+        isConnected 
+      });
+      return;
+    }
+
+    console.log('📤 Sending message to:', recipientId);
+    
+    // Send via socket
+    socket.emit('sendPrivateMessage', {
+      recipientId,
+      content: newMessage.trim()
+    });
+
+    // Emit typing stopped
+    socket.emit('stopTyping', { recipientId });
+
     setNewMessage('');
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
+  const handleTyping = () => {
+    if (socket && isConnected) {
+      socket.emit('userTyping', { recipientId });
     }
   };
 
-  const handleEditMessage = (msg) => {
-    if (msg.sender_id !== currentUserId || msg.is_deleted) return;
-    setEditingMessageId(msg.id);
-    setEditContent(msg.content);
-  };
+  const handleSendFile = (fileData) => {
+    if (!socket || !isConnected) {
+      console.warn('Cannot send file: socket not connected');
+      return;
+    }
 
-  const handleSaveEdit = () => {
-    if (!socket || !editContent.trim()) return;
-    socket.emit('editPrivateMessage', { messageId: editingMessageId, newContent: editContent.trim() });
-    setEditingMessageId(null);
-    setEditContent('');
+    console.log('📎 Sending file to:', recipientId);
+    
+    socket.emit('sendPrivateFile', {
+      recipientId,
+      ...fileData
+    });
   };
 
   const handleDeleteMessage = (messageId) => {
-    setDeleteConfirmMessageId(messageId);
-  };
-
-  const confirmDelete = () => {
-    if (socket && deleteConfirmMessageId) {
-      socket.emit('deletePrivateMessage', { messageId: deleteConfirmMessageId });
+    console.log('🗑️ Deleting message:', messageId);
+    
+    if (socket && isConnected) {
+      socket.emit('deleteMessage', { messageId });
+      
+      // Optimistically remove from UI
+      setMessages(prev => prev.filter(m => m.id !== messageId));
     }
-    setDeleteConfirmMessageId(null);
   };
 
-  const cancelDelete = () => setDeleteConfirmMessageId(null);
+  const handleEditMessage = (messageId, newContent) => {
+    console.log('✏️ Editing message:', messageId, newContent);
+    
+    if (socket && isConnected) {
+      socket.emit('editMessage', { messageId, newContent });
+      
+      // Optimistically update UI
+      setMessages(prev => prev.map(msg => 
+        msg.id === messageId 
+          ? { ...msg, content: newContent, is_edited: true, isEdited: true }
+          : msg
+      ));
+    }
+  };
 
   return (
-    <div style={chatStyles.container} className="min-h-screen p-5">
-      <div className="max-w-4xl mx-auto w-full h-full">
-        <div style={chatStyles.chatWrapper} className="flex flex-col h-[90vh]">
-          <div style={chatStyles.gradientBorder}></div>
-          
-          <div className={`px-4 py-1 text-xs font-medium text-center ${
-            isConnected ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-          }`}>
-            {isConnected ? '🟢 Connected' : '🔴 Disconnected'}
-          </div>
-
-          {/* Simple Header - Just name and back button */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white">
-            <button
-              onClick={onBack}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-              Back
-            </button>
-            <h2 className="text-xl font-semibold text-gray-800">{recipientName}</h2>
-            <div className="w-16"></div> {/* Spacer for centering */}
-          </div>
-          
-          <MessageList
-            messages={messages}
-            currentUserId={currentUserId}
-            recipientName={recipientName}
-            editingMessageId={editingMessageId}
-            editContent={editContent}
-            setEditContent={setEditContent}
-            handleSaveEdit={handleSaveEdit}
-            setEditingMessageId={setEditingMessageId}
-            handleEditMessage={handleEditMessage}
-            handleDeleteMessage={handleDeleteMessage}
-          />
-          
-          {/* Simple Input - Just textarea and send button */}
-          <div className="p-4 bg-white border-t border-gray-200">
-            <div className="flex gap-2 items-end">
-              <textarea
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Type a message..."
-                rows={1}
-                disabled={!isConnected}
-                className="flex-1 resize-none rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                style={{ minHeight: '44px', maxHeight: '120px' }}
-              />
-              <button
-                onClick={handleSendMessage}
-                disabled={!newMessage.trim() || !isConnected}
-                className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors h-[44px]"
-              >
-                Send
-              </button>
-            </div>
-          </div>
-          
-          <DeleteConfirmationModal
-            isOpen={deleteConfirmMessageId !== null}
-            onCancel={cancelDelete}
-            onConfirm={confirmDelete}
-          />
+    <div className="flex flex-col h-screen bg-gradient-to-br from-[#FCF0F8] to-[#F5E1F0]">
+      {/* Error banner */}
+      {error && (
+        <div className="bg-red-500 text-white px-4 py-2 text-center font-semibold">
+          ⚠️ {error}
         </div>
-      </div>
+      )}
+
+      {/* Header */}
+      <ChatHeader
+        recipientName={recipientName}
+        recipientId={recipientId}
+        onBack={onBack}
+        isConnected={isConnected}
+        socket={socket}
+      />
+
+      {/* Messages */}
+      <MessageList 
+        messages={messages} 
+        currentUserId={currentUserId}
+        onDeleteMessage={handleDeleteMessage}
+        onEditMessage={handleEditMessage}
+      />
+
+      {/* Input */}
+      <MessageInput
+        newMessage={newMessage}
+        setNewMessage={setNewMessage}
+        handleSendMessage={handleSendMessage}
+        isConnected={isConnected}
+        socket={socket}
+        recipientId={recipientId}
+        onSendFile={handleSendFile}
+        onTyping={handleTyping}
+      />
+
+      {/* Connection status indicator */}
+      {!isConnected && !error && (
+        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-yellow-400 to-yellow-500 text-white px-6 py-3 rounded-full shadow-xl animate-pulse z-50">
+          <div className="flex items-center space-x-2">
+            <div className="w-3 h-3 bg-white rounded-full animate-ping"></div>
+            <span className="font-semibold">Connecting to server...</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
