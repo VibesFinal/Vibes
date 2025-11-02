@@ -5,7 +5,7 @@ import ChatHeader from '../components/TherapistChat/ChatHeader';
 import MessageList from '../components/TherapistChat/MessageList';
 import MessageInput from '../components/TherapistChat/MessageInput';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:7777';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:7777';
 
 const PrivateChat = ({ recipientId, recipientName, onBack }) => {
   const [socket, setSocket] = useState(null);

@@ -7,7 +7,7 @@ import MessageList from '../components/chat/MessageList';
 import TypingIndicator from '../components/chat/TypingIndicator';
 import { showAlert, handleError } from '../utils/alertUtils';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:7777';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:7777';
 const SOCKET_SERVER_URL = API_URL;
 
 const CommunityChat = () => {
