@@ -63,7 +63,8 @@ export default function Navigation({ onLogout }) {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-xl shadow-sm border-b border-gray-100">
+      {/* Desktop Header - Hidden on Mobile */}
+      <header className="hidden md:block sticky top-0 z-50 bg-white/95 backdrop-blur-xl shadow-sm border-b border-gray-100">
         <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
@@ -79,13 +80,10 @@ export default function Navigation({ onLogout }) {
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-[#9333ea] to-[#a855f7] opacity-0 group-hover:opacity-20 rounded-full blur-xl transition-opacity duration-300"></div>
               </div>
-              {/* <span className="font-bold text-2xl text-[#C05299]">
-                ibes
-              </span> */}
             </div>
 
-            {/* Desktop Navigation - REMOVED CHATBOT LINK */}
-            <nav className="hidden md:flex items-center gap-1">
+            {/* Desktop Navigation */}
+            <nav className="flex items-center gap-1">
               <Link
                 to="/"
                 className={`nav-btn group ${location.pathname === "/" ? "text-[#C05299]" : ""}`}
@@ -128,7 +126,7 @@ export default function Navigation({ onLogout }) {
             {/* Right Section */}
             <div className="flex items-center gap-3">
               {/* Search Bar */}
-              <div className="relative hidden md:block w-[300px] lg:w-[400px]">
+              <div className="relative w-[300px] lg:w-[400px]">
                 <MagnifyingGlass
                   size={18}
                   className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
@@ -155,7 +153,8 @@ export default function Navigation({ onLogout }) {
                             className="h-8 w-8 rounded-full object-cover"
                           />
                         ) : (
-                      <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#C05299] to-[#d666ae] flex items-center justify-center text-white font-semibold">                            {user.username[0].toUpperCase()}
+                          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#C05299] to-[#d666ae] flex items-center justify-center text-white font-semibold">
+                            {user.username[0].toUpperCase()}
                           </div>
                         )}
                         <p className="font-medium text-gray-700">{user.username}</p>
@@ -165,14 +164,10 @@ export default function Navigation({ onLogout }) {
                 )}
               </div>
 
-
-              {/* Notification Bell */}
-              <div className="hidden sm:block">
-                <NotificationBell />
-              </div>
+              <NotificationBell />
 
               {/* Profile Dropdown */}
-              <div className="hidden md:block relative">
+              <div className="relative">
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                   className="flex items-center gap-2 p-1 pr-3 rounded-full hover:bg-gray-100 transition-all duration-300 group"
@@ -185,7 +180,8 @@ export default function Navigation({ onLogout }) {
                         className="h-9 w-9 rounded-full object-cover border-2 border-transparent group-hover:border-[#C05299] transition-all"
                       />
                     ) : (
-                    <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[#C05299] to-[#d666ae] flex items-center justify-center text-white font-semibold border-2 border-transparent group-hover:border-[#C05299] transition-all">                        {currentUser?.username?.[0]?.toUpperCase() || "U"}
+                      <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[#C05299] to-[#d666ae] flex items-center justify-center text-white font-semibold border-2 border-transparent group-hover:border-[#C05299] transition-all">
+                        {currentUser?.username?.[0]?.toUpperCase() || "U"}
                       </div>
                     )}
                     <div className="absolute bottom-0 right-0 h-3 w-3 bg-green-500 rounded-full border-2 border-white"></div>
@@ -227,13 +223,11 @@ export default function Navigation({ onLogout }) {
                         </div>
                       </div>
 
-                            {currentUser?.id && (
-
-                              <div className="px-4 py-3 border-b border-gray-100">
-                                <InviteButton userId={currentUser.id} />
-                              </div>
-
-                            )}
+                      {currentUser?.id && (
+                        <div className="px-4 py-3 border-b border-gray-100">
+                          <InviteButton userId={currentUser.id} />
+                        </div>
+                      )}
 
                       {currentUser?.role === "admin" && (
                         <Link
@@ -246,16 +240,11 @@ export default function Navigation({ onLogout }) {
                       )}
 
                       <Link
-                      
-                        to= "/health-faq#faq-section"
+                        to="/health-faq#faq-section"
                         className="flex items-center gap-3 px-4 py-3 hover:bg-[#F9E6F0] transition-colors"
                         onClick={() => setDropdownOpen(false)}
-                      
                       >
-
                         <span className="text-gray-700 font-medium">Learn more</span>
-                      
-                      
                       </Link>
 
                       <button
@@ -268,24 +257,178 @@ export default function Navigation({ onLogout }) {
                   </>
                 )}
               </div>
-
-              {/* Mobile Menu */}
-              <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                {mobileMenuOpen ? (
-                  <X size={24} className="text-gray-700" />
-                ) : (
-                  <List size={24} className="text-gray-700" />
-                )}
-              </button>
             </div>
           </div>
         </div>
       </header>
 
-      
+      {/* Mobile Top Bar - Only Logo, Search, and Notifications */}
+      <header className="md:hidden sticky top-0 z-50 bg-white/95 backdrop-blur-xl shadow-sm border-b border-gray-100">
+        <div className="px-4 py-3">
+          <div className="flex items-center justify-between gap-3">
+            {/* Logo */}
+            <div
+              className="flex items-center cursor-pointer"
+              onClick={() => navigate("/")}
+            >
+              <img src={logo} alt="Logo" className="h-8 w-8 object-contain" />
+            </div>
+
+            {/* Search Bar */}
+            <div className="relative flex-1 max-w-md">
+              <MagnifyingGlass
+                size={16}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              />
+              <input
+                type="text"
+                placeholder="Search..."
+                value={searchTerm}
+                onChange={handleSearch}
+                className="w-full pl-9 pr-3 py-2 rounded-full bg-gray-100 border border-transparent focus:border-[#C05299] focus:ring-2 focus:ring-[#C05299]/30 focus:bg-white outline-none transition-all text-sm"
+              />
+              {searchResults.length > 0 && (
+                <ul className="absolute mt-2 w-full bg-white rounded-xl shadow-lg border border-gray-100 max-h-60 overflow-y-auto z-50">
+                  {searchResults.map((user) => (
+                    <li
+                      key={user.id}
+                      onClick={() => handleSelectUser(user)}
+                      className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 cursor-pointer transition-all"
+                    >
+                      {user.profile_pic ? (
+                        <img
+                          src={user.profile_pic}
+                          alt={user.username}
+                          className="h-8 w-8 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#C05299] to-[#d666ae] flex items-center justify-center text-white font-semibold text-sm">
+                          {user.username[0].toUpperCase()}
+                        </div>
+                      )}
+                      <p className="font-medium text-gray-700 text-sm">{user.username}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            {/* Notification Bell */}
+            <NotificationBell />
+          </div>
+        </div>
+      </header>
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-lg">
+        <div className="grid grid-cols-5 h-16">
+          <Link
+            to="/"
+            className={`mobile-nav-btn ${location.pathname === "/" ? "active" : ""}`}
+          >
+            <House size={24} weight={location.pathname === "/" ? "fill" : "regular"} />
+            <span className="mobile-nav-label">Home</span>
+          </Link>
+
+          <Link
+            to="/community"
+            className={`mobile-nav-btn ${location.pathname === "/community" ? "active" : ""}`}
+          >
+            <UsersThree size={24} weight={location.pathname === "/community" ? "fill" : "regular"} />
+            <span className="mobile-nav-label">Community</span>
+          </Link>
+
+          <Link
+            to="/chat"
+            className={`mobile-nav-btn ${location.pathname === "/chat" ? "active" : ""}`}
+          >
+            <ChatCircle size={24} weight={location.pathname === "/chat" ? "fill" : "regular"} />
+            <span className="mobile-nav-label">Therapists</span>
+          </Link>
+
+          <Link
+            to={`/profile/${currentUser?.username}`}
+            className={`mobile-nav-btn ${location.pathname.startsWith("/profile") ? "active" : ""}`}
+          >
+            <UserCircle size={24} weight={location.pathname.startsWith("/profile") ? "fill" : "regular"} />
+            <span className="mobile-nav-label">Profile</span>
+          </Link>
+
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="mobile-nav-btn"
+          >
+            <List size={24} />
+            <span className="mobile-nav-label">Menu</span>
+          </button>
+        </div>
+      </nav>
+
+      {/* Mobile Menu Overlay */}
+      {mobileMenuOpen && (
+        <>
+          <div
+            className="md:hidden fixed inset-0 bg-black/50 z-40"
+            onClick={() => setMobileMenuOpen(false)}
+          ></div>
+          <div className="md:hidden fixed bottom-16 left-0 right-0 bg-white rounded-t-3xl shadow-2xl z-50 animate-slideUp max-h-[70vh] overflow-y-auto">
+            <div className="p-6">
+              {/* User Profile Section */}
+              <div className="flex items-center gap-3 mb-6 pb-6 border-b border-gray-200">
+                {currentUser?.profile_pic ? (
+                  <img
+                    src={currentUser.profile_pic}
+                    alt={currentUser.username}
+                    className="h-14 w-14 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="h-14 w-14 rounded-full bg-gradient-to-br from-[#C05299] to-[#d666ae] flex items-center justify-center text-white font-semibold text-xl">
+                    {currentUser?.username?.[0]?.toUpperCase() || "U"}
+                  </div>
+                )}
+                <div>
+                  <p className="font-semibold text-gray-900 text-lg">
+                    {currentUser?.username || "User"}
+                  </p>
+                  <p className="text-sm text-gray-500">{currentUser?.email}</p>
+                </div>
+              </div>
+
+              {/* Menu Items */}
+              {currentUser?.id && (
+                <div className="mb-4">
+                  <InviteButton userId={currentUser.id} />
+                </div>
+              )}
+
+              {currentUser?.role === "admin" && (
+                <Link
+                  to="/admin/certifications"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#F9E6F0] transition-colors mb-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <span className="text-gray-700 font-medium">Admin Dashboard</span>
+                </Link>
+              )}
+
+              <Link
+                to="/health-faq#faq-section"
+                className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#F9E6F0] transition-colors mb-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <span className="text-gray-700 font-medium">Learn more</span>
+              </Link>
+
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center justify-center gap-3 px-4 py-3 mt-4 rounded-xl bg-red-50 hover:bg-red-100 transition-colors"
+              >
+                <span className="text-red-600 font-medium">Logout</span>
+              </button>
+            </div>
+          </div>
+        </>
+      )}
 
       <style>{`
         .nav-btn {
@@ -312,20 +455,30 @@ export default function Navigation({ onLogout }) {
           font-size: 0.875rem;
         }
 
-        @keyframes gradient {
-          0% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
-          100% {
-            background-position: 0% 50%;
-          }
+        .mobile-nav-btn {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 0.25rem;
+          color: #6b7280;
+          transition: all 0.3s ease;
+          background: transparent;
+          border: none;
+          cursor: pointer;
         }
 
-        .animate-gradient {
-          animation: gradient 3s ease infinite;
+        .mobile-nav-btn.active {
+          color: #C05299;
+        }
+
+        .mobile-nav-btn:active {
+          transform: scale(0.95);
+        }
+
+        .mobile-nav-label {
+          font-size: 0.625rem;
+          font-weight: 500;
         }
 
         @keyframes slideDown {
@@ -341,6 +494,28 @@ export default function Navigation({ onLogout }) {
 
         .animate-slideDown {
           animation: slideDown 0.3s ease forwards;
+        }
+
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(100%);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .animate-slideUp {
+          animation: slideUp 0.3s ease forwards;
+        }
+
+        /* Add padding to body to prevent content from being hidden under bottom nav on mobile */
+        @media (max-width: 768px) {
+          body {
+            padding-bottom: 4rem;
+          }
         }
       `}</style>
     </>

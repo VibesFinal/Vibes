@@ -8,6 +8,7 @@ export default function Feed() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [newPost, setNewPost] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
+  const [showMobileFilter, setShowMobileFilter] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -26,12 +27,17 @@ export default function Feed() {
 
   const handlePostCreated = (post) => setNewPost(post);
 
+  const handleCategorySelect = (category) => {
+    setSelectedCategory(category);
+    setShowMobileFilter(false);
+  };
+
   const categories = [
-    { name: "Mindfulness",  gradient: "from-emerald-400 to-teal-500" },
-    { name: "Self Care",  gradient: "from-pink-400 to-rose-500" },
-    { name: "Anxiety",  gradient: "from-blue-400 to-cyan-500" },
-    { name: "Depression",  gradient: "from-indigo-400 to-purple-500" },
-    { name: "Positive Vibes",  gradient: "from-amber-400 to-orange-500" },
+    { name: "Mindfulness", gradient: "from-emerald-400 to-teal-500" },
+    { name: "Self Care", gradient: "from-pink-400 to-rose-500" },
+    { name: "Anxiety", gradient: "from-blue-400 to-cyan-500" },
+    { name: "Depression", gradient: "from-indigo-400 to-purple-500" },
+    { name: "Positive Vibes", gradient: "from-amber-400 to-orange-500" },
   ];
 
   return (
@@ -40,7 +46,7 @@ export default function Feed() {
       <WelcomeModal />
       
       {/* Animated mesh gradient background */}
-      <div className="fixed inset-0 opacity-20">
+      <div className="fixed inset-0 opacity-20 pointer-events-none">
         <div className="absolute top-0 -left-4 w-96 h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl animate-blob"></div>
         <div className="absolute top-0 -right-4 w-96 h-96 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000"></div>
         <div className="absolute -bottom-8 left-20 w-96 h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000"></div>
@@ -62,16 +68,88 @@ export default function Feed() {
         ))}
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-4 py-8 lg:py-12">
+      <div className="relative max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8 lg:py-12">
         
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Mobile Filter Button - Sticky at top */}
+        <div className="lg:hidden sticky top-16 z-40 mb-4">
+          <button
+            onClick={() => setShowMobileFilter(!showMobileFilter)}
+            className="w-full bg-white/90 backdrop-blur-xl rounded-2xl px-4 py-3 shadow-lg border border-purple-200/50 flex items-center justify-between group hover:bg-white transition-all"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#9333EA] to-[#C05299] flex items-center justify-center">
+                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-semibold text-slate-800">
+                  {selectedCategory || "All Posts"}
+                </p>
+                <p className="text-xs text-slate-500">Tap to filter</p>
+              </div>
+            </div>
+            <svg 
+              className={`w-5 h-5 text-slate-600 transition-transform ${showMobileFilter ? 'rotate-180' : ''}`}
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {/* Mobile Filter Dropdown */}
+          {showMobileFilter && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-purple-200/50 overflow-hidden animate-slideDown">
+              <div className="p-3 space-y-2 max-h-[60vh] overflow-y-auto">
+                {/* All Posts */}
+                <button
+                  onClick={() => handleCategorySelect("")}
+                  className={`w-full text-left px-4 py-3 rounded-xl font-semibold text-sm transition-all ${
+                    selectedCategory === ""
+                      ? "bg-gradient-to-r from-[#C05299] to-[#D473B3] text-white shadow-lg"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  }`}
+                >
+                  All Posts
+                </button>
+
+                {/* Categories */}
+                {categories.map((cat) => (
+                  <button
+                    key={cat.name}
+                    onClick={() => handleCategorySelect(cat.name)}
+                    className={`w-full text-left px-4 py-3 rounded-xl font-semibold text-sm transition-all ${
+                      selectedCategory === cat.name
+                        ? "bg-gradient-to-r from-[#C05299] to-[#D473B3] text-white shadow-lg"
+                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    }`}
+                  >
+                    {cat.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Close overlay when clicking outside on mobile */}
+        {showMobileFilter && (
+          <div 
+            className="lg:hidden fixed inset-0 z-30" 
+            onClick={() => setShowMobileFilter(false)}
+          />
+        )}
+        
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
           
-          {/* Glassmorphic Sidebar */}
-          <aside className="lg:col-span-3">
+          {/* Desktop Sidebar - Hidden on mobile */}
+          <aside className="hidden lg:block lg:col-span-3">
             <div className="sticky top-[80px] space-y-4">
               
               {/* Category Pills */}
-              <div className="bg-white/80 backdrop-blur-2xl rounded-3xl p-6 border border-from-[#C05299] to-[#D473B3] shadow-xl">
+              <div className="bg-white/80 backdrop-blur-2xl rounded-3xl p-6 border border-purple-200/50 shadow-xl">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#9333EA] to-[#C05299] flex items-center justify-center shadow-lg">
                     <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -125,7 +203,6 @@ export default function Feed() {
                   <div className="bg-white/90 rounded-3xl p-5">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-
                         <div>
                           <p className="text-xs text-slate-500 uppercase tracking-wider font-bold">Filtering</p>
                           <p className="text-slate-800 font-bold">{selectedCategory}</p>
@@ -147,20 +224,20 @@ export default function Feed() {
           </aside>
 
           {/* Main Content Area */}
-          <div className="lg:col-span-9 space-y-6">
+          <div className="lg:col-span-9 space-y-4 sm:space-y-6">
             
             {/* New Post Card */}
             <div className="group bg-white/80 backdrop-blur-2xl rounded-3xl border border-purple-200/50 shadow-xl overflow-hidden hover:bg-white/90 transition-all duration-300">
-              <div className="p-8">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#C05299] to-[#D473B3] flex items-center justify-center shadow-lg">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="p-4 sm:p-8">
+                <div className="flex items-center gap-3 mb-4 sm:mb-6">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-[#C05299] to-[#D473B3] flex items-center justify-center shadow-lg">
+                    <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                     </svg>
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-slate-800">Share Your Vibes</h2>
-                    <p className="text-slate-500 text-sm">What's on your mind today?</p>
+                    <h2 className="text-lg sm:text-xl font-bold text-slate-800">Share Your Vibes</h2>
+                    <p className="text-slate-500 text-xs sm:text-sm">What's on your mind today?</p>
                   </div>
                 </div>
                 <NewPost onPostCreated={handlePostCreated} />
@@ -168,10 +245,10 @@ export default function Feed() {
             </div>
 
             {/* Posts Feed */}
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <div className="flex items-center gap-3 px-2">
-                <div className="h-1 w-12 rounded-full bg-gradient-to-r from-purple-500 to-pink-500"></div>
-                <h2 className="text-2xl font-bold text-slate-800">
+                <div className="h-1 w-8 sm:w-12 rounded-full bg-gradient-to-r from-purple-500 to-pink-500"></div>
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-800">
                   {selectedCategory ? `${selectedCategory} Feed` : "Latest Posts"}
                 </h2>
               </div>
@@ -194,6 +271,16 @@ export default function Feed() {
           0%, 100% { transform: translateY(0px); }
           50% { transform: translateY(-20px); }
         }
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
         .animate-blob {
           animation: blob 7s infinite;
         }
@@ -202,6 +289,9 @@ export default function Feed() {
         }
         .animation-delay-4000 {
           animation-delay: 4s;
+        }
+        .animate-slideDown {
+          animation: slideDown 0.2s ease-out;
         }
       `}</style>
     </main>
