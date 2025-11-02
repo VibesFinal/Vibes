@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import io from 'socket.io-client';
+import axiosInstance from '../api/axiosInstance'; // ← Step 1: Import axios instance
 
 const NotificationContext = createContext();
 
@@ -28,10 +29,10 @@ export const NotificationProvider = ({ children, userId }) => {
     socket.emit('joinUser', userId);
 
     // Listen for new notifications
-   socket.on('new_notification', (newNotif) => {
-   console.log('🔔 RECEIVED real-time notification:', newNotif);
-   setNotifications((prev) => [newNotif, ...prev]);
-   });
+    socket.on('new_notification', (newNotif) => {
+      console.log('🔔 RECEIVED real-time notification:', newNotif);
+      setNotifications((prev) => [newNotif, ...prev]);
+    });
 
     // Cleanup
     return () => {
@@ -39,17 +40,14 @@ export const NotificationProvider = ({ children, userId }) => {
     };
   }, [userId]);
 
-  // Fetch unread notifications on mount
+  // Step 2: Fetch unread notifications using axios
   useEffect(() => {
     if (!userId) return;
 
     const fetchNotifications = async () => {
       try {
-        const res = await fetch(`/notifications/unread/${userId}`);
-        if (res.ok) {
-          const data = await res.json();
-          setNotifications(data);
-        }
+        const { data } = await axiosInstance.get(`/notifications/unread/${userId}`);
+        setNotifications(data);
       } catch (err) {
         console.error('Failed to fetch notifications:', err);
       } finally {
@@ -60,12 +58,10 @@ export const NotificationProvider = ({ children, userId }) => {
     fetchNotifications();
   }, [userId]);
 
-  // Mark a notification as read
+  // Step 3: Mark a notification as read using axios
   const markAsRead = async (id) => {
     try {
-      await fetch(`/notifications/read/${id}`, {
-        method: 'PATCH',
-      });
+      await axiosInstance.patch(`/notifications/read/${id}`);
       setNotifications((prev) =>
         prev.map((notif) =>
           notif.id === id ? { ...notif, is_read: true } : notif
@@ -76,19 +72,23 @@ export const NotificationProvider = ({ children, userId }) => {
     }
   };
 
-  // Mark all as read
+  // Step 4: Mark all as read using axios
   const markAllAsRead = async () => {
     const unreadIds = notifications
       .filter((n) => !n.is_read)
       .map((n) => n.id);
 
-    await Promise.all(
-      unreadIds.map((id) => fetch(`/notifications/read/${id}`, { method: 'PATCH' }))
-    );
+    try {
+      await Promise.all(
+        unreadIds.map((id) => axiosInstance.patch(`/notifications/read/${id}`))
+      );
 
-    setNotifications((prev) =>
-      prev.map((n) => ({ ...n, is_read: true }))
-    );
+      setNotifications((prev) =>
+        prev.map((n) => ({ ...n, is_read: true }))
+      );
+    } catch (err) {
+      console.error('Failed to mark all as read:', err);
+    }
   };
 
   return (
