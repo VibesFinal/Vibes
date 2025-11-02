@@ -13,7 +13,7 @@ export default function NewPost({ onPostCreated }) {
   const [photo, setPhoto] = useState(null);
   const [video, setVideo] = useState(null);
   const [isPosting, setIsPosting] = useState(false);
-  const [user , setUser] = useState(null);
+  const [user, setUser] = useState(null);
 
   const suggestionsRef = useRef(null);
   const photoInputRef = useRef(null);
@@ -84,41 +84,37 @@ export default function NewPost({ onPostCreated }) {
 
   useEffect(() => {
     const fetchUser = async () => {
-
       try {        
         const res = await axiosInstance.get("/user/profile");
         setUser(res.data.user);
       } catch (error) {
-        console.error("error fetching user" , error);
+        console.error("error fetching user", error);
         handleError(error);       
       }
     }
-
     fetchUser();
-
-  } , []);
+  }, []);
 
   return (
-    <div className="w-full max-w-2xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+    <div className="w-full max-w-2xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6 mb-6">
       {/* Main Content Area */}
-      <div className="flex gap-4">
-        {/* User Avatar */}
-        <div className="flex-shrink-0">
+      <div className="flex gap-3 sm:gap-4">
+        {/* User Avatar - Hidden on very small screens, visible on sm+ */}
+        <div className="hidden sm:block flex-shrink-0">
           {user?.profile_pic ? (
             <img
               src={user.profile_pic}
               alt={user.username || "Profile"}
-              className="w-12 h-12 rounded-full object-cover shadow-md"
+              className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover shadow-md"
             />
           ) : (
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 to-purple-400 flex items-center justify-center shadow-md">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-purple-600 to-purple-400 flex items-center justify-center shadow-md">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
               </svg>
             </div>
           )}
         </div>
-
 
         {/* Input Area */}
         <div className="flex-1">
@@ -126,28 +122,25 @@ export default function NewPost({ onPostCreated }) {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="Share your thoughts or feelings..."
-            rows="2"
-            className={`w-full text-base text-gray-700 bg-white border rounded-xl px-4 py-2 placeholder:text-gray-400 resize-none mb-3
-    focus:outline-none focus:ring-2 focus:ring-[#C05299]/30 focus:border-[#C05299]`}
+            rows="3"
+            className="w-full text-sm sm:text-base text-gray-700 bg-white border rounded-xl px-3 sm:px-4 py-2 sm:py-3 placeholder:text-gray-400 resize-none mb-3 focus:outline-none focus:ring-2 focus:ring-[#C05299]/30 focus:border-[#C05299]"
           />
 
-          
-          <div className="relative mb-4" ref={suggestionsRef}>
-              {/* Category Input */}
-              <input
-                value={categoryInput}
-                onChange={handleCategoryChange}
-                placeholder="Category (e.g., Mindfulness, Self Care...)"
-                className={`w-full text-sm bg-gray-50 border rounded-xl px-4 py-2 text-gray-700 placeholder:text-gray-400
-                  focus:outline-none focus:ring-2 focus:ring-[#C05299]/30 focus:border-[#C05299]`}
-              />
+          <div className="relative mb-3 sm:mb-4" ref={suggestionsRef}>
+            {/* Category Input */}
+            <input
+              value={categoryInput}
+              onChange={handleCategoryChange}
+              placeholder="Category (e.g., Mindfulness...)"
+              className="w-full text-xs sm:text-sm bg-gray-50 border rounded-xl px-3 sm:px-4 py-2 text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#C05299]/30 focus:border-[#C05299]"
+            />
             {suggestions.length > 0 && (
-              <ul className="absolute w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-20">
+              <ul className="absolute w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-20 max-h-48 overflow-y-auto">
                 {suggestions.map((cat, idx) => (
                   <li
                     key={idx}
                     onClick={() => handleSelectCategory(cat)}
-                    className="px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-purple-50"
+                    className="px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 cursor-pointer hover:bg-purple-50"
                   >
                     {cat}
                   </li>
@@ -158,22 +151,19 @@ export default function NewPost({ onPostCreated }) {
 
           {/* Preview */}
           {(photo || video) && (
-            <div className="mb-4 rounded-xl overflow-hidden border border-gray-200 bg-gray-50 relative">
+            <div className="mb-3 sm:mb-4 rounded-xl overflow-hidden border border-gray-200 bg-gray-50 relative">
               {/* Remove button */}
               <button
                 onClick={() => {
                   setPhoto(null);
                   setVideo(null);
-
-                  //reset file input if the user removes the picture and wants to upload again
                   if (photoInputRef.current) photoInputRef.current.value = "";
                   if (videoInputRef.current) videoInputRef.current.value = "";
-
                 }}
-                  className="absolute top-2 right-2 z-10 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-lg transition-colors"
-                  title="Remove media"
+                className="absolute top-2 right-2 z-10 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-lg transition-colors"
+                title="Remove media"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
               </button>
@@ -182,60 +172,58 @@ export default function NewPost({ onPostCreated }) {
                 <img 
                   src={URL.createObjectURL(photo)} 
                   alt="Preview" 
-                  className="w-full h-auto object-contain"
+                  className="w-full h-auto object-contain max-h-64 sm:max-h-96"
                 />
               )}
               {video && (
                 <video 
                   controls 
                   src={URL.createObjectURL(video)} 
-                  className="w-full h-auto"
+                  className="w-full h-auto max-h-64 sm:max-h-96"
                 />
               )}
             </div>
           )}
 
-          {/* Bottom Bar */}
-          <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-            <div className="flex items-center gap-4">
+          {/* Bottom Bar - Stacked on mobile, horizontal on larger screens */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 pt-3 border-t border-gray-100">
+            {/* Media Buttons */}
+            <div className="flex items-center gap-3 sm:gap-4">
               {/* Photo Button */}
-              <label className="flex items-center gap-2 text-gray-500 hover:text-[#C05299] cursor-pointer transition-colors">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <label className="flex items-center gap-1.5 sm:gap-2 text-gray-500 hover:text-[#C05299] cursor-pointer transition-colors">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                 </svg>
-                <span className="text-sm font-medium">Photo</span>
-
+                <span className="text-xs sm:text-sm font-medium">Photo</span>
                 <input 
-
                   type="file"
                   accept="image/*" 
                   ref={photoInputRef}
                   onChange={(e) => setPhoto(e.target.files[0])} 
-                  className="hidden" />
-
+                  className="hidden" 
+                />
               </label>
 
               {/* Video Button */}
-              <label className="flex items-center gap-2 text-gray-500 hover:text-[#C05299] cursor-pointer transition-colors">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <label className="flex items-center gap-1.5 sm:gap-2 text-gray-500 hover:text-[#C05299] cursor-pointer transition-colors">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                 </svg>
-                <span className="text-sm font-medium">Video</span>
+                <span className="text-xs sm:text-sm font-medium">Video</span>
                 <input
-                 type="file" 
-                 accept="video/*" 
-                 ref={videoInputRef}
-                 onChange={(e) => setVideo(e.target.files[0])} 
-                 className="hidden" />
+                  type="file" 
+                  accept="video/*" 
+                  ref={videoInputRef}
+                  onChange={(e) => setVideo(e.target.files[0])} 
+                  className="hidden" 
+                />
               </label>
-
-
             </div>
 
             {/* Anonymous Toggle */}
             <div className="flex items-center gap-2">
               <label className="flex items-center gap-2 cursor-pointer">
-                <span className="text-sm text-gray-600">Anonymous</span>
+                <span className="text-xs sm:text-sm text-gray-600">Anonymous</span>
                 <input
                   type="checkbox"
                   checked={isAnonymous}
@@ -254,10 +242,10 @@ export default function NewPost({ onPostCreated }) {
           type="submit"
           onClick={handleSubmit}
           disabled={isPosting}
-          className={`px-8 py-2.5 rounded-full font-semibold text-white text-sm transition-all ${
+          className={`px-6 sm:px-8 py-2 sm:py-2.5 rounded-full font-semibold text-white text-xs sm:text-sm transition-all ${
             isPosting
               ? "bg-gray-300 cursor-not-allowed"
-               : "bg-[#C05299] hover:shadow-lg hover:scale-105"
+              : "bg-[#C05299] hover:shadow-lg hover:scale-105"
           }`}
         >
           {isPosting ? "Posting..." : "Post"}

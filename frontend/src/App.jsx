@@ -1,271 +1,244 @@
-import { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation, replace } from 'react-router-dom';
-import axios from 'axios';
-import './App.css';
-import Feed from '../src/pages/feed';
-import Login from './pages/login';
-import Register from './pages/register';
-import Navigation from './components/Navigation'; 
-import Profile from './pages/profile';
-import About from './pages/About';
-import Error from './pages/Error404';
-import Chatbot from './pages/chatBot';
-import HealthFAQ from './pages/HealthFAQ';
-import Community from './pages/community';
-import CreateCommunity from './pages/createCommunity';
-import InviteButton from "./components/InviteButton";
-import CommunityChat from './pages/CommunityChat';
-import Activate from './pages/Activate';
-import { NotificationProvider } from './context/NotificationContext';
-import NotificationBell from './components/NotificationBell';
-import ForgotPassword from './components/ForgotPassword';
-import ResetPassword from './components/ResetPassword';
-import DeleteAccount from './pages/DeleteAccount';
-import AdminCertifications from './pages/AdminsCertifications';
-import ChatInbox from './pages/ChatInbox'
-import Landing from './pages/Landing';
+import { useEffect, useState } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
+import axios from "axios";
+import "./App.css";
 
-// Helper component to handle scrolling to #faq-section
+// 🧭 Pages
+import Feed from "./pages/feed";
+import Login from "./pages/login";
+import Register from "./pages/register";
+import Profile from "./pages/profile";
+import About from "./pages/About";
+import Error from "./pages/Error404";
+import Chatbot from "./pages/chatBot";
+import HealthFAQ from "./pages/HealthFAQ";
+import Community from "./pages/community";
+import CreateCommunity from "./pages/createCommunity";
+import CommunityChat from "./pages/CommunityChat";
+import Activate from "./pages/Activate";
+import DeleteAccount from "./pages/DeleteAccount";
+import AdminCertifications from "./pages/AdminsCertifications";
+import ChatInbox from "./pages/ChatInbox";
+import Landing from "./pages/Landing";
+
+// 🧩 Components
+import Navigation from "./components/Navigation";
+import NotificationBell from "./components/NotificationBell";
+import ForgotPassword from "./components/ForgotPassword";
+import ResetPassword from "./components/ResetPassword";
+import InviteButton from "./components/InviteButton";
+
+// 🧠 Context
+import { NotificationProvider } from "./context/NotificationContext";
+
+// -----------------------------------------------------------------------------
+// Helper Components
+// -----------------------------------------------------------------------------
+
+// ✅ Smooth scroll to FAQ section
 const ScrollToFAQ = () => {
   const location = useLocation();
 
   useEffect(() => {
-    if (location.hash === '#faq-section') {
-      const faqSection = document.getElementById('faq-section');
-      if (faqSection) {
-        faqSection.scrollIntoView({ behavior: 'smooth' });
-      }
+    if (location.hash === "#faq-section") {
+      document.getElementById("faq-section")?.scrollIntoView({ behavior: "smooth" });
     }
   }, [location]);
 
   return null;
 };
 
-const FloatingFAQButton = ({ onClick }) => {
-  return (
-    <button
-      onClick={onClick}
-      aria-label="Open Mental Health Chatbot"
-      className="fixed bottom-8 left-8 z-50 w-16 h-16 rounded-full bg-gradient-to-br from-[#C05299] to-[#9b3d7a] shadow-2xl hover:shadow-pink-500/50 transform hover:scale-105 transition-transform duration-150 text-white flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-pink-300/50 group"
+// ✅ Floating Chatbot button
+const FloatingFAQButton = ({ onClick }) => (
+  <button
+    onClick={onClick}
+    aria-label="Open Mental Health Chatbot"
+    className="fixed bottom-24 right-6 md:bottom-8 md:left-8 z-50 w-14 h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-[#C05299] to-[#9b3d7a] shadow-2xl hover:shadow-pink-500/50 transform hover:scale-105 transition-transform duration-150 text-white flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-pink-300/50"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className="h-7 w-7 md:h-8 md:w-8"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
     >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className="h-8 w-8"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-        />
-      </svg>
-    </button>
-  );
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+      />
+    </svg>
+  </button>
+);
+
+// ✅ Admin-only route protection
+const AdminRoute = ({ element }) => {
+  const user = JSON.parse(localStorage.getItem("user"));
+  const token = localStorage.getItem("token");
+
+  if (!token) return <Navigate to="/login" />;
+  if (!user || user.role !== "admin") return <Navigate to="/" />;
+
+  return element;
 };
 
-
+// -----------------------------------------------------------------------------
+// Main App
+// -----------------------------------------------------------------------------
 
 export default function App() {
-
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [showChatBot , setShowChatBot] = useState(false);
-
+  const [showChatBot, setShowChatBot] = useState(false);
 
   const currentUser = JSON.parse(localStorage.getItem("user"));
+  const userId = currentUser?.id;
 
-
+  // ✅ Check authentication on mount
   useEffect(() => {
     const token = localStorage.getItem("token");
     setIsAuthenticated(!!token);
     setIsLoading(false);
   }, []);
 
+  // ✅ Example backend test call
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await axios.get('http://localhost:7777/');
-        console.log(res.data);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    fetchData();
+    axios
+      .get("http://localhost:7777/")
+      .then((res) => console.log(res.data))
+      .catch((err) => console.error(err));
   }, []);
+
+  // ✅ Prevent body scroll when chatbot is open (mobile)
+  useEffect(() => {
+    document.body.classList.toggle("chatbot-open", showChatBot);
+    return () => document.body.classList.remove("chatbot-open");
+  }, [showChatBot]);
 
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
-  // ✅ Extract userId safely
-  const userId = currentUser?.id;
-
-
-  //admin route
-const AdminRoute = ({element}) => {
-
-  const user = JSON.parse(localStorage.getItem("user"));
-  const token = localStorage.getItem("token");
-
-  if(!token){
-
-    return <Navigate to="/login" />
-
-  }
-
-  if(!user || user.role !== "admin"){
-
-    return <Navigate to="/"/> //non admins go back to feed
-
-  }
-
-  return element;
-
-};
-
   return (
     <Router>
-      {/* ✅ Wrap authenticated part with NotificationProvider */}
-      {isAuthenticated && userId && (
+      {/* ✅ Authenticated area */}
+      {isAuthenticated && userId ? (
         <NotificationProvider userId={userId}>
           <Navigation onLogout={() => setIsAuthenticated(false)}>
-            {/* ✅ Inject NotificationBell into Navigation */}
             <NotificationBell />
           </Navigation>
 
-<FloatingFAQButton onClick={() => setShowChatBot(true)} />
-{showChatBot && (
-  <div 
-    className="fixed inset-0 z-[60] bg-black/30"
-    style={{ animation: 'fadeIn 0.15s ease-out' }}
-    onClick={() => setShowChatBot(false)}
-  >
-    {/* Position chatbot to the RIGHT of the floating button */}
-    <div 
-      className="absolute bottom-8 left-28 bg-white rounded-3xl shadow-2xl w-full max-w-md h-[600px] sm:h-[650px] overflow-hidden"
-      style={{ animation: 'slideRight 0.2s ease-out' }}
-      onClick={(e) => e.stopPropagation()}
-    >
-      {/* Header */}
-      <div className="bg-gradient-to-r from-[#C05299] to-[#9b3d7a] px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6 text-white"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+          {/* Floating chatbot button */}
+          <FloatingFAQButton onClick={() => setShowChatBot(true)} />
+
+          {/* Chatbot modal */}
+          {showChatBot && (
+            <div
+              className="fixed inset-0 z-[60] bg-black/30 animate-fadeIn"
+              onClick={() => setShowChatBot(false)}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-              />
-            </svg>
-          </div>
-          <div>
-            <h3 className="text-white font-semibold text-lg">Mental Health Assistant</h3>
-            <p className="text-white/80 text-xs">Always here to help</p>
-          </div>
-        </div>
-        <button
-          onClick={() => setShowChatBot(false)}
-          className="text-white/80 hover:text-white hover:bg-white/20 rounded-full p-2 transition-colors duration-150"
-          aria-label="Close chatbot"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
-      </div>
+              <div
+                className="absolute inset-4 md:inset-auto md:bottom-8 md:left-28 bg-white rounded-3xl shadow-2xl md:w-full md:max-w-md h-auto md:h-[650px] overflow-hidden animate-slideRight"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Header */}
+                <div className="bg-gradient-to-r from-[#C05299] to-[#9b3d7a] px-4 md:px-6 py-3 md:py-4 flex items-center justify-between">
+                  <div className="flex items-center gap-2 md:gap-3">
+                    <div className="w-8 h-8 md:w-10 md:h-10 bg-white/20 rounded-full flex items-center justify-center">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 md:h-6 md:w-6 text-white"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-white font-semibold text-base md:text-lg">
+                        Mental Health Assistant
+                      </h3>
+                      <p className="text-white/80 text-xs hidden md:block">Always here to help</p>
+                    </div>
+                  </div>
 
-      {/* Chatbot Content */}
-      <div className="h-[calc(100%-72px)]">
-        <Chatbot />
-      </div>
-    </div>
+                  <button
+                    onClick={() => setShowChatBot(false)}
+                    className="text-white/80 hover:text-white hover:bg-white/20 rounded-full p-2 transition-colors duration-150"
+                    aria-label="Close chatbot"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 md:h-6 md:w-6"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
 
-    {/* Add animations */}
-    <style>{`
-      @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-      }
-      @keyframes slideRight {
-        from {
-          opacity: 0;
-          transform: translateX(-30px);
-        }
-        to {
-          opacity: 1;
-          transform: translateX(0);
-        }
-      }
-    `}</style>
-  </div>
-)}
+                {/* Chatbot Body */}
+                <div className="h-[calc(100%-56px)] md:h-[calc(100%-72px)]">
+                  <Chatbot />
+                </div>
+              </div>
 
-
-
+              {/* Animations */}
+              <style>{`
+                @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
+                @keyframes slideRight {
+                  from {opacity:0; transform:translateX(-30px);}
+                  to {opacity:1; transform:translateX(0);}
+                }
+                .animate-fadeIn { animation: fadeIn 0.15s ease-out; }
+                .animate-slideRight { animation: slideRight 0.2s ease-out; }
+                @media (max-width:768px){ body.chatbot-open{overflow:hidden;} }
+              `}</style>
+            </div>
+          )}
 
           <ScrollToFAQ />
 
+          {/* ✅ Protected routes */}
           <Routes>
-            
             <Route path="/" element={<Navigate to="/feed" replace />} />
             <Route path="/feed" element={<Feed />} />
-
-            <Route path="/login" element={<Navigate to="/feed" replace/>} />
-            <Route path="/register" element={<Navigate to="/feed" replace/>} /> 
-            <Route path="/user/verify/:token" element={<Activate />} />
             <Route path="/profile/:username" element={<Profile />} />
-            
-            <Route path="/Community" element={<Community />} />
+            <Route path="/community" element={<Community />} />
             <Route path="/community/create" element={<CreateCommunity />} />
             <Route path="/communities/:id/chat" element={<CommunityChat />} />
             <Route path="/health-faq" element={<HealthFAQ />} />
             <Route path="/chat" element={<ChatInbox />} />
-
-            <Route 
-            
-              path='/admin/certifications'
-              element={<AdminRoute element={<AdminCertifications />}/>}
-            
+            <Route path="/user/verify/:token" element={<Activate />} />
+            <Route
+              path="/admin/certifications"
+              element={<AdminRoute element={<AdminCertifications />} />}
             />
-
-            {/* //  New routes for password reset */}
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
-            {/* New route for account deletion */}
             <Route path="/delete/:token" element={<DeleteAccount />} />
-
             <Route path="*" element={<Error />} />
           </Routes>
-
-  
         </NotificationProvider>
-      )}
-
-      {/* ❌ Unauthenticated routes outside provider */}
-      {!isAuthenticated && (
+      ) : (
+        // 🚫 Unauthenticated routes
         <Routes>
-          <Route path='/' element={<Landing />} />
+          <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login onLogin={() => setIsAuthenticated(true)} />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -273,20 +246,6 @@ const AdminRoute = ({element}) => {
           <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="/delete/:token" element={<DeleteAccount />} />
           <Route path="*" element={<Navigate to="/login" />} />
-
-          <Route 
-          
-            path='/'
-            element={
-
-              isAuthenticated
-                ? <Navigate to="/feed"/>
-                : <Landing />
-
-            }
-          
-          />
-
         </Routes>
       )}
     </Router>
