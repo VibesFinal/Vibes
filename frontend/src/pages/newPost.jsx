@@ -16,6 +16,8 @@ export default function NewPost({ onPostCreated }) {
   const [user , setUser] = useState(null);
 
   const suggestionsRef = useRef(null);
+  const photoInputRef = useRef(null);
+  const videoInputRef = useRef(null);
 
   const handleCategoryChange = (e) => {
     const value = e.target.value;
@@ -156,9 +158,40 @@ export default function NewPost({ onPostCreated }) {
 
           {/* Preview */}
           {(photo || video) && (
-            <div className="mb-4 rounded-xl overflow-hidden border border-gray-200">
-              {photo && <img src={URL.createObjectURL(photo)} alt="Preview" className="w-full object-cover max-h-48" />}
-              {video && <video controls src={URL.createObjectURL(video)} className="w-full max-h-48" />}
+            <div className="mb-4 rounded-xl overflow-hidden border border-gray-200 bg-gray-50 relative">
+              {/* Remove button */}
+              <button
+                onClick={() => {
+                  setPhoto(null);
+                  setVideo(null);
+
+                  //reset file input if the user removes the picture and wants to upload again
+                  if (photoInputRef.current) photoInputRef.current.value = "";
+                  if (videoInputRef.current) videoInputRef.current.value = "";
+
+                }}
+                  className="absolute top-2 right-2 z-10 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-lg transition-colors"
+                  title="Remove media"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+              
+              {photo && (
+                <img 
+                  src={URL.createObjectURL(photo)} 
+                  alt="Preview" 
+                  className="w-full h-auto object-contain"
+                />
+              )}
+              {video && (
+                <video 
+                  controls 
+                  src={URL.createObjectURL(video)} 
+                  className="w-full h-auto"
+                />
+              )}
             </div>
           )}
 
@@ -171,7 +204,15 @@ export default function NewPost({ onPostCreated }) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                 </svg>
                 <span className="text-sm font-medium">Photo</span>
-                <input type="file" accept="image/*" onChange={(e) => setPhoto(e.target.files[0])} className="hidden" />
+
+                <input 
+
+                  type="file"
+                  accept="image/*" 
+                  ref={photoInputRef}
+                  onChange={(e) => setPhoto(e.target.files[0])} 
+                  className="hidden" />
+
               </label>
 
               {/* Video Button */}
@@ -180,7 +221,12 @@ export default function NewPost({ onPostCreated }) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                 </svg>
                 <span className="text-sm font-medium">Video</span>
-                <input type="file" accept="video/*" onChange={(e) => setVideo(e.target.files[0])} className="hidden" />
+                <input
+                 type="file" 
+                 accept="video/*" 
+                 ref={videoInputRef}
+                 onChange={(e) => setVideo(e.target.files[0])} 
+                 className="hidden" />
               </label>
 
 
