@@ -7,7 +7,6 @@ const MessageList = ({ messages = [], currentUserId, onDeleteMessage, onEditMess
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [isUserNearBottom, setIsUserNearBottom] = useState(true);
 
-  // 🔄 Detect scroll position to show/hide button
   const handleScroll = () => {
     if (containerRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
@@ -17,40 +16,42 @@ const MessageList = ({ messages = [], currentUserId, onDeleteMessage, onEditMess
     }
   };
 
-  // 🔽 Scroll to bottom function
   const scrollToBottom = (behavior = 'auto') => {
-    messagesEndRef.current?.scrollIntoView({ behavior });
+    // Use smooth scroll only on non-touch devices for better UX
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    const finalBehavior = isTouchDevice && behavior === 'smooth' ? 'auto' : behavior;
+    messagesEndRef.current?.scrollIntoView({ behavior: finalBehavior });
   };
 
-  // ⏬ Scroll when new messages arrive only if user is near bottom
   useEffect(() => {
-    if (isUserNearBottom) scrollToBottom('instant');
+    if (isUserNearBottom) {
+      scrollToBottom('auto'); // Instant scroll when new messages arrive
+    }
   }, [messages, isUserNearBottom]);
 
-  // ⬇️ Initial scroll on mount
   useEffect(() => {
-    scrollToBottom('instant');
+    scrollToBottom('auto');
   }, []);
 
   return (
     <div className="relative flex-1 overflow-hidden">
-      {/* Decorative gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#FCF0F8] via-white to-[#F5E1F0] opacity-50"></div>
+      {/* Decorative background (reduced opacity for performance) */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#FCF0F8] via-white to-[#F5E1F0] opacity-30 pointer-events-none"></div>
 
-      {/* Scrollable area */}
+      {/* Scrollable container */}
       <div
         ref={containerRef}
         onScroll={handleScroll}
-        className="relative h-full overflow-y-auto px-6 py-6 scroll-smooth flex flex-col"
+        className="relative h-full overflow-y-auto px-3 sm:px-6 py-4 sm:py-6 flex flex-col"
         style={{
           scrollbarWidth: 'thin',
           scrollbarColor: '#D473B3 #F5E1F0',
         }}
       >
         {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center">
-            <div className="w-24 h-24 bg-gradient-to-br from-[#C05299] to-[#D473B3] rounded-full flex items-center justify-center mb-6 shadow-2xl animate-pulse">
-              <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex flex-col items-center justify-center h-full text-center p-4">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-[#C05299] to-[#D473B3] rounded-full flex items-center justify-center mb-4 sm:mb-6 shadow-lg">
+              <svg className="w-10 h-10 sm:w-12 sm:h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -59,14 +60,16 @@ const MessageList = ({ messages = [], currentUserId, onDeleteMessage, onEditMess
                 />
               </svg>
             </div>
-            <h3 className="text-2xl font-bold bg-gradient-to-r from-[#C05299] to-[#D473B3] bg-clip-text text-transparent mb-2">
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">
               No messages yet
             </h3>
-            <p className="text-gray-500 text-lg">Start the conversation by sending a message!</p>
+            <p className="text-gray-500 text-sm sm:text-base px-2">
+              Start the conversation by sending a message!
+            </p>
           </div>
         ) : (
           <>
-            <div className="flex flex-col space-y-4">
+            <div className="flex flex-col space-y-3 sm:space-y-4">
               {messages.map((message, index) => {
                 const messageSenderId = message.sender_id || message.senderId || message.from;
                 const isOwn = messageSenderId === currentUserId;
@@ -87,34 +90,48 @@ const MessageList = ({ messages = [], currentUserId, onDeleteMessage, onEditMess
         )}
       </div>
 
-      {/* Scroll to bottom button */}
+      {/* Scroll to bottom button — larger tap target, better position */}
       {showScrollButton && (
         <button
           onClick={() => scrollToBottom('smooth')}
-          className="absolute bottom-6 right-6 p-4 bg-gradient-to-br from-[#C05299] to-[#D473B3] text-white rounded-full shadow-2xl hover:shadow-3xl transform hover:scale-110 transition-all duration-300 z-10 animate-bounce"
-          title="Scroll to bottom"
+          className="absolute bottom-4 right-3 sm:bottom-6 sm:right-6 w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-[#C05299] to-[#D473B3] text-white rounded-full shadow-xl flex items-center justify-center z-10 transition-transform hover:scale-105"
+          aria-label="Scroll to bottom"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
           </svg>
         </button>
       )}
 
-      {/* Custom scrollbar styles */}
+      {/* Custom scrollbar — hidden on mobile for cleaner look */}
       <style>{`
-        .overflow-y-auto::-webkit-scrollbar {
-          width: 8px;
+        /* Hide scrollbar on mobile to reduce visual clutter */
+        @media (max-width: 639px) {
+          .overflow-y-auto {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+          }
+          .overflow-y-auto::-webkit-scrollbar {
+            display: none;
+          }
         }
-        .overflow-y-auto::-webkit-scrollbar-track {
-          background: #F5E1F0;
-          border-radius: 10px;
-        }
-        .overflow-y-auto::-webkit-scrollbar-thumb {
-          background: linear-gradient(to bottom, #C05299, #D473B3);
-          border-radius: 10px;
-        }
-        .overflow-y-auto::-webkit-scrollbar-thumb:hover {
-          background: linear-gradient(to bottom, #A8458A, #C05299);
+
+        /* Desktop scrollbar */
+        @media (min-width: 640px) {
+          .overflow-y-auto::-webkit-scrollbar {
+            width: 8px;
+          }
+          .overflow-y-auto::-webkit-scrollbar-track {
+            background: #F5E1F0;
+            border-radius: 10px;
+          }
+          .overflow-y-auto::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, #C05299, #D473B3);
+            border-radius: 10px;
+          }
+          .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(to bottom, #A8458A, #C05299);
+          }
         }
       `}</style>
     </div>

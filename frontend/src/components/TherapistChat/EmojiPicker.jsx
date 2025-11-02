@@ -3,7 +3,6 @@ import React, { useState, useRef, useEffect } from 'react';
 const EmojiPicker = ({ onEmojiSelect, onClose }) => {
   const pickerRef = useRef(null);
   
-  // Emoji categories with pink theme
   const emojiCategories = {
     'Smileys': ['😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃', '😉', '😊', '😇', '🥰', '😍', '🤩', '😘', '😗', '😚', '😙', '🥲', '😋', '😛', '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', '🤔'],
     'Gestures': ['👋', '🤚', '🖐', '✋', '🖖', '👌', '🤌', '🤏', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆', '🖕', '👇', '☝️', '👍', '👎', '✊', '👊', '🤛', '🤜', '👏', '🙌', '👐', '🤲', '🤝', '🙏'],
@@ -16,39 +15,43 @@ const EmojiPicker = ({ onEmojiSelect, onClose }) => {
   const [activeCategory, setActiveCategory] = useState('Smileys');
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Close picker when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (pickerRef.current && !pickerRef.current.contains(event.target)) {
         onClose();
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [onClose]);
 
   const handleEmojiClick = (emoji) => {
     onEmojiSelect(emoji);
+    // Optional: auto-close after selection on mobile
+    // onClose();
   };
 
   const filteredEmojis = searchTerm
-    ? Object.values(emojiCategories).flat().filter(emoji => emoji.includes(searchTerm))
+    ? Object.values(emojiCategories).flat().filter(emoji => 
+        emoji.toLowerCase().includes(searchTerm.toLowerCase())
+      )
     : emojiCategories[activeCategory];
 
   return (
     <div 
       ref={pickerRef}
-      className="absolute bottom-20 left-0 w-80 bg-white/98 backdrop-blur-xl rounded-2xl shadow-2xl border-2 border-[#D473B3]/30 overflow-hidden z-50 animate-in fade-in-0 zoom-in-95"
+      className="fixed bottom-0 left-0 right-0 sm:absolute sm:bottom-auto sm:left-0 sm:w-80 bg-white/98 backdrop-blur-xl rounded-t-3xl sm:rounded-2xl shadow-2xl border-t-2 sm:border-2 border-[#D473B3]/30 z-50 sm:animate-in sm:fade-in-0 sm:zoom-in-95"
+      style={{ maxHeight: '70vh', overflow: 'hidden' }}
     >
-      {/* Header with pink gradient */}
+      {/* Header */}
       <div className="bg-gradient-to-r from-[#F5E1F0] to-[#FCF0F8] p-4 border-b-2 border-[#D473B3]/20">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-lg font-bold bg-gradient-to-r from-[#C05299] to-[#D473B3] bg-clip-text text-transparent">
+          <h3 className="text-base sm:text-lg font-bold text-gray-800">
             Pick an Emoji
           </h3>
           <button
             onClick={onClose}
+            aria-label="Close emoji picker"
             className="p-1.5 rounded-lg hover:bg-[#D473B3]/20 transition-colors duration-200"
           >
             <svg className="w-5 h-5 text-[#C05299]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -57,26 +60,26 @@ const EmojiPicker = ({ onEmojiSelect, onClose }) => {
           </button>
         </div>
         
-        {/* Search bar */}
+        {/* Search */}
         <input
           type="text"
           placeholder="Search emoji..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full px-3 py-2 bg-white border-2 border-[#D473B3]/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#D473B3] text-sm"
+          className="w-full px-3 py-2 text-sm bg-white border-2 border-[#D473B3]/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#D473B3]"
         />
       </div>
 
-      {/* Category tabs */}
+      {/* Category tabs (only when not searching) */}
       {!searchTerm && (
-        <div className="flex overflow-x-auto bg-gradient-to-r from-[#FCF0F8] to-[#F5E1F0] border-b-2 border-[#D473B3]/20 p-2 gap-2">
+        <div className="flex overflow-x-auto hide-scrollbar bg-gradient-to-r from-[#FCF0F8] to-[#F5E1F0] border-b-2 border-[#D473B3]/20 p-2 gap-2">
           {Object.keys(emojiCategories).map((category) => (
             <button
               key={category}
               onClick={() => setActiveCategory(category)}
-              className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-300 ${
+              className={`px-3 py-1.5 text-xs font-medium whitespace-nowrap rounded-lg transition-colors ${
                 activeCategory === category
-                  ? 'bg-gradient-to-r from-[#C05299] to-[#D473B3] text-white shadow-lg'
+                  ? 'bg-gradient-to-r from-[#C05299] to-[#D473B3] text-white'
                   : 'bg-white text-[#C05299] hover:bg-[#F5E1F0]'
               }`}
             >
@@ -87,13 +90,15 @@ const EmojiPicker = ({ onEmojiSelect, onClose }) => {
       )}
 
       {/* Emoji grid */}
-      <div className="p-3 h-64 overflow-y-auto custom-scrollbar">
-        <div className="grid grid-cols-8 gap-2">
+      <div className="p-3 h-64 overflow-y-auto hide-scrollbar">
+        {/* Use fewer columns on mobile */}
+        <div className="grid grid-cols-7 sm:grid-cols-8 gap-1.5 sm:gap-2">
           {filteredEmojis.map((emoji, index) => (
             <button
               key={index}
               onClick={() => handleEmojiClick(emoji)}
-              className="text-2xl p-2 rounded-lg hover:bg-gradient-to-br hover:from-[#F5E1F0] hover:to-[#FCF0F8] transition-all duration-200 transform hover:scale-125"
+              aria-label={`Select ${emoji}`}
+              className="text-2xl sm:text-2xl p-2 rounded-lg active:scale-110 focus:outline-none focus:ring-2 focus:ring-[#D473B3]/50 transition-transform"
             >
               {emoji}
             </button>
@@ -101,7 +106,7 @@ const EmojiPicker = ({ onEmojiSelect, onClose }) => {
         </div>
       </div>
 
-      {/* Recently used section (optional) */}
+      {/* Recently used */}
       <div className="bg-gradient-to-r from-[#FCF0F8] to-[#F5E1F0] p-3 border-t-2 border-[#D473B3]/20">
         <p className="text-xs font-semibold text-[#C05299] mb-2">Recently Used</p>
         <div className="flex gap-2">
@@ -109,7 +114,8 @@ const EmojiPicker = ({ onEmojiSelect, onClose }) => {
             <button
               key={index}
               onClick={() => handleEmojiClick(emoji)}
-              className="text-xl p-2 rounded-lg hover:bg-white transition-all duration-200 transform hover:scale-110"
+              aria-label={`Select ${emoji}`}
+              className="text-xl p-2 rounded-lg active:scale-110 focus:outline-none"
             >
               {emoji}
             </button>
@@ -119,5 +125,13 @@ const EmojiPicker = ({ onEmojiSelect, onClose }) => {
     </div>
   );
 };
+
+// Optional: Hide scrollbar for better mobile look
+const style = document.createElement('style');
+style.textContent = `
+  .hide-scrollbar::-webkit-scrollbar { display: none; }
+  .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+`;
+document.head.appendChild(style);
 
 export default EmojiPicker;

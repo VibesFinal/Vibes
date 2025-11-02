@@ -6,7 +6,6 @@ const ChatHeader = ({ recipientName = 'User', recipientId, onBack, isConnected =
   const [isTyping, setIsTyping] = useState(false);
   const [showMoreOptions, setShowMoreOptions] = useState(false);
   
-  // Confirmation modal state
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
     title: '',
@@ -15,7 +14,6 @@ const ChatHeader = ({ recipientName = 'User', recipientId, onBack, isConnected =
     onConfirm: () => {}
   });
 
-  // Simulate typing indicator
   useEffect(() => {
     if (!socket) return;
 
@@ -70,108 +68,58 @@ const ChatHeader = ({ recipientName = 'User', recipientId, onBack, isConnected =
 
   const handleOptionSelect = (optionId) => {
     console.log('Option selected:', optionId);
-    
+    // ... (your logic remains unchanged)
     switch (optionId) {
-      case 'search':
-        console.log('Search in conversation');
-        break;
-        
+      case 'search': console.log('Search'); break;
       case 'mute':
-        showConfirmation(
-          'Mute Notifications',
-          'Do you want to mute notifications for this conversation?',
-          () => {
-            console.log('Notifications muted');
-          },
-          'info'
-        );
+        showConfirmation('Mute Notifications', 'Mute this chat?', () => console.log('Muted'), 'info');
         break;
-        
-      case 'wallpaper':
-        console.log('Change wallpaper');
-        break;
-        
+      case 'wallpaper': console.log('Wallpaper'); break;
       case 'export':
-        showConfirmation(
-          'Export Chat',
-          'Export this conversation as a text file?',
-          () => {
-            console.log('Chat exported');
-          },
-          'info'
-        );
+        showConfirmation('Export Chat', 'Export as text?', () => console.log('Exported'), 'info');
         break;
-        
       case 'clear':
-        showConfirmation(
-          'Clear Chat History',
-          'Are you sure you want to clear all messages? This action cannot be undone.',
-          () => {
-            if (socket) {
-              socket.emit('clearChatHistory', { recipientId });
-            }
-            console.log('Chat cleared');
-          },
-          'danger'
-        );
+        showConfirmation('Clear Chat', 'Clear all messages? Cannot be undone.', () => {
+          if (socket) socket.emit('clearChatHistory', { recipientId });
+        }, 'danger');
         break;
-        
       case 'block':
-        showConfirmation(
-          'Block User',
-          `Are you sure you want to block ${recipientName}? You will no longer receive messages from this user.`,
-          () => {
-            if (socket) {
-              socket.emit('blockUser', { recipientId });
-            }
-            console.log('User blocked');
-          },
-          'danger'
-        );
+        showConfirmation('Block User', `Block ${recipientName}?`, () => {
+          if (socket) socket.emit('blockUser', { recipientId });
+        }, 'danger');
         break;
-        
       case 'report':
-        showConfirmation(
-          'Report User',
-          `Report ${recipientName} for inappropriate behavior?`,
-          () => {
-            if (socket) {
-              socket.emit('reportUser', { recipientId });
-            }
-            console.log('User reported');
-          },
-          'danger'
-        );
+        showConfirmation('Report User', `Report ${recipientName}?`, () => {
+          if (socket) socket.emit('reportUser', { recipientId });
+        }, 'danger');
         break;
-        
-      default:
-        break;
+      default: break;
     }
   };
 
-  // Safe function to get first character
   const getInitial = (name) => {
     if (!name || typeof name !== 'string') return '?';
     return name.charAt(0).toUpperCase();
   };
 
-  // Safe recipient name
   const displayName = recipientName || 'User';
 
   return (
     <>
-      <div className="relative overflow">
-        {/* Animated gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#C05299] via-[#D473B3] to-[#E8A5D8] opacity-10 animate-gradient-x"></div>
+      <div className="relative">
+        {/* Animated gradient background (keep subtle) */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#C05299] via-[#D473B3] to-[#E8A5D8] opacity-5"></div>
         
-        {/* Main header container */}
-        <div className="relative bg-white/98 backdrop-blur-xl border-b border-[#D473B3]/20 px-6 py-4 flex items-center justify-between shadow-xl">
-          {/* Left section */}
-          <div className="flex items-center space-x-4">
+        {/* Main header */}
+        <div className="relative bg-white/95 backdrop-blur-lg border-b border-[#D473B3]/20 px-3 sm:px-5 py-3 flex items-center justify-between shadow-md">
+          
+          {/* Left: Back button + User info */}
+          <div className="flex items-center min-w-0">
             {onBack && (
               <button
                 onClick={onBack}
-                className="group relative p-3 rounded-2xl bg-gradient-to-br from-[#C05299] to-[#D473B3] hover:from-[#A8458A] hover:to-[#C05299] transition-all duration-300 shadow-lg hover:shadow-2xl transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#D473B3]"
+                aria-label="Back"
+                className="p-2.5 rounded-xl bg-gradient-to-br from-[#C05299] to-[#D473B3] hover:from-[#A8458A] hover:to-[#C05299] transition-all duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#D473B3] focus:ring-opacity-50"
               >
                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -180,27 +128,34 @@ const ChatHeader = ({ recipientName = 'User', recipientId, onBack, isConnected =
             )}
 
             {/* User info */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center ml-2 min-w-0">
               <div className="relative">
-                <div className="w-14 h-14 bg-gradient-to-br from-[#C05299] via-[#D473B3] to-[#E8A5D8] rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-2xl ring-4 ring-[#F5E1F0]">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#C05299] via-[#D473B3] to-[#E8A5D8] rounded-xl flex items-center justify-center text-white font-bold text-sm sm:text-base shadow-md ring-2 ring-[#F5E1F0]">
                   {getInitial(displayName)}
                 </div>
-                <div className={`absolute -bottom-1 -right-1 w-5 h-5 ${getStatusColor()} rounded-full border-3 border-white shadow-xl ${isConnected ? 'animate-pulse' : ''}`}></div>
+                <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 sm:w-4 sm:h-4 ${getStatusColor()} rounded-full border-2 border-white shadow-sm ${isConnected ? 'animate-pulse' : ''}`}></div>
               </div>
 
-              <div className="flex flex-col">
-                <h2 className="text-xl font-bold bg-gradient-to-r from-[#C05299] to-[#D473B3] bg-clip-text text-transparent">
+              <div className="ml-3 min-w-0">
+                <h2 className="text-base sm:text-lg font-bold text-gray-800 truncate">
                   {displayName}
                 </h2>
-                <div className="flex items-center space-x-2">
-                  <div className={`text-sm font-semibold ${!isConnected ? 'text-red-500' : isTyping ? 'text-[#D473B3]' : 'text-[#C05299]'}`}>
+                <div className="flex items-center space-x-1.5 mt-0.5">
+                  <span className={`text-xs sm:text-sm font-medium ${
+                    !isConnected ? 'text-red-500' : 
+                    isTyping ? 'text-[#D473B3]' : 'text-[#C05299]'
+                  }`}>
                     {getStatusText()}
-                  </div>
+                  </span>
                   {isTyping && (
-                    <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-[#D473B3] rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-[#D473B3] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                      <div className="w-2 h-2 bg-[#D473B3] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                    <div className="flex space-x-0.5">
+                      {[0, 1, 2].map(i => (
+                        <div
+                          key={i}
+                          className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-[#D473B3] rounded-full animate-bounce"
+                          style={{ animationDelay: `${i * 150}ms` }}
+                        ></div>
+                      ))}
                     </div>
                   )}
                 </div>
@@ -208,19 +163,15 @@ const ChatHeader = ({ recipientName = 'User', recipientId, onBack, isConnected =
             </div>
           </div>
 
-          {/* Right section */}
-          <div className="flex items-center space-x-4">
-            <div className="text-right">
-              <div className="text-lg font-bold bg-gradient-to-r from-[#C05299] to-[#D473B3] bg-clip-text text-transparent px-6 py-3 rounded-xl shadow-md bg-[#F5E1F0]">
-                {formatTime(currentTime)}
-              </div>
+          {/* Right: Time (hide on very small screens if needed) */}
+          <div className="flex-shrink-0">
+            <div className="text-xs sm:text-sm font-semibold bg-[#F5E1F0] text-[#C05299] px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-lg">
+              {formatTime(currentTime)}
             </div>
           </div>
         </div>
-
       </div>
 
-      {/* Confirmation Modal */}
       <ConfirmationModal
         isOpen={confirmModal.isOpen}
         title={confirmModal.title}
