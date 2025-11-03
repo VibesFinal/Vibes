@@ -1,8 +1,10 @@
 import axios from "axios";
 
+export const BACKEND_URL = import.meta.env.VITE_API_URL || "http://localhost:7777";
+
 const axiosInstance = axios.create({
-    baseURL: "http://localhost:7777/",
-    withCredentials: "true" //for cookies
+    baseURL: BACKEND_URL,
+    withCredentials: true
 });
 
 axiosInstance.interceptors.request.use((config) => {

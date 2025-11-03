@@ -56,7 +56,7 @@ app.use(cors(corsOptions));
 // --------------------------
 // ROUTES
 // --------------------------
-app.use(errorHandler);
+
 
 const auth = require("./Routes/auth");
 app.use("/user", auth);
@@ -118,6 +118,8 @@ app.use('/notifications', notifications);
 // Therapists route
 const therapist = require("./Routes/therapist");
 app.use("/api/therapist", therapist);
+
+app.use(errorHandler);
 
 // --------------------------
 // START SERVER
