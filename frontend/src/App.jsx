@@ -138,79 +138,86 @@ export default function App() {
           {/* Floating chatbot button */}
           <FloatingFAQButton onClick={() => setShowChatBot(true)} />
 
-          {/* Chatbot modal */}
-          {showChatBot && (
-            <div
-              className="fixed inset-0 z-[60] bg-black/30 animate-fadeIn"
-              onClick={() => setShowChatBot(false)}
-            >
+            {/* Chatbot modal */}
+            {showChatBot && (
               <div
-                className="absolute inset-4 md:inset-auto md:bottom-8 md:left-28 bg-white rounded-3xl shadow-2xl md:w-full md:max-w-md h-auto md:h-[650px] overflow-hidden animate-slideRight"
-                onClick={(e) => e.stopPropagation()}
+                className="fixed inset-0 z-[60] bg-black/30 animate-fadeIn"
+                onClick={() => setShowChatBot(false)}
               >
-                {/* Header */}
-                <div className="bg-gradient-to-r from-[#C05299] to-[#9b3d7a] px-4 md:px-6 py-3 md:py-4 flex items-center justify-between">
-                  <div className="flex items-center gap-2 md:gap-3">
-                    <div className="w-8 h-8 md:w-10 md:h-10 bg-white/20 rounded-full flex items-center justify-center">
+                <div
+                  className="absolute inset-6 md:inset-auto md:bottom-10 md:left-32 bg-white rounded-2xl shadow-2xl 
+                            w-[90%] max-w-sm md:w-[350px] md:h-[520px] overflow-hidden animate-slideRight"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {/* Header */}
+                  <div className="bg-gradient-to-r from-[#C05299] to-[#9b3d7a] px-4 h-[70px] flex items-center justify-between">
+
+
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5 text-white"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                          />
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 className="text-white font-semibold text-sm md:text-base">
+                          Mental Health Assistant
+                        </h3>
+                        <p className="text-white/80 text-[10px] hidden md:block">Always here to help</p>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => setShowChatBot(false)}
+                      className="text-white/80 hover:text-white hover:bg-white/20 rounded-full p-2 transition-colors duration-150"
+                      aria-label="Close chatbot"
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5 md:h-6 md:w-6 text-white"
+                        className="h-5 w-5"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                        />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                       </svg>
-                    </div>
-                    <div>
-                      <h3 className="text-white font-semibold text-base md:text-lg">
-                        Mental Health Assistant
-                      </h3>
-                      <p className="text-white/80 text-xs hidden md:block">Always here to help</p>
-                    </div>
+                    </button>
                   </div>
 
-                  <button
-                    onClick={() => setShowChatBot(false)}
-                    className="text-white/80 hover:text-white hover:bg-white/20 rounded-full p-2 transition-colors duration-150"
-                    aria-label="Close chatbot"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 md:h-6 md:w-6"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
+                  {/* Chatbot Body */}
+                  <div className="h-[calc(100%-70px)]">
+
+                    <Chatbot />
+                  </div>
                 </div>
 
-                {/* Chatbot Body */}
-                <div className="h-[calc(100%-56px)] md:h-[calc(100%-72px)]">
-                  <Chatbot />
-                </div>
+                {/* Animations */}
+                <style>{`
+                  @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
+                  @keyframes slideRight {
+                    from {opacity:0; transform:translateX(-30px);}
+                    to {opacity:1; transform:translateX(0);}
+                  }
+                  .animate-fadeIn { animation: fadeIn 0.15s ease-out; }
+                  .animate-slideRight { animation: slideRight 0.2s ease-out; }
+                  @media (max-width:768px){
+                    body.chatbot-open{overflow:hidden;}
+                  }
+                `}</style>
               </div>
+            )}
 
-              {/* Animations */}
-              <style>{`
-                @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
-                @keyframes slideRight {
-                  from {opacity:0; transform:translateX(-30px);}
-                  to {opacity:1; transform:translateX(0);}
-                }
-                .animate-fadeIn { animation: fadeIn 0.15s ease-out; }
-                .animate-slideRight { animation: slideRight 0.2s ease-out; }
-                @media (max-width:768px){ body.chatbot-open{overflow:hidden;} }
-              `}</style>
-            </div>
-          )}
 
           <ScrollToFAQ />
 
