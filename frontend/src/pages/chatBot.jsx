@@ -115,7 +115,8 @@ export default function Chatbot() {
       </div>
 
       {/* Input area - SIMPLIFIED */}
-      <div className="p-4 bg-white border-t border-pink-100">
+      <div className="px-4 pt-4 pb-6 bg-white border-t border-pink-100">
+
         <div className="flex items-center gap-2">
           <input
             type="text"
