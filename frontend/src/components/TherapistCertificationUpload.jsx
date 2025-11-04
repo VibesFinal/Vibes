@@ -36,7 +36,11 @@ export default function TherapistCertificationUpload( { onChange } ){
 
             {isTherapist && (
                 <label className="w-full flex flex-col items-center px-5 py-4 bg-purple-50/50 border-2 border-[#C05299] rounded-xl cursor-pointer hover:border-[#C05299] focus-within:border-[#C05299] focus-within:ring-2 focus-within:ring-[#C05299] transition-colors text-gray-800">
-                <span className="text-gray-500 text-sm">Click to upload your certification</span>
+                <span className="text-gray-500 text-sm">
+                    {certification
+                    ? `File uploaded: ${certification.name}`
+                    : "Click to upload your certification"}
+                </span>
                 <input
                     type="file"
                     accept=".jpg,.jpeg,.png,.pdf"

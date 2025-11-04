@@ -8,13 +8,35 @@ import { showAlert, handleError } from "../utils/alertUtils";
 export default function Register({ onRegister }) {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
 
   //for therapists
   const [isTherapist, setIsTherapist] = useState(false);
   const [certification, setCertification] = useState(null);
+  
+  // for password validation
+  const [password, setPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [requirements, setRequirements] = useState({
+    upperCase: false,
+    number: false,
+    specialChar: false,
+    minLength: false,
+  });
 
   const navigate = useNavigate();
+
+  // handle password input change and validation
+  const handlePasswordChange = (e) => {
+    const value = e.target.value;
+    setPassword(value);
+
+    setRequirements({
+      upperCase: /[A-Z]/.test(value),
+      number: /[0-9]/.test(value),
+      specialChar: /[!@#$%^&*(),.?":{}|<>]/.test(value),
+      minLength: value.length >= 8,
+    });
+  };
 
   const handleTherapistChange = (checked, file) => {
     setIsTherapist(checked);
@@ -66,7 +88,7 @@ export default function Register({ onRegister }) {
       </div>
 
       {/* Left Side - Welcome Text */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-center items-center text-center px-6 sm:px-12 py-20 sm:py-20 relative z-10">
+      <div className="w-full lg:w-1/2 flex flex-col justify-center items-center text-center px-6 sm:px-12 relative z-10">
         <img src={logo} alt="Logo" className="w-16 sm:w-20 mb-6" />
         <h1 className="text-3xl sm:text-5xl font-bold text-[#C05299] mb-4 sm:mb-6">
           Join Us
@@ -104,14 +126,34 @@ export default function Register({ onRegister }) {
                   className="appearance-none w-full px-4 sm:px-5 py-3 sm:py-4 bg-white/70 border-2 border-[#C05299] rounded-xl focus:border-[#C0529950] focus:outline-none focus:ring-2 focus:ring-[#C05299] transition-colors text-gray-800 placeholder:text-purple-400 text-base"
                 />
 
-                <input
-                  type="password"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="appearance-none w-full px-4 sm:px-5 py-3 sm:py-4 bg-white/70 border-2 border-[#C05299] rounded-xl focus:border-[#C0529950] focus:outline-none focus:ring-2 focus:ring-[#C05299] transition-colors text-gray-800 placeholder:text-purple-400 text-base"
-                />
+                <div className="flex flex-col gap-2 w-full">
+                  <input
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={handlePasswordChange}
+                    required
+                    className="appearance-none w-full px-4 sm:px-5 py-3 sm:py-4 bg-white/70 border-2 border-[#C05299] rounded-xl focus:border-[#C0529950] focus:outline-none focus:ring-2 focus:ring-[#C05299] transition-colors text-gray-800 placeholder:text-purple-400 text-base"
+                  />
+
+                  {/* Password strength checklist */}
+                  {password && (
+                    <div className="text-sm mt-1 text-gray-700 space-y-1">
+                      <p className={requirements.upperCase ? "text-[#9333EA]" : "text-[#4c494e]"}>
+                        {requirements.upperCase ? "✓" : "✘"} At least one uppercase letter
+                      </p>
+                      <p className={requirements.number ? "text-[#9333EA]" : "text-[#4c494e]"}>
+                        {requirements.number ? "✓" : "✘"} At least one number
+                      </p>
+                      <p className={requirements.specialChar ? "text-[#9333EA]" : "text-[#4c494e]"}>
+                        {requirements.specialChar ? "✓" : "✘"} At least one special character
+                      </p>
+                      <p className={requirements.minLength ? "text-[#9333EA]" : "text-[#4c494e]"}>
+                        {requirements.minLength ? "✓" : "✘"} Minimum 8 characters
+                      </p>
+                    </div>
+                  )}
+                </div>
 
                 <TherapistCertificationUpload onChange={handleTherapistChange} />
 
