@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { MessageCircle, Users, Target, Brain, Heart, TrendingUp, Play , Shield , Sparkles} from "lucide-react";
+import { MessageCircle, Users, Target, Brain, Heart, TrendingUp, Play, Shield, Sparkles } from "lucide-react";
 import logo from "../components/images/v_logo.png";
 import About from "./About";
 
@@ -41,153 +41,161 @@ export default function Landing() {
     }
   };
 
-  const VideoDemo = ({ title, description, gradient, delay }) => (
+  const VideoDemo = ({ title, videoSrc, gradient, delay }) => (
     <div
       className={`transition-all duration-1000 transform ${
         isVisible[`section-${title}`] ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
       }`}
       style={{ transitionDelay: `${delay}ms` }}
     >
-      <div className="relative group cursor-pointer">
-        <div className={`aspect-video rounded-2xl bg-gradient-to-br ${gradient} overflow-hidden shadow-2xl`}>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-20 h-20 bg-white/95 rounded-full flex items-center justify-center transform transition-all duration-300 group-hover:scale-110 group-hover:bg-white shadow-lg">
-              <Play className="w-8 h-8 text-[#C05299] ml-1" fill="#C05299" />
+      <div className="relative group">
+        <div className={`aspect-video rounded-2xl overflow-hidden shadow-2xl border border-gray-200`}>
+          {videoSrc ? (
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-full object-cover"
+            >
+              <source src={videoSrc} type="video/mp4" />
+            </video>
+          ) : (
+            <div className={`w-full h-full bg-gradient-to-br ${gradient} flex items-center justify-center`}>
+              <div className="text-white text-center p-8">
+                <Sparkles className="w-16 h-16 mx-auto mb-4 opacity-60" />
+                <p className="text-lg font-semibold">Video Coming Soon</p>
+              </div>
             </div>
-          </div>
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          )}
         </div>
         <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-pink-400/20 rounded-full blur-3xl group-hover:w-40 group-hover:h-40 transition-all duration-500" />
-      </div>
-      <div className="mt-6">
-        <h3 className="text-2xl font-bold text-gray-900 mb-2">{title}</h3>
-        <p className="text-gray-600 text-lg">{description}</p>
       </div>
     </div>
   );
 
   return (
     <div className="min-h-screen bg-white">
-{/* Navigation */}
-<nav className="fixed top-0 w-full bg-white/80 backdrop-blur-lg z-50 border-b border-gray-100">
-  <div className="max-w-7xl mx-auto px-6 py-4">
-    <div className="flex items-center justify-between">
-      {/* Logo */}
-      <div className="flex items-center gap-2">
-        <img
-          src={logo}
-          alt="Logo"
-          className="h-9 w-9 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 object-contain"
-        />
-      </div>
+      {/* Navigation */}
+      <nav className="fixed top-0 w-full bg-white/80 backdrop-blur-lg z-50 border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            {/* Logo */}
+            <div className="flex items-center gap-2">
+              <img
+                src={logo}
+                alt="Logo"
+                className="h-9 w-9 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 object-contain"
+              />
+            </div>
 
-      {/* Desktop Navigation */}
-      <div className="hidden md:flex items-center gap-8 ml-[135px]">
-        <a 
-          href="#features" 
-          onClick={(e) => handleScrollToSection(e, 'features')}
-          className="text-gray-700 hover:text-[#C05299] transition-colors cursor-pointer"
-        >
-          Features
-        </a>
-        <a 
-          href="#testimonials" 
-          onClick={(e) => handleScrollToSection(e, 'testimonials')}
-          className="text-gray-700 hover:text-[#C05299] transition-colors cursor-pointer"
-        >
-          Testimonials
-        </a>
-        <a 
-          href="#about" 
-          onClick={(e) => handleScrollToSection(e, 'about')}
-          className="text-gray-700 hover:text-[#C05299] transition-colors cursor-pointer"
-        >
-          About
-        </a>
-      </div>
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center gap-8 ml-[135px]">
+              <a 
+                href="#features" 
+                onClick={(e) => handleScrollToSection(e, 'features')}
+                className="text-gray-700 hover:text-[#C05299] transition-colors cursor-pointer"
+              >
+                Features
+              </a>
+              <a 
+                href="#testimonials" 
+                onClick={(e) => handleScrollToSection(e, 'testimonials')}
+                className="text-gray-700 hover:text-[#C05299] transition-colors cursor-pointer"
+              >
+                Testimonials
+              </a>
+              <a 
+                href="#about" 
+                onClick={(e) => handleScrollToSection(e, 'about')}
+                className="text-gray-700 hover:text-[#C05299] transition-colors cursor-pointer"
+              >
+                About
+              </a>
+            </div>
 
-      {/* Desktop Auth Buttons */}
-      <div className="hidden md:flex items-center gap-4">
-        <Link
-          to="/login"
-          className="text-gray-700 hover:text-[#C05299] transition-colors font-medium"
-        >
-          Login
-        </Link>
-        <Link
-          to="/register"
-          className="px-6 py-2.5 bg-[#C05299] text-white font-semibold rounded-lg hover:bg-[#9b3d7a] transition-all shadow-lg shadow-pink-500/30 hover:shadow-xl hover:shadow-pink-500/40 hover:-translate-y-0.5"
-        >
-          Get Started
-        </Link>
-      </div>
+            {/* Desktop Auth Buttons */}
+            <div className="hidden md:flex items-center gap-4">
+              <Link
+                to="/login"
+                className="text-gray-700 hover:text-[#C05299] transition-colors font-medium"
+              >
+                Login
+              </Link>
+              <Link
+                to="/register"
+                className="px-6 py-2.5 bg-[#C05299] text-white font-semibold rounded-lg hover:bg-[#9b3d7a] transition-all shadow-lg shadow-pink-500/30 hover:shadow-xl hover:shadow-pink-500/40 hover:-translate-y-0.5"
+              >
+                Get Started
+              </Link>
+            </div>
 
-      {/* Mobile Menu Button */}
-      <button
-        onClick={() => setIsVisible(prev => ({ ...prev, mobileMenu: !prev.mobileMenu }))}
-        className="md:hidden p-2 text-gray-700 hover:text-[#C05299] transition-colors"
-      >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          {isVisible.mobileMenu ? (
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          ) : (
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setIsVisible(prev => ({ ...prev, mobileMenu: !prev.mobileMenu }))}
+              className="md:hidden p-2 text-gray-700 hover:text-[#C05299] transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {isVisible.mobileMenu ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+          </div>
+
+          {/* Mobile Menu */}
+          {isVisible.mobileMenu && (
+            <div className="md:hidden mt-4 pb-4 border-t border-gray-100 pt-4 space-y-4">
+              <a 
+                href="#features" 
+                onClick={(e) => {
+                  handleScrollToSection(e, 'features');
+                  setIsVisible(prev => ({ ...prev, mobileMenu: false }));
+                }}
+                className="block text-gray-700 hover:text-[#C05299] transition-colors cursor-pointer py-2"
+              >
+                Features
+              </a>
+              <a 
+                href="#testimonials" 
+                onClick={(e) => {
+                  handleScrollToSection(e, 'testimonials');
+                  setIsVisible(prev => ({ ...prev, mobileMenu: false }));
+                }}
+                className="block text-gray-700 hover:text-[#C05299] transition-colors cursor-pointer py-2"
+              >
+                Testimonials
+              </a>
+              <a 
+                href="#about" 
+                onClick={(e) => {
+                  handleScrollToSection(e, 'about');
+                  setIsVisible(prev => ({ ...prev, mobileMenu: false }));
+                }}
+                className="block text-gray-700 hover:text-[#C05299] transition-colors cursor-pointer py-2"
+              >
+                About
+              </a>
+              <div className="pt-4 space-y-3 border-t border-gray-100">
+                <Link
+                  to="/login"
+                  className="block text-center py-2.5 text-gray-700 hover:text-[#C05299] transition-colors font-medium"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/register"
+                  className="block text-center px-6 py-2.5 bg-[#C05299] text-white font-semibold rounded-lg hover:bg-[#9b3d7a] transition-all shadow-lg shadow-pink-500/30"
+                >
+                  Get Started
+                </Link>
+              </div>
+            </div>
           )}
-        </svg>
-      </button>
-    </div>
-
-    {/* Mobile Menu */}
-    {isVisible.mobileMenu && (
-      <div className="md:hidden mt-4 pb-4 border-t border-gray-100 pt-4 space-y-4">
-        <a 
-          href="#features" 
-          onClick={(e) => {
-            handleScrollToSection(e, 'features');
-            setIsVisible(prev => ({ ...prev, mobileMenu: false }));
-          }}
-          className="block text-gray-700 hover:text-[#C05299] transition-colors cursor-pointer py-2"
-        >
-          Features
-        </a>
-        <a 
-          href="#testimonials" 
-          onClick={(e) => {
-            handleScrollToSection(e, 'testimonials');
-            setIsVisible(prev => ({ ...prev, mobileMenu: false }));
-          }}
-          className="block text-gray-700 hover:text-[#C05299] transition-colors cursor-pointer py-2"
-        >
-          Testimonials
-        </a>
-        <a 
-          href="#about" 
-          onClick={(e) => {
-            handleScrollToSection(e, 'about');
-            setIsVisible(prev => ({ ...prev, mobileMenu: false }));
-          }}
-          className="block text-gray-700 hover:text-[#C05299] transition-colors cursor-pointer py-2"
-        >
-          About
-        </a>
-        <div className="pt-4 space-y-3 border-t border-gray-100">
-          <Link
-            to="/login"
-            className="block text-center py-2.5 text-gray-700 hover:text-[#C05299] transition-colors font-medium"
-          >
-            Login
-          </Link>
-          <Link
-            to="/register"
-            className="block text-center px-6 py-2.5 bg-[#C05299] text-white font-semibold rounded-lg hover:bg-[#9b3d7a] transition-all shadow-lg shadow-pink-500/30"
-          >
-            Get Started
-          </Link>
         </div>
-      </div>
-    )}
-  </div>
-</nav>
+      </nav>
 
       {/* Hero Section */}
       <section className="pt-32 pb-20 px-6 bg-gradient-to-b from-pink-50 to-white">
@@ -232,8 +240,6 @@ export default function Landing() {
         </div>
       </section>
 
-
-
       {/* Feature Sections with Video Demos */}
       <section id="features" className="py-24 px-6">
         <div className="max-w-7xl mx-auto space-y-32">
@@ -252,7 +258,7 @@ export default function Landing() {
             </div>
             <VideoDemo
               title="chatbot"
-              description=""
+              videoSrc="/icon/Videos/chatbotSpeed.mp4"
               gradient="from-violet-400 via-purple-500 to-pink-500"
               delay={0}
             />
@@ -262,7 +268,7 @@ export default function Landing() {
           <div id="section-community" className="grid md:grid-cols-2 gap-16 items-center">
             <VideoDemo
               title="community"
-              description=""
+              videoSrc="/icon/Videos/communitiesFinal.mp4"
               gradient="from-blue-400 via-indigo-500 to-purple-500"
               delay={100}
             />
@@ -283,18 +289,18 @@ export default function Landing() {
           <div id="section-tracking" className="grid md:grid-cols-2 gap-16 items-center">
             <div className="space-y-6">
               <div className="inline-block px-4 py-1 bg-green-100 text-green-600 rounded-full text-sm font-semibold uppercase tracking-wide">
-                Progress Tracking
+                Posting
               </div>
               <h2 className="text-4xl md:text-5xl font-bold text-gray-900">
-                Watch yourself grow
+                Share your thoughts
               </h2>
               <p className="text-xl text-gray-600 leading-relaxed">
-                Set meaningful goals, track your daily progress, and celebrate every milestone on your mental wellness journey.
+                Share your thoughts with people, and see other people opinions and experience
               </p>
             </div>
             <VideoDemo
               title="tracking"
-              description=""
+              videoSrc="/icon/Videos/postingFinal.mp4"
               gradient="from-emerald-400 via-teal-500 to-cyan-500"
               delay={200}
             />
@@ -303,7 +309,6 @@ export default function Landing() {
       </section>
 
       {/* About section */}
-
       <About />
 
       {/* Testimonials */}
@@ -361,11 +366,11 @@ export default function Landing() {
       {/* Footer */}
       <footer className="py-12 bg-gray-900 text-white text-center">
         <div className="flex items-center justify-center gap-2 mb-4">
-            <img
+          <img
             src={logo}
             alt="Logo"
             className="h-9 w-9 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 object-contain"
-            />
+          />
           <span className="text-xl font-bold">Vibes</span>
         </div>
         <p className="text-gray-400">© {new Date().getFullYear()} Vibes. All rights reserved.</p>
