@@ -1,11 +1,31 @@
 // src/components/NotificationBell.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNotifications } from '../context/NotificationContext';
 import { Bell } from 'phosphor-react';
 
-const NotificationBell = ({ size = 24 }) => {
+const NotificationBell = ({ size = 24, shouldClose }) => {
   const { unreadCount, notifications, markAsRead, markAllAsRead, loading } = useNotifications();
   const [isOpen, setIsOpen] = useState(false);
+
+  
+  // closes the dropdown when shouldClose changes to true
+  useEffect(() => {
+    if (shouldClose) setIsOpen(false);
+  }, [shouldClose]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.notification-dropdown') && !event.target.closest('.notification-button')) {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) document.addEventListener('mousedown', handleClickOutside);
+    else document.removeEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen]);
+
+
 
   return (
     <div className="relative">

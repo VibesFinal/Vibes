@@ -61,6 +61,32 @@ export default function Navigation({ onLogout }) {
     navigate(`/profile/${user.username}`);
   };
 
+  // close dropdown when location changes
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location]);
+
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      const menu = document.querySelector(".mobile-menu-container");
+      const menuButton = document.querySelector(".mobile-menu-button");
+      if (
+        mobileMenuOpen &&
+        menu &&
+        !menu.contains(e.target) &&
+        !menuButton.contains(e.target)
+      ) {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    // Add event listener when mobile menu is open
+    document.addEventListener("click", handleClickOutside);
+      return () => document.removeEventListener("click", handleClickOutside);
+    }, [mobileMenuOpen]);
+
+
   return (
     <>
       {/* Desktop Header - Hidden on Mobile */}
@@ -356,7 +382,7 @@ export default function Navigation({ onLogout }) {
 
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="mobile-nav-btn"
+            className="mobile-nav-btn mobile-menu-button"
           >
             <List size={24} />
             <span className="mobile-nav-label">Menu</span>

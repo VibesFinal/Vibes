@@ -32,8 +32,8 @@ function Badges({ userId }) {
   return (
     <div className="badges-container flex flex-wrap gap-8 justify-center p-4">
       {badges.map(badge => {
-        const imageUrl = badge.image_url 
-          ? `${BACKEND_URL}${badge.image_url}` 
+        const imageUrl = badge.image_url
+          ? new URL(badge.image_url.trim(), BACKEND_URL).toString()
           : '/default-badge.png';
         
         return (
