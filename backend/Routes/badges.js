@@ -43,74 +43,91 @@ router.get('/:userId', async (req, res) => {
  * - Popular (50+ comments on posts)
  */
 router.post('/award/all', async (req, res) => {
+  const results = {
+    supportSoulAdded: 0,
+    storyTellerAdded: 0,
+    cheerleaderAdded: 0,
+    popularAdded: 0,
+    errors: []
+  };
+
   try {
     // Supportive Soul
-    const ssResult = await pool.query(`
-      INSERT INTO user_badges (user_id, badge_id)
-      SELECT user_id, (SELECT id FROM badge_types WHERE name='Supportive Soul')
-      FROM comments
-      GROUP BY user_id
-      HAVING COUNT(*) >= 20
-      ON CONFLICT (user_id, badge_id) DO NOTHING
-      RETURNING *;
-    `);
+    try {
+      const ssResult = await pool.query(`
+        INSERT INTO user_badges (user_id, badge_id)
+        SELECT user_id, 1
+        FROM comments
+        GROUP BY user_id
+        HAVING COUNT(*) >= 20
+        ON CONFLICT (user_id, badge_id) DO NOTHING
+        RETURNING *;
+      `);
+      results.supportSoulAdded = ssResult.rowCount;
+    } catch (err) {
+      results.errors.push({ badge: 'Supportive Soul', error: err.message });
+    }
 
     // Story Teller
-    const stResult = await pool.query(`
-      INSERT INTO user_badges (user_id, badge_id)
-      SELECT user_id, (SELECT id FROM badge_types WHERE name='Story Teller')
-      FROM posts
-      GROUP BY user_id
-      HAVING COUNT(*) >= 10
-      ON CONFLICT (user_id, badge_id) DO NOTHING
-      RETURNING *;
-    `);
+    try {
+      const stResult = await pool.query(`
+        INSERT INTO user_badges (user_id, badge_id)
+        SELECT user_id, 2
+        FROM posts
+        GROUP BY user_id
+        HAVING COUNT(*) >= 10
+        ON CONFLICT (user_id, badge_id) DO NOTHING
+        RETURNING *;
+      `);
+      results.storyTellerAdded = stResult.rowCount;
+    } catch (err) {
+      results.errors.push({ badge: 'Story Teller', error: err.message });
+    }
 
     // Cheerleader
-    const chResult = await pool.query(`
-      INSERT INTO user_badges (user_id, badge_id)
-      SELECT l.user_id, (SELECT id FROM badge_types WHERE name='Cheerleader')
-      FROM likes l
-      GROUP BY l.user_id
-      HAVING COUNT(*) >= 20
-      ON CONFLICT (user_id, badge_id) DO NOTHING
-      RETURNING *;
-    `);
+    try {
+      const chResult = await pool.query(`
+        INSERT INTO user_badges (user_id, badge_id)
+        SELECT user_id, 3
+        FROM likes
+        GROUP BY user_id
+        HAVING COUNT(*) >= 20
+        ON CONFLICT (user_id, badge_id) DO NOTHING
+        RETURNING *;
+      `);
+      results.cheerleaderAdded = chResult.rowCount;
+    } catch (err) {
+      results.errors.push({ badge: 'Cheerleader', error: err.message });
+    }
 
     // Popular
-    const popResult = await pool.query(`
-      INSERT INTO user_badges (user_id, badge_id)
-      SELECT p.user_id, (SELECT id FROM badge_types WHERE name='Popular')
-      FROM posts p
-      JOIN comments c ON c.post_id = p.id
-      GROUP BY p.user_id
-      HAVING COUNT(c.id) >= 50
-      ON CONFLICT (user_id, badge_id) DO NOTHING
-      RETURNING *;
-    `);
+    try {
+      const popResult = await pool.query(`
+        INSERT INTO user_badges (user_id, badge_id)
+        SELECT p.user_id, 4
+        FROM posts p
+        JOIN comments c ON c.post_id = p.id
+        GROUP BY p.user_id
+        HAVING COUNT(c.id) >= 50
+        ON CONFLICT (user_id, badge_id) DO NOTHING
+        RETURNING *;
+      `);
+      results.popularAdded = popResult.rowCount;
+    } catch (err) {
+      results.errors.push({ badge: 'Popular', error: err.message });
+    }
 
-    // res.json({
-    //   message: 'Badges awarded successfully',
-    //   supportSoulAdded: ssResult.rowCount,
-    //   storyTellerAdded: stResult.rowCount,
-    //   cheerleaderAdded: chResult.rowCount,
-    //   popularAdded: popResult.rowCount
-    // });
     res.json({
-      success: true,
-      message: "Badges awarded successfully.",
-      type: "success",
-      data: {
-        supportSoulAdded: ssResult.rowCount,
-        storyTellerAdded: stResult.rowCount,
-        cheerleaderAdded: chResult.rowCount,
-        popularAdded: popResult.rowCount,
-      },
+      success: results.errors.length === 0,
+      message: results.errors.length === 0
+        ? "Badges awarded successfully."
+        : "Some badges could not be awarded.",
+      type: results.errors.length === 0 ? "success" : "warning",
+      data: results
     });
 
   } catch (err) {
     console.error("Error awarding badges:", err);
-    // res.status(500).json({ error: 'Server error' });
     res.status(500).json({
       success: false,
       message: ERROR_MESSAGES.SYSTEM.SERVER_ERROR,
