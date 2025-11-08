@@ -15,6 +15,15 @@ const EmojiPicker = ({ onEmojiSelect, onClose }) => {
   const [activeCategory, setActiveCategory] = useState('Smileys');
   const [searchTerm, setSearchTerm] = useState('');
 
+  // 🔧 Cleanup any existing emoji styles on unmount
+  useEffect(() => {
+    const cleanup = () => {
+      const existing = document.getElementById('emoji-styles');
+      if (existing) existing.remove();
+    };
+    return cleanup;
+  }, []);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (pickerRef.current && !pickerRef.current.contains(event.target)) {
@@ -27,8 +36,6 @@ const EmojiPicker = ({ onEmojiSelect, onClose }) => {
 
   const handleEmojiClick = (emoji) => {
     onEmojiSelect(emoji);
-    // Optional: auto-close after selection on mobile
-    // onClose();
   };
 
   const filteredEmojis = searchTerm
@@ -40,7 +47,7 @@ const EmojiPicker = ({ onEmojiSelect, onClose }) => {
   return (
     <div 
       ref={pickerRef}
-      className="fixed bottom-0 left-0 right-0 sm:absolute sm:bottom-auto sm:left-0 sm:w-80 bg-white/98 backdrop-blur-xl rounded-t-3xl sm:rounded-2xl shadow-2xl border-t-2 sm:border-2 border-[#D473B3]/30 z-50 sm:animate-in sm:fade-in-0 sm:zoom-in-95"
+      className="fixed bottom-0 left-0 right-0 sm:absolute sm:bottom-full sm:left-0 sm:w-80 bg-white/98 backdrop-blur-xl rounded-t-3xl sm:rounded-2xl shadow-2xl border-t-2 sm:border-2 border-[#D473B3]/30 z-50 sm:mt-2 animate-in fade-in zoom-in-95"
       style={{ maxHeight: '70vh', overflow: 'hidden' }}
     >
       {/* Header */}
@@ -60,7 +67,6 @@ const EmojiPicker = ({ onEmojiSelect, onClose }) => {
           </button>
         </div>
         
-        {/* Search */}
         <input
           type="text"
           placeholder="Search emoji..."
@@ -70,7 +76,7 @@ const EmojiPicker = ({ onEmojiSelect, onClose }) => {
         />
       </div>
 
-      {/* Category tabs (only when not searching) */}
+      {/* Tabs */}
       {!searchTerm && (
         <div className="flex overflow-x-auto hide-scrollbar bg-gradient-to-r from-[#FCF0F8] to-[#F5E1F0] border-b-2 border-[#D473B3]/20 p-2 gap-2">
           {Object.keys(emojiCategories).map((category) => (
@@ -89,19 +95,33 @@ const EmojiPicker = ({ onEmojiSelect, onClose }) => {
         </div>
       )}
 
-      {/* Emoji grid */}
-      <div className="p-3 h-64 overflow-y-auto hide-scrollbar">
-        {/* Use fewer columns on mobile */}
-        <div className="grid grid-cols-7 sm:grid-cols-8 gap-1.5 sm:gap-2">
+      {/* Emoji grid — ✅ FIXED FOR WINDOWS */}
+      <div className="p-2 h-64 overflow-y-auto hide-scrollbar">
+        <div className="grid grid-cols-7 sm:grid-cols-8 gap-1">
           {filteredEmojis.map((emoji, index) => (
-            <button
-              key={index}
+            <div
+              key={`${emoji}-${index}`} // ✅ stable key
               onClick={() => handleEmojiClick(emoji)}
               aria-label={`Select ${emoji}`}
-              className="text-2xl sm:text-2xl p-2 rounded-lg active:scale-110 focus:outline-none focus:ring-2 focus:ring-[#D473B3]/50 transition-transform"
+              // ✅ Critical: inline font + sizing
+              style={{
+                fontFamily: '"Segoe UI Emoji", "Apple Color Emoji", sans-serif',
+                fontSize: '1.5rem', // ~24px — avoids fractional scaling
+                textAlign: 'center',
+                padding: '0.5rem',
+                cursor: 'pointer',
+                userSelect: 'none',
+                WebkitTapHighlightColor: 'transparent',
+                minWidth: '2rem',
+                minHeight: '2rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              className="rounded-lg hover:bg-[#F5E1F0] active:scale-110 transition-transform"
             >
               {emoji}
-            </button>
+            </div>
           ))}
         </div>
       </div>
@@ -111,27 +131,31 @@ const EmojiPicker = ({ onEmojiSelect, onClose }) => {
         <p className="text-xs font-semibold text-[#C05299] mb-2">Recently Used</p>
         <div className="flex gap-2">
           {['😊', '❤️', '👍', '🎉', '😂'].map((emoji, index) => (
-            <button
+            <div
               key={index}
               onClick={() => handleEmojiClick(emoji)}
               aria-label={`Select ${emoji}`}
-              className="text-xl p-2 rounded-lg active:scale-110 focus:outline-none"
+              style={{
+                fontFamily: '"Segoe UI Emoji", "Apple Color Emoji", sans-serif',
+                fontSize: '1.25rem',
+                textAlign: 'center',
+                padding: '0.5rem',
+                cursor: 'pointer',
+                minWidth: '2rem',
+                minHeight: '2rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              className="rounded-lg hover:bg-[#F5E1F0] active:scale-110"
             >
               {emoji}
-            </button>
+            </div>
           ))}
         </div>
       </div>
     </div>
   );
 };
-
-// Optional: Hide scrollbar for better mobile look
-const style = document.createElement('style');
-style.textContent = `
-  .hide-scrollbar::-webkit-scrollbar { display: none; }
-  .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-`;
-document.head.appendChild(style);
 
 export default EmojiPicker;
