@@ -49,7 +49,7 @@ export default function FollowList({ userId, currentUserId }) {
   };
 
   return (
-    <div className="followContainer bg-white/70 backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-white/50">
+    <div className="followContainer bg-white/70 backdrop-blur-lg rounded-2xl p-6 border border-white/50">
       {/* Follow / Unfollow Button */}
       {currentUserId !== userId && (
         <div className="text-center mb-6">
