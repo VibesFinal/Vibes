@@ -1,10 +1,9 @@
 // components/ChatInbox.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axiosInstance from '../api/axiosInstance';
 import PrivateChat from './privateChat';
 import { showAlert, handleError } from '../utils/alertUtils';
 
-// Remove most inline styles; rely on Tailwind
 const gradientClasses = {
   container: 'bg-gradient-to-br from-[#FCF0F8] via-[#F5E1F0] to-[#D473B3]',
   newChatButton: 'bg-gradient-to-r from-[#C05299] via-[#D473B3] to-[#E8A5D8] text-white font-bold rounded-2xl px-4 py-2.5 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 flex items-center justify-center space-x-2 ring-2 ring-white',
@@ -20,6 +19,7 @@ export default function ChatInbox() {
   const [currentUser, setCurrentUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Extract current user from token
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -28,10 +28,13 @@ export default function ChatInbox() {
         setCurrentUser(payload);
       } catch (e) {
         console.error('Invalid token');
+        showAlert('Session expired. Please log in again.');
+        // Optional: redirect to login
       }
     }
   }, []);
 
+  // Fetch conversations
   useEffect(() => {
     if (!currentUser) return;
 
@@ -51,6 +54,7 @@ export default function ChatInbox() {
     fetchConversations();
   }, [currentUser]);
 
+  // Fetch therapists (for patients)
   const fetchTherapists = async () => {
     try {
       const res = await axiosInstance.get('/api/therapist/therapists');
@@ -58,6 +62,7 @@ export default function ChatInbox() {
     } catch (err) {
       console.error('Failed to load therapists', err);
       handleError(err);
+      showAlert('Failed to load therapists');
     }
   };
 
@@ -65,7 +70,7 @@ export default function ChatInbox() {
     if (!currentUser?.isTherapist) {
       fetchTherapists();
       setShowTherapistList(true);
-      setSelectedPartnerId(null); // ensure we show list
+      setSelectedPartnerId(null);
     }
   };
 
@@ -74,6 +79,7 @@ export default function ChatInbox() {
     setShowTherapistList(false);
   };
 
+  // Format time for last message
   const formatLastMessageTime = (dateString) => {
     if (!dateString) return '';
     const date = new Date(dateString);
@@ -86,6 +92,7 @@ export default function ChatInbox() {
     return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
   };
 
+  // Search filtering
   const filteredTherapists = therapists.filter(therapist =>
     therapist.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (therapist.specialty && therapist.specialty.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -95,19 +102,32 @@ export default function ChatInbox() {
     conv.other_user.username.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // On mobile, if in chat view, only show chat
-  const isMobile = window.innerWidth < 768;
+  // ✅ Handle real-time conversation updates (edit/delete/send)
+  const handleConversationUpdate = useCallback(({ other_user_id, last_message }) => {
+    setConversations(prev => 
+      prev.map(conv => 
+        conv.other_user.id === other_user_id
+          ? { 
+              ...conv, 
+              last_message: last_message,
+              updated_at: last_message?.created_at || new Date().toISOString()
+            }
+          : conv
+      )
+    );
+  }, []);
+
+  // Responsive: hide sidebar on mobile when chat open
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   const showSidebar = !(isMobile && selectedPartnerId);
 
   return (
     <div className={`${gradientClasses.container} flex flex-col md:flex-row h-screen w-full overflow-hidden`}>
-      {/* Sidebar (hidden on mobile when chat is active) */}
+      {/* Sidebar */}
       {showSidebar && (
         <div className="w-full md:w-80 lg:w-96 bg-white/95 backdrop-blur-sm border-r-2 border-[#D473B3]/20 flex flex-col max-h-screen">
-          {/* Gradient top bar */}
           <div className="h-1 w-full bg-gradient-to-r from-[#C05299] via-[#D473B3] to-[#E8A5D8]"></div>
 
-          {/* Header */}
           <div className="p-4 md:p-6 border-b-2 border-[#D473B3]/20">
             <div className="flex justify-between items-center mb-4">
               <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-[#C05299] via-[#D473B3] to-[#E8A5D8] bg-clip-text text-transparent">
@@ -126,7 +146,6 @@ export default function ChatInbox() {
               )}
             </div>
 
-            {/* Search */}
             <div className="relative">
               <input
                 type="text"
@@ -141,7 +160,6 @@ export default function ChatInbox() {
             </div>
           </div>
 
-          {/* Content */}
           <div className="flex-1 overflow-y-auto p-2 md:p-4">
             {loading && !showTherapistList ? (
               <div className="space-y-4">
@@ -260,10 +278,11 @@ export default function ChatInbox() {
                             </span>
                           )}
                         </div>
-                        {conversation.last_message && (
+                        {/* ✅ HANDLE EDITED & DELETED MESSAGES */}
+                        {conversation.last_message ? (
                           <div className="text-xs md:text-sm text-gray-600 truncate mt-1">
                             {conversation.last_message.is_deleted ? (
-                              <span className="text-gray-400 italic">Message deleted</span>
+                              <span className="text-gray-400 italic">No recent messages</span>
                             ) : (
                               <>
                                 {conversation.last_message.content}
@@ -272,6 +291,10 @@ export default function ChatInbox() {
                                 )}
                               </>
                             )}
+                          </div>
+                        ) : (
+                          <div className="text-xs md:text-sm text-gray-500 italic mt-1">
+                            No messages yet
                           </div>
                         )}
                       </div>
@@ -282,7 +305,7 @@ export default function ChatInbox() {
             )}
           </div>
 
-          {/* User Footer */}
+          {/* User footer */}
           <div className="p-4 border-t-2 border-[#D473B3]/20 bg-gradient-to-r from-[#FCF0F8] to-[#F5E1F0]">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#C05299] to-[#D473B3] flex items-center justify-center text-white font-bold text-sm">
@@ -301,12 +324,13 @@ export default function ChatInbox() {
         </div>
       )}
 
-      {/* Chat Area (or welcome screen) */}
+      {/* Chat area */}
       <div className="flex-1 flex flex-col">
         {selectedPartnerId ? (
           <PrivateChat
             recipientId={selectedPartnerId}
             onBack={() => setSelectedPartnerId(null)}
+            onConversationUpdate={handleConversationUpdate}  // ✅ Critical!
           />
         ) : (
           <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-[#FCF0F8] via-[#F5E1F0] to-[#E8A5D8]/40 p-4">

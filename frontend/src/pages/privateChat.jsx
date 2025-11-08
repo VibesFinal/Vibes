@@ -1,13 +1,14 @@
+// components/privateChat.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
 import axiosInstance from '../api/axiosInstance';
-import ChatHeader from '../components/TherapistChat/ChatHeader';
+import ChatHeader from '../components/TherapistChat/ChatHeader'; // Ensure path is correct
 import MessageList from '../components/TherapistChat/MessageList';
 import MessageInput from '../components/TherapistChat/MessageInput';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:7777';
 
-const PrivateChat = ({ recipientId, recipientName, onBack }) => {
+const PrivateChat = ({ recipientId, onBack, onConversationUpdate }) => {
   const [socket, setSocket] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
@@ -17,111 +18,81 @@ const PrivateChat = ({ recipientId, recipientName, onBack }) => {
   
   const socketRef = useRef(null);
 
-  // Get current user ID from token
+  // Extract current user from token
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
         setCurrentUserId(payload.id);
-        console.log('✅ Current user ID:', payload.id);
       } catch (e) {
-        console.error('❌ Error parsing token:', e);
-        setError('Invalid token');
+        console.error('❌ Invalid token:', e);
+        setError('Session invalid. Please log in again.');
       }
     } else {
-      console.error('❌ No token found');
       setError('Not authenticated');
     }
   }, []);
 
-  // Initialize socket connection
+  // Initialize socket
   useEffect(() => {
-    if (!currentUserId || !recipientId) {
-      console.log('⏳ Waiting for user IDs...', { currentUserId, recipientId });
-      return;
-    }
+    if (!currentUserId || !recipientId) return;
 
     const token = localStorage.getItem('token');
     if (!token) {
-      console.error('❌ No token');
-      setError('Not authenticated');
+      setError('Authentication required');
       return;
     }
 
-    console.log('🔌 Connecting to socket...');
-    console.log('API URL:', API_URL);
-    console.log('Namespace: /private');
-
-    // Create socket connection to /private namespace
+    // Connect to /private-chat namespace
     const newSocket = io(`${API_URL}/private-chat`, {
       auth: { token },
       transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionDelay: 1000,
       reconnectionAttempts: 5,
-      timeout: 20000
     });
 
     socketRef.current = newSocket;
     setSocket(newSocket);
 
-    // Connection events
+    // Connection handlers
     newSocket.on('connect', () => {
-      console.log('✅ Socket connected:', newSocket.id);
       setIsConnected(true);
       setError(null);
-      
-      // Join private chat room
       newSocket.emit('joinPrivateChat', { recipientId });
-      console.log('💬 Joined private chat with:', recipientId);
     });
 
-    newSocket.on('disconnect', (reason) => {
-      console.log('❌ Socket disconnected:', reason);
-      setIsConnected(false);
-    });
+    newSocket.on('disconnect', () => setIsConnected(false));
+    newSocket.on('connect_error', () => setError('Connection failed. Retrying...'));
+    newSocket.on('connect_timeout', () => setError('Connection timed out.'));
 
-    newSocket.on('connect_error', (error) => {
-      console.error('❌ Connection error:', error);
-      setIsConnected(false);
-      setError('Connection failed. Check if server is running.');
-    });
-
-    newSocket.on('connect_timeout', () => {
-      console.error('❌ Connection timeout');
-      setError('Connection timeout. Check server.');
+    // ✅ REAL-TIME CONVERSATION UPDATES
+    newSocket.on('conversationUpdated', ({ last_message }) => {
+      if (onConversationUpdate) {
+        onConversationUpdate({
+          other_user_id: recipientId,
+          last_message: last_message
+        });
+      }
     });
 
     // Message events
     newSocket.on('privateMessageReceived', (message) => {
-      console.log('📨 Received message:', message);
-      
-      // Add message to list
       setMessages(prev => {
-        // Avoid duplicates
         const exists = prev.some(m => m.id === message.id);
-        if (exists) return prev;
-        return [...prev, message];
+        return exists ? prev : [...prev, message];
       });
     });
 
     newSocket.on('privateMessageSent', (message) => {
-      console.log('✅ Message sent:', message);
-      
-      // Add message to list
       setMessages(prev => {
-        // Avoid duplicates
         const exists = prev.some(m => m.id === message.id);
-        if (exists) return prev;
-        return [...prev, message];
+        return exists ? prev : [...prev, message];
       });
     });
 
-    // Message edited event
     newSocket.on('messageEdited', ({ messageId, newContent }) => {
-      console.log('✏️ Message edited:', messageId);
-      
       setMessages(prev => prev.map(msg => 
         msg.id === messageId 
           ? { ...msg, content: newContent, is_edited: true, isEdited: true }
@@ -129,27 +100,18 @@ const PrivateChat = ({ recipientId, recipientName, onBack }) => {
       ));
     });
 
-    // Message deleted event
     newSocket.on('messageDeleted', ({ messageId }) => {
-      console.log('🗑️ Message deleted:', messageId);
-      
       setMessages(prev => prev.filter(msg => msg.id !== messageId));
     });
 
-    // Typing indicator
-    newSocket.on('userTyping', ({ userId }) => {
-      console.log('⌨️ User typing:', userId);
-    });
-
-    // Cleanup on unmount
+    // Cleanup
     return () => {
-      console.log('🧹 Cleaning up socket connection');
       if (newSocket) {
         newSocket.emit('leavePrivateChat', { recipientId });
         newSocket.close();
       }
     };
-  }, [currentUserId, recipientId]);
+  }, [currentUserId, recipientId, onConversationUpdate]);
 
   // Load message history
   useEffect(() => {
@@ -158,92 +120,59 @@ const PrivateChat = ({ recipientId, recipientName, onBack }) => {
     const loadMessages = async () => {
       try {
         const token = localStorage.getItem('token');
-        
         const response = await fetch(`${API_URL}/private/history/${recipientId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
+          headers: { 'Authorization': `Bearer ${token}` }
         });
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
-        console.log('📜 Response status:', response.status);
-        
-        if (response.ok) {
-          const data = await response.json();
-          const messageList = data.messages || data.data || [];
-          console.log('✅ Loaded messages:', messageList.length);
-          setMessages(messageList);
-        } else {
-          console.warn('⚠️ Failed to load messages:', response.status);
-        }
-      } catch (error) {
-        console.error('❌ Error loading messages:', error);
+        const data = await response.json();
+        const messageList = data.data || data.messages || [];
+        setMessages(messageList);
+      } catch (err) {
+        console.error('❌ Failed to load messages:', err);
+        // Optional: setError('Failed to load messages')
       }
     };
 
     loadMessages();
   }, [recipientId, currentUserId]);
 
+  // Handlers
   const handleSendMessage = () => {
-    if (!newMessage.trim() || !socket || !isConnected) {
-      console.warn('Cannot send message:', { 
-        hasMessage: !!newMessage.trim(), 
-        hasSocket: !!socket, 
-        isConnected 
-      });
-      return;
-    }
-
-    console.log('📤 Sending message to:', recipientId);
+    if (!newMessage.trim() || !socket || !isConnected) return;
     
     socket.emit('sendPrivateMessage', {
       recipientId,
       content: newMessage.trim()
     });
-
+    
     socket.emit('stopTyping', { recipientId });
     setNewMessage('');
   };
 
   const handleTyping = () => {
-    if (socket && isConnected) {
+    if (socket?.connected) {
       socket.emit('userTyping', { recipientId });
     }
   };
 
   const handleSendFile = (fileData) => {
-    if (!socket || !isConnected) {
-      console.warn('Cannot send file: socket not connected');
-      return;
+    if (socket?.connected) {
+      socket.emit('sendPrivateFile', { recipientId, ...fileData });
     }
-
-    console.log('📎 Sending file to:', recipientId);
-    
-    socket.emit('sendPrivateFile', {
-      recipientId,
-      ...fileData
-    });
   };
 
+  // ✅ Let backend handle updates — no optimistic patching needed
   const handleDeleteMessage = (messageId) => {
-    console.log('🗑️ Deleting message:', messageId);
-    
-    if (socket && isConnected) {
+    if (socket?.connected) {
       socket.emit('deleteMessage', { messageId });
-      setMessages(prev => prev.filter(m => m.id !== messageId));
     }
   };
 
   const handleEditMessage = (messageId, newContent) => {
-    console.log('✏️ Editing message:', messageId, newContent);
-    
-    if (socket && isConnected) {
+    if (socket?.connected) {
       socket.emit('editMessage', { messageId, newContent });
-      setMessages(prev => prev.map(msg => 
-        msg.id === messageId 
-          ? { ...msg, content: newContent, is_edited: true, isEdited: true }
-          : msg
-      ));
     }
   };
 
@@ -251,14 +180,13 @@ const PrivateChat = ({ recipientId, recipientName, onBack }) => {
     <div className="flex flex-col h-screen bg-gradient-to-br from-[#FCF0F8] to-[#F5E1F0] w-full max-w-full overflow-hidden">
       {/* Error banner */}
       {error && (
-        <div className="bg-red-500 text-white px-4 py-2 text-center font-semibold w-full">
+        <div className="bg-red-500 text-white px-4 py-2 text-center font-semibold">
           ⚠️ {error}
         </div>
       )}
 
       {/* Header */}
       <ChatHeader
-        recipientName={recipientName}
         recipientId={recipientId}
         onBack={onBack}
         isConnected={isConnected}
@@ -289,12 +217,12 @@ const PrivateChat = ({ recipientId, recipientName, onBack }) => {
         />
       </div>
 
-      {/* Connection status indicator */}
+      {/* Connection indicator */}
       {!isConnected && !error && (
         <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-yellow-400 to-yellow-500 text-white px-4 py-2 rounded-full shadow-lg z-50 text-sm">
           <div className="flex items-center space-x-1">
             <div className="w-2 h-2 sm:w-3 sm:h-3 bg-white rounded-full animate-ping"></div>
-            <span className="font-medium">Connecting…</span>
+            <span>Connecting…</span>
           </div>
         </div>
       )}

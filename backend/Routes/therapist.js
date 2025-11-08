@@ -164,23 +164,36 @@ router.get('/chat/conversations', routeGuard, async (req, res) => {
 
   try {
     const result = await pool.query(
-      `SELECT pc.id,
-      CASE WHEN pc.user_id = $1 THEN u2.id ELSE u1.id END AS other_user_id,
-      CASE WHEN pc.user_id = $1 THEN u2.username ELSE u1.username END AS other_user_username,
-      CASE WHEN pc.user_id = $1 THEN u2.is_therapist ELSE u1.is_therapist END AS other_user_is_therapist,
-      pm.content,
-      pm.created_at
+      `SELECT 
+        pc.id,
+        -- Identify the other user
+        CASE WHEN pc.user_id = $1 THEN u2.id ELSE u1.id END AS other_user_id,
+        CASE WHEN pc.user_id = $1 THEN u2.username ELSE u1.username END AS other_user_username,
+        CASE WHEN pc.user_id = $1 THEN u2.profile_pic ELSE u1.profile_pic END AS other_user_profile_pic,
+        CASE WHEN pc.user_id = $1 THEN u2.is_therapist ELSE u1.is_therapist END AS other_user_is_therapist,
+        -- Last *non-deleted* message fields
+        pm.id AS last_message_id,
+        pm.content AS last_message_content,
+        pm.created_at AS last_message_created_at,
+        pm.is_edited AS last_message_is_edited,
+        pm.is_deleted AS last_message_is_deleted
       FROM private_conversations pc
       JOIN users u1 ON pc.user_id = u1.id
       JOIN users u2 ON pc.therapist_id = u2.id
-      LEFT JOIN (
-        SELECT DISTINCT ON (conversation_id) *
-        FROM private_messages
-        ORDER BY conversation_id, created_at DESC
-      ) pm ON pm.conversation_id = pc.id
+      -- ✅ LEFT JOIN latest NON-DELETED message only
+      LEFT JOIN private_messages pm 
+        ON pm.conversation_id = pc.id 
+        AND pm.is_deleted = false
+        AND pm.id = (
+          SELECT id 
+          FROM private_messages 
+          WHERE conversation_id = pc.id 
+            AND is_deleted = false 
+          ORDER BY created_at DESC 
+          LIMIT 1
+        )
       WHERE pc.user_id = $1 OR pc.therapist_id = $1
-      ORDER BY pm.created_at DESC NULLS LAST;
-      `,
+      ORDER BY pm.created_at DESC NULLS LAST;`,
       [userId]
     );
 
@@ -189,20 +202,26 @@ router.get('/chat/conversations', routeGuard, async (req, res) => {
       other_user: {
         id: row.other_user_id,
         username: row.other_user_username,
+        profile_pic: row.other_user_profile_pic, // 👈 now included!
         is_therapist: row.other_user_is_therapist
       },
-      last_message: row.content
-        ? { content: row.content }
+      last_message: row.last_message_id
+        ? {
+            id: row.last_message_id,
+            content: row.last_message_content,
+            created_at: row.last_message_created_at,
+            is_edited: row.last_message_is_edited,
+            is_deleted: row.last_message_is_deleted // ← always false due to filter
+          }
         : null
     }));
 
     res.json(conversations);
   } catch (err) {
     console.error('Fetch conversations error:', err);
-    // res.status(500).json({ error: 'Failed to load conversations' });
     res.status(500).json({
       success: false,
-      message: ERROR_MESSAGES.MEDIA.UPLOAD_FAILED_CERTIFI,
+      message: ERROR_MESSAGES.SYSTEM.FETCH_CONVERSATIONS_FAILED || "Failed to load conversations",
       type: "error",
     });
   }

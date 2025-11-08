@@ -126,17 +126,7 @@ const MessageInput = ({ newMessage, setNewMessage, handleSendMessage, isConnecte
               style={{ minHeight: '44px', maxHeight: '100px' }}
             />
 
-            {newMessage.length > 0 && (
-              <div className="absolute bottom-1.5 right-2 sm:bottom-2 sm:right-3">
-                <div className={`text-[9px] sm:text-xs font-semibold px-1.5 py-0.5 rounded ${
-                  newMessage.length > 500
-                    ? 'bg-red-500 text-white'
-                    : 'bg-[#F5E1F0] text-[#C05299] border border-[#D473B3]/30'
-                }`}>
-                  {newMessage.length}/1000
-                </div>
-              </div>
-            )}
+           
           </div>
 
           <button

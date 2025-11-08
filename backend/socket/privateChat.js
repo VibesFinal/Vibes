@@ -20,10 +20,43 @@ module.exports = (io, pool) => {
     }
   });
 
+  // Helper: Emit updated conversation metadata to room
+  const emitConversationUpdate = async (roomId, conversationId) => {
+    try {
+      const result = await pool.query(`
+        SELECT 
+          (SELECT json_build_object(
+            'id', pm.id,
+            'content', pm.content,
+            'created_at', pm.created_at,
+            'is_edited', pm.is_edited,
+            'is_deleted', pm.is_deleted,
+            'sender_id', pm.sender_id
+          )
+          FROM private_messages pm 
+          WHERE pm.conversation_id = pc.id 
+            AND pm.is_deleted = false 
+          ORDER BY pm.created_at DESC 
+          LIMIT 1
+        ) AS last_message
+        FROM private_conversations pc
+        WHERE pc.id = $1
+      `, [conversationId]);
+
+      const last_message = result.rows[0]?.last_message || null;
+
+      io.to(roomId).emit('conversationUpdated', {
+        conversationId,
+        last_message
+      });
+    } catch (err) {
+      console.error('❌ Failed to emit conversationUpdated:', err);
+    }
+  };
+
   io.on('connection', (socket) => {
     console.log(`✅ Private chat connected: ${socket.username} (${socket.userId})`);
 
-    // Join private chat room
     socket.on('joinPrivateChat', async ({ recipientId }) => {
       try {
         const parsedRecipientId = parseInt(recipientId, 10);
@@ -32,7 +65,6 @@ module.exports = (io, pool) => {
           return;
         }
 
-        // Create room identifier (sorted IDs for consistency)
         const roomId = [socket.userId, parsedRecipientId].sort((a, b) => a - b).join('-');
         socket.join(roomId);
         socket.currentRoom = roomId;
@@ -40,7 +72,6 @@ module.exports = (io, pool) => {
 
         console.log(`💬 ${socket.username} joined room: ${roomId}`);
 
-        // Find or create conversation
         let convResult = await pool.query(
           `SELECT id FROM private_conversations 
            WHERE (user_id = $1 AND therapist_id = $2) 
@@ -50,10 +81,9 @@ module.exports = (io, pool) => {
 
         let conversationId;
         if (convResult.rows.length === 0) {
-          // Create new conversation
           const insertResult = await pool.query(
-            `INSERT INTO private_conversations (user_id, therapist_id) 
-             VALUES ($1, $2) 
+            `INSERT INTO private_conversations (user_id, therapist_id, last_message_at) 
+             VALUES ($1, $2, NOW()) 
              RETURNING id`,
             [socket.userId, parsedRecipientId]
           );
@@ -64,16 +94,18 @@ module.exports = (io, pool) => {
         }
 
         socket.conversationId = conversationId;
+
+        // Initial emit (optional but helpful)
+        await emitConversationUpdate(roomId, conversationId);
       } catch (err) {
         console.error('❌ Error joining private chat:', err);
         socket.emit('error', { message: 'Failed to join chat' });
       }
     });
 
-    // Send private message
     socket.on('sendPrivateMessage', async ({ recipientId, content }) => {
       try {
-        if (!content || !content.trim()) {
+        if (!content?.trim()) {
           socket.emit('error', { message: 'Message cannot be empty' });
           return;
         }
@@ -84,7 +116,6 @@ module.exports = (io, pool) => {
           return;
         }
 
-        // Insert message into database
         const result = await pool.query(
           `INSERT INTO private_messages (conversation_id, sender_id, content) 
            VALUES ($1, $2, $3) 
@@ -94,7 +125,6 @@ module.exports = (io, pool) => {
 
         const message = result.rows[0];
 
-        // Get sender info
         const userResult = await pool.query(
           `SELECT username, profile_pic, is_therapist FROM users WHERE id = $1`,
           [socket.userId]
@@ -107,20 +137,18 @@ module.exports = (io, pool) => {
           is_therapist: userResult.rows[0].is_therapist
         };
 
-        // Emit to sender
         socket.emit('privateMessageSent', fullMessage);
+        socket.to(socket.currentRoom).emit('privateMessageReceived', fullMessage);
 
-        // Emit to recipient (if they're in the room)
-        const roomId = socket.currentRoom;
-        socket.to(roomId).emit('privateMessageReceived', fullMessage);
-
-        // Update conversation's last_message_at
+        // ✅ Update last_message_at AND emit conversation update
         await pool.query(
           `UPDATE private_conversations 
            SET last_message_at = NOW() 
            WHERE id = $1`,
           [socket.conversationId]
         );
+
+        await emitConversationUpdate(socket.currentRoom, socket.conversationId);
 
         console.log(`📤 Message sent from ${socket.username} to recipient ${parsedRecipientId}`);
       } catch (err) {
@@ -129,10 +157,9 @@ module.exports = (io, pool) => {
       }
     });
 
-    // Edit message
     socket.on('editMessage', async ({ messageId, newContent }) => {
       try {
-        if (!newContent || !newContent.trim()) {
+        if (!newContent?.trim()) {
           socket.emit('error', { message: 'Message cannot be empty' });
           return;
         }
@@ -143,23 +170,16 @@ module.exports = (io, pool) => {
           return;
         }
 
-        // Verify the message belongs to the sender
         const checkResult = await pool.query(
-          `SELECT sender_id, conversation_id FROM private_messages WHERE id = $1`,
+          `SELECT sender_id FROM private_messages WHERE id = $1`,
           [parsedMessageId]
         );
 
-        if (checkResult.rows.length === 0) {
-          socket.emit('error', { message: 'Message not found' });
-          return;
-        }
-
-        if (checkResult.rows[0].sender_id !== socket.userId) {
+        if (!checkResult.rows.length || checkResult.rows[0].sender_id !== socket.userId) {
           socket.emit('error', { message: 'Unauthorized to edit this message' });
           return;
         }
 
-        // Update the message in database
         await pool.query(
           `UPDATE private_messages 
            SET content = $1, is_edited = true, edited_at = NOW() 
@@ -167,12 +187,13 @@ module.exports = (io, pool) => {
           [newContent.trim(), parsedMessageId]
         );
 
-        // Broadcast to all users in the room
-        const roomId = socket.currentRoom;
-        io.to(roomId).emit('messageEdited', {
+        io.to(socket.currentRoom).emit('messageEdited', {
           messageId: parsedMessageId,
           newContent: newContent.trim()
         });
+
+        // ✅ Emit updated conversation (in case edited message is last)
+        await emitConversationUpdate(socket.currentRoom, socket.conversationId);
 
         console.log(`✏️ Message ${parsedMessageId} edited by ${socket.username}`);
       } catch (err) {
@@ -181,7 +202,6 @@ module.exports = (io, pool) => {
       }
     });
 
-    // Delete message
     socket.on('deleteMessage', async ({ messageId }) => {
       try {
         const parsedMessageId = parseInt(messageId, 10);
@@ -190,33 +210,25 @@ module.exports = (io, pool) => {
           return;
         }
 
-        // Verify the message belongs to the sender
         const checkResult = await pool.query(
-          `SELECT sender_id, conversation_id FROM private_messages WHERE id = $1`,
+          `SELECT sender_id FROM private_messages WHERE id = $1`,
           [parsedMessageId]
         );
 
-        if (checkResult.rows.length === 0) {
-          socket.emit('error', { message: 'Message not found' });
-          return;
-        }
-
-        if (checkResult.rows[0].sender_id !== socket.userId) {
+        if (!checkResult.rows.length || checkResult.rows[0].sender_id !== socket.userId) {
           socket.emit('error', { message: 'Unauthorized to delete this message' });
           return;
         }
 
-        // Mark message as deleted in database
         await pool.query(
-          `UPDATE private_messages 
-           SET is_deleted = true 
-           WHERE id = $1`,
+          `UPDATE private_messages SET is_deleted = true WHERE id = $1`,
           [parsedMessageId]
         );
 
-        // Broadcast to all users in the room
-        const roomId = socket.currentRoom;
-        io.to(roomId).emit('messageDeleted', { messageId: parsedMessageId });
+        io.to(socket.currentRoom).emit('messageDeleted', { messageId: parsedMessageId });
+
+        // ✅ Critical: refresh last_message (may now be previous msg or null)
+        await emitConversationUpdate(socket.currentRoom, socket.conversationId);
 
         console.log(`🗑️ Message ${parsedMessageId} deleted by ${socket.username}`);
       } catch (err) {
@@ -225,19 +237,15 @@ module.exports = (io, pool) => {
       }
     });
 
-    // User typing indicator
     socket.on('userTyping', ({ recipientId }) => {
-      const roomId = socket.currentRoom;
-      socket.to(roomId).emit('userTyping', { userId: socket.userId });
+      socket.to(socket.currentRoom).emit('userTyping', { userId: socket.userId });
     });
 
     socket.on('stopTyping', ({ recipientId }) => {
-      const roomId = socket.currentRoom;
-      socket.to(roomId).emit('userStoppedTyping', { userId: socket.userId });
+      socket.to(socket.currentRoom).emit('userStoppedTyping', { userId: socket.userId });
     });
 
-    // Leave private chat
-    socket.on('leavePrivateChat', ({ recipientId }) => {
+    socket.on('leavePrivateChat', () => {
       if (socket.currentRoom) {
         socket.leave(socket.currentRoom);
         console.log(`👋 ${socket.username} left room: ${socket.currentRoom}`);
