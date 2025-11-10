@@ -21,7 +21,16 @@ const io = require('socket.io')(server, {
 });
 
 // PostgreSQL
-const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+//const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+
+const isProduction = process.env.NODE_ENV === "production";
+
+const pool = new pg.Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: isProduction ? { rejectUnauthorized: false } : false
+});
+
+
 
 // ✅ ✅ ✅ SOCKET.IO NAMESPACES SETUP ✅ ✅ ✅
 // Public community chat (no auth)
