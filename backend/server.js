@@ -60,7 +60,7 @@ app.use(express.urlencoded({ limit: "10mb", extended: true }));
 const corsOptions = {
   origin: ["http://localhost:3000",
   "http://localhost:4000",
-    "https://vibesfrontend-cduw2cz0m-hamzehmehyars-projects.vercel.app"
+    "https://vibesfrontend-3oa4prupf-hamzehmehyars-projects.vercel.app/"
  ],
   credentials: true,
   optionsSuccessStatus: 200,
