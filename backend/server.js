@@ -21,6 +21,8 @@ const io = require('socket.io')(server, {
   }
 });
 
+//adding backend to cors
+
 // PostgreSQL
 //const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 
