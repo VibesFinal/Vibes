@@ -13,7 +13,8 @@ const io = require('socket.io')(server, {
   cors: {
     origin: [
       "http://localhost:3000",
-      "http://localhost:4000"
+      "http://localhost:4000",
+      "https://vibesfrontend-cduw2cz0m-hamzehmehyars-projects.vercel.app/"
     ],
     methods: ["GET", "POST"],
     credentials: true
