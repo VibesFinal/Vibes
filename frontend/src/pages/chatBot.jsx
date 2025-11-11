@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { showAlert, handleError } from "../utils/alertUtils";
+import { BACKEND_URL } from "../api/axiosInstance";
  
 export default function Chatbot() {
   const [messages, setMessages] = useState([
@@ -27,7 +28,7 @@ export default function Chatbot() {
     
     try {
       const conversationHistory = messages.slice(1);
-      const res = await fetch("http://localhost:7777/api/chat", {
+      const res = await fetch(`${BACKEND_URL}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

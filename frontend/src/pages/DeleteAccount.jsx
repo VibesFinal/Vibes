@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axiosInstance from "../api/axiosInstance";
 import { useNavigate, useParams } from "react-router-dom";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import vLogo from "../components/images/v_logo.png"; 
@@ -21,8 +21,8 @@ export default function DeleteAccount() {
       return;
     }
 
-    axios
-      .get(`http://localhost:7777/user/delete/${token}`)
+    axiosInstance
+      .get(`/user/delete/${token}`)
       .then((res) => {
         // Clear user session
         localStorage.removeItem("token");

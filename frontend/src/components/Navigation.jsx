@@ -4,6 +4,7 @@ import logo from "./images/v_logo.png";
 import { UserCircle, House, UsersThree, ChatCircle, CaretDown, MagnifyingGlass, X, List, } from "phosphor-react";
 import NotificationBell from "./NotificationBell";
 import InviteButton from "./InviteButton";
+import { BACKEND_URL } from "../api/axiosInstance";
 
 export default function Navigation({ onLogout }) {
   const navigate = useNavigate();
@@ -19,7 +20,7 @@ export default function Navigation({ onLogout }) {
     if (token) {
       const fetchUser = async () => {
         try {
-          const res = await fetch("http://localhost:7777/user/profile", {
+          const res = await fetch(`${BACKEND_URL}/user/profile`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           const data = await res.json();
@@ -45,7 +46,7 @@ export default function Navigation({ onLogout }) {
     setSearchTerm(value);
     if (!value.trim()) return setSearchResults([]);
     try {
-      const res = await fetch(`http://localhost:7777/user/search?username=${value}`, {
+      const res = await fetch(`${BACKEND_URL}/user/search?username=${value}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       const data = await res.json();
