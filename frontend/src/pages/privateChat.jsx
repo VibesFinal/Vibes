@@ -6,7 +6,7 @@ import ChatHeader from '../components/TherapistChat/ChatHeader'; // Ensure path 
 import MessageList from '../components/TherapistChat/MessageList';
 import MessageInput from '../components/TherapistChat/MessageInput';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:7777';
+const API_URL = import.meta.env.VITE_API_URL || "https://vibes-backend-6u9u.onrender.com"
 
 const PrivateChat = ({ recipientId, onBack, onConversationUpdate }) => {
   const [socket, setSocket] = useState(null);
