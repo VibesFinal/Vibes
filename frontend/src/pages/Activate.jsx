@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axiosInstance from "../api/axiosInstance";
 import { useNavigate, useParams } from "react-router-dom";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import vLogo from "../components/images/v_logo.png"; 
@@ -24,8 +24,8 @@ export default function Activate() {
     }
 
     // Call backend API to verify the token
-    axios
-      .get(`http://localhost:7777/user/verify/${token}`)
+    axiosInstance
+      .get(`/user/verify/${token}`)
       .then((res) => {
         const { token: sessionToken, welcomeMessage, user } = res.data;
 
