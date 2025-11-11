@@ -26,6 +26,7 @@ import DeleteAccount from "./pages/DeleteAccount";
 import AdminCertifications from "./pages/AdminsCertifications";
 import ChatInbox from "./pages/ChatInbox";
 import Landing from "./pages/Landing";
+import { BACKEND_URL } from "./api/axiosInstance";
 
 // 🧩 Components
 import Navigation from "./components/Navigation";
@@ -111,7 +112,7 @@ export default function App() {
   // ✅ Example backend test call
   useEffect(() => {
     axios
-      .get("http://localhost:7777/")
+      .get(`${BACKEND_URL}`)
       .then((res) => console.log(res.data))
       .catch((err) => console.error(err));
   }, []);

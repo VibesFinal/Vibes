@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import vLogo from "../components/images/v_logo.png"; 
 import { showAlert, handleError } from "../utils/alertUtils";
+import { BACKEND_URL } from "../api/axiosInstance";
 
 export default function Activate() {
   // State to track loading, message, and success/failure
@@ -25,7 +26,7 @@ export default function Activate() {
 
     // Call backend API to verify the token
     axios
-      .get(`http://localhost:7777/user/verify/${token}`)
+      .get(`${BACKEND_URL}/user/verify/${token}`)
       .then((res) => {
         const { token: sessionToken, welcomeMessage, user } = res.data;
 
