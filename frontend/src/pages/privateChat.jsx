@@ -1,7 +1,7 @@
 // components/privateChat.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
-import axiosInstance from '../api/axiosInstance';
+import { BACKEND_URL } from '../api/axiosInstance';
 import ChatHeader from '../components/TherapistChat/ChatHeader'; // Ensure path is correct
 import MessageList from '../components/TherapistChat/MessageList';
 import MessageInput from '../components/TherapistChat/MessageInput';
@@ -45,7 +45,7 @@ const PrivateChat = ({ recipientId, onBack, onConversationUpdate }) => {
     }
 
     // Connect to /private-chat namespace
-    const newSocket = io(`${API_URL}/private-chat`, {
+    const newSocket = io(`${BACKEND_URL}/private-chat`, {
       auth: { token },
       transports: ['websocket', 'polling'],
       reconnection: true,
@@ -120,7 +120,7 @@ const PrivateChat = ({ recipientId, onBack, onConversationUpdate }) => {
     const loadMessages = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/private/history/${recipientId}`, {
+        const response = await fetch(`${BACKEND_URL}/private/history/${recipientId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 

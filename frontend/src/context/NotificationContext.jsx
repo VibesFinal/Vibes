@@ -1,11 +1,12 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import io from 'socket.io-client';
 import axiosInstance from '../api/axiosInstance'; // ← Step 1: Import axios instance
+import { BACKEND_URL } from '../api/axiosInstance';
 
 const NotificationContext = createContext();
 
 // Replace with your backend URL
-const SOCKET_URL = 'http://localhost:7777'; // or your deployed URL
+const SOCKET_URL = BACKEND_URL; // or your deployed URL
 
 export const useNotifications = () => {
   const context = useContext(NotificationContext);

@@ -6,9 +6,10 @@ import ChatInput from '../components/chat/ChatInput';
 import MessageList from '../components/chat/MessageList';
 import TypingIndicator from '../components/chat/TypingIndicator';
 import { showAlert, handleError } from '../utils/alertUtils';
+import { BACKEND_URL } from '../api/axiosInstance';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:7777';
-const SOCKET_SERVER_URL = API_URL;
+//const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:7777';
+const SOCKET_SERVER_URL = BACKEND_URL;
 
 const CommunityChat = () => {
   const { id } = useParams();
