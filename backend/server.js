@@ -15,7 +15,8 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim())
   : [
       "http://localhost:3000",
-      "http://localhost:4000"
+      "http://localhost:4000",
+      "https://vibesfrontend.vercel.app"
     ];
 
 console.log('🌐 Allowed CORS origins:', allowedOrigins);
@@ -62,6 +63,7 @@ const corsOptions = {
   origin: allowedOrigins,
   credentials: true,
   optionsSuccessStatus: 200,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
 };
 app.use(cors(corsOptions));
