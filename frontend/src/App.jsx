@@ -6,7 +6,7 @@ import {
   Navigate,
   useLocation,
 } from "react-router-dom";
-import axios from "axios";
+import axiosInstance from "./api/axiosInstance";
 import "./App.css";
 
 // 🧭 Pages
@@ -110,8 +110,8 @@ export default function App() {
 
   // ✅ Example backend test call
   useEffect(() => {
-    axios
-      .get("http://localhost:7777/")
+    axiosInstance
+      .get("/")
       .then((res) => console.log(res.data))
       .catch((err) => console.error(err));
   }, []);
