@@ -7,6 +7,8 @@ import vLogo from "../components/images/v_logo.png";
 import { showAlert, handleError } from "../utils/alertUtils";
 import { BACKEND_URL } from "../api/axiosInstance";
 
+const API_URL = import.meta.env.VITE_API_URL
+
 export default function Activate() {
   // State to track loading, message, and success/failure
   const [loading, setLoading] = useState(true); 
@@ -27,7 +29,7 @@ export default function Activate() {
 
     // Call backend API to verify the token
     axios
-      .get(`${BACKEND_URL}/user/verify/${token}`)
+      .get(`${API_URL}/user/verify/${token}`)
       .then((res) => {
         const { token: sessionToken, welcomeMessage, user } = res.data;
 
