@@ -14,6 +14,9 @@ export default function Activate({ onActivate }) {
   const { token } = useParams();
 
   useEffect(() => {
+    console.log("🔍 Activate component mounted");
+    console.log("📝 Token from URL:", token);
+    
     if (!token) {
       setMessage("❌ Invalid activation link.");
       setSuccess(false);
@@ -21,6 +24,8 @@ export default function Activate({ onActivate }) {
       return;
     }
 
+    console.log("🌐 Making request to:", `/user/verify/${token}`);
+    
     // ✅ Use axiosInstance which has the correct baseURL
     axiosInstance
       .get(`/user/verify/${token}`) // ✅ Remove BACKEND_URL, axiosInstance handles it
@@ -105,5 +110,3 @@ export default function Activate({ onActivate }) {
     </div>
   );
 }
-
-//comment
