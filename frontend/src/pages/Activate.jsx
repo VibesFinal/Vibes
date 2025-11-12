@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import vLogo from "../components/images/v_logo.png"; 
 import { showAlert } from "../utils/alertUtils";
-import { BACKEND_URL } from "../api/axiosInstance";
+import axiosInstance from "../api/axiosInstance"; // ✅ Use axiosInstance instead of axios
 
 export default function Activate({ onActivate }) {
   const [loading, setLoading] = useState(true); 
@@ -22,8 +21,9 @@ export default function Activate({ onActivate }) {
       return;
     }
 
-    axios
-      .get(`${BACKEND_URL}/user/verify/${token}`)
+    // ✅ Use axiosInstance which has the correct baseURL
+    axiosInstance
+      .get(`/user/verify/${token}`) // ✅ Remove BACKEND_URL, axiosInstance handles it
       .then((res) => {
         const { token: sessionToken, welcomeMessage, user } = res.data;
 
