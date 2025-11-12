@@ -38,11 +38,7 @@ import InviteButton from "./components/InviteButton";
 // 🧠 Context
 import { NotificationProvider } from "./context/NotificationContext";
 
-// -----------------------------------------------------------------------------
-// Helper Components
-// -----------------------------------------------------------------------------
-
-// ✅ Smooth scroll to FAQ section
+// Helper Components (keeping all your existing helper components)
 const ScrollToFAQ = () => {
   const location = useLocation();
 
@@ -55,7 +51,6 @@ const ScrollToFAQ = () => {
   return null;
 };
 
-// ✅ Floating Chatbot button
 const FloatingFAQButton = ({ onClick }) => (
   <button
     onClick={onClick}
@@ -79,7 +74,6 @@ const FloatingFAQButton = ({ onClick }) => (
   </button>
 );
 
-// ✅ Admin-only route protection
 const AdminRoute = ({ element }) => {
   const user = JSON.parse(localStorage.getItem("user"));
   const token = localStorage.getItem("token");
@@ -90,7 +84,6 @@ const AdminRoute = ({ element }) => {
   return element;
 };
 
-// ✅ Authenticated Layout Wrapper
 const AuthenticatedLayout = ({ children, onLogout, userId }) => {
   const [showChatBot, setShowChatBot] = useState(false);
 
@@ -186,10 +179,6 @@ const AuthenticatedLayout = ({ children, onLogout, userId }) => {
   );
 };
 
-// -----------------------------------------------------------------------------
-// Main App
-// -----------------------------------------------------------------------------
-
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -197,14 +186,12 @@ export default function App() {
   const currentUser = JSON.parse(localStorage.getItem("user"));
   const userId = currentUser?.id;
 
-  // ✅ Check authentication on mount
   useEffect(() => {
     const token = localStorage.getItem("token");
     setIsAuthenticated(!!token);
     setIsLoading(false);
   }, []);
 
-  // ✅ Example backend test call
   useEffect(() => {
     axios
       .get(`${BACKEND_URL}`)
@@ -219,7 +206,7 @@ export default function App() {
   return (
     <Router>
       <Routes>
-        {/* ✅ GLOBAL ROUTES - Available regardless of auth status */}
+        {/* ✅ PUBLIC ROUTES - MUST BE FIRST, OUTSIDE AUTH CHECK */}
         <Route 
           path="/user/verify/:token" 
           element={<Activate onActivate={() => setIsAuthenticated(true)} />} 
@@ -227,9 +214,17 @@ export default function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/delete/:token" element={<DeleteAccount />} />
-
-        {/* ✅ Authenticated Routes */}
-        {isAuthenticated && userId ? (
+        
+        {/* Unauthenticated Routes */}
+        {!isAuthenticated ? (
+          <>
+            <Route path="/" element={<Landing />} />
+            <Route path="/login" element={<Login onLogin={() => setIsAuthenticated(true)} />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="*" element={<Navigate to="/login" />} />
+          </>
+        ) : (
+          /* ✅ Authenticated Routes */
           <>
             <Route 
               path="/" 
@@ -311,14 +306,6 @@ export default function App() {
                 </AuthenticatedLayout>
               } 
             />
-          </>
-        ) : (
-          /* 🚫 Unauthenticated Routes */
-          <>
-            <Route path="/" element={<Landing />} />
-            <Route path="/login" element={<Login onLogin={() => setIsAuthenticated(true)} />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="*" element={<Navigate to="/login" />} />
           </>
         )}
       </Routes>
