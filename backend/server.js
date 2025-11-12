@@ -14,6 +14,7 @@ const io = require('socket.io')(server, {
     origin: [
       "http://localhost:3000",
       "http://localhost:4000",
+      "https://vibes-frontend-8jla.onrender.com"
     ],
     methods: ["GET", "POST"],
     credentials: true
