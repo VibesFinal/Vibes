@@ -9,15 +9,45 @@ const errorHandler = require("./middleware/errorHandler");
 // App & server setup
 const app = express();
 const server = http.createServer(app);
+
+// ✅ CORS Configuration - MUST be before Socket.IO setup
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:4000",
+  "https://vibes-frontend-8jla.onrender.com"
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.log('❌ Blocked by CORS:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  optionsSuccessStatus: 200,
+  allowedHeaders: ["Content-Type", "Authorization"],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
+};
+
+// Apply CORS middleware BEFORE other middleware
+app.use(cors(corsOptions));
+
+// Handle preflight requests
+app.options('*', cors(corsOptions));
+
+// Socket.IO setup with CORS
 const io = require('socket.io')(server, {
   cors: {
-    origin: [
-      "http://localhost:3000",
-      "http://localhost:4000",
-      "https://vibes-frontend-8jla.onrender.com"
-    ],
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
-    credentials: true
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"]
   }
 });
 
@@ -38,28 +68,17 @@ require('./socket/notifications')(io, pool);
 
 // ✅ Attach io to req (for HTTP routes that emit notifications)
 app.use((req, res, next) => {
-  req.io = io; // 👈 Still needed for HTTP-triggered notifications
+  req.io = io;
   next();
 });
 
-// Middleware
+// Middleware - AFTER CORS
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
-
-const corsOptions = {
-  origin: ["http://localhost:3000", 
-    "http://localhost:4000" ,
-  "https://vibes-frontend-8jla.onrender.com"],
-  credentials: true,
-  optionsSuccessStatus: 200,
-  allowedHeaders: ["Content-Type", "Authorization"]
-};
-app.use(cors(corsOptions));
 
 // --------------------------
 // ROUTES
 // --------------------------
-
 
 const auth = require("./Routes/auth");
 app.use("/user", auth);
@@ -122,13 +141,14 @@ app.use('/notifications', notifications);
 const therapist = require("./Routes/therapist");
 app.use("/api/therapist", therapist);
 
+// Error handler middleware (must be last)
 app.use(errorHandler);
 
 // --------------------------
 // START SERVER
 // --------------------------
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 7777;
 
 pool
   .connect()
@@ -144,9 +164,10 @@ pool
         console.log(
           `✅ Connected to PostgreSQL as user '${dbUser}' on database '${dbName}'`
         );
+        console.log(`🌐 Allowed origins:`, allowedOrigins);
 
         server.listen(PORT, () => {
-          console.log(`🚀 Express + Socket.io server running on http://localhost:${PORT}`);
+          console.log(`🚀 Express + Socket.io server running on port ${PORT}`);
           console.log(`💬 Real-time community chat system initialized`);
         });
       });
