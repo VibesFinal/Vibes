@@ -3,20 +3,18 @@ import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import vLogo from "../components/images/v_logo.png"; 
-import { showAlert, handleError } from "../utils/alertUtils";
+import { showAlert } from "../utils/alertUtils";
 import { BACKEND_URL } from "../api/axiosInstance";
 
-export default function Activate() {
-  // State to track loading, message, and success/failure
+export default function Activate({ onActivate }) {
   const [loading, setLoading] = useState(true); 
   const [message, setMessage] = useState("");   
   const [success, setSuccess] = useState(false); 
 
-  const navigate = useNavigate(); // To navigate programmatically
-  const { token } = useParams(); // Get token from the URL
+  const navigate = useNavigate();
+  const { token } = useParams();
 
   useEffect(() => {
-    // If no token is found in the URL
     if (!token) {
       setMessage("❌ Invalid activation link.");
       setSuccess(false);
@@ -24,7 +22,6 @@ export default function Activate() {
       return;
     }
 
-    // Call backend API to verify the token
     axios
       .get(`${BACKEND_URL}/user/verify/${token}`)
       .then((res) => {
@@ -38,27 +35,26 @@ export default function Activate() {
         setMessage(welcomeMessage);
         setSuccess(true);
 
-        // Redirect to login page after 2 seconds
-        setTimeout(() => navigate("/login"), 2000);
+        // Update authentication state in App.jsx
+        if (onActivate) {
+          onActivate();
+        }
+
+        // Show success alert
+        showAlert(welcomeMessage, "success");
+
+        // Redirect to feed page after 2 seconds
+        setTimeout(() => navigate("/feed"), 2000);
       })
       .catch((err) => {
-        // Handle error response
         console.error("Activation error:", err);
-        // setMessage(
-        //   err.response?.data?.message ||
-        //     err.response?.data ||
-        //     "Activation failed. Please try again."
-        // );
-        // setSuccess(false);
-
         const errMsg = err.response?.data?.message || "Activation failed. Please try again.";
         setMessage(errMsg);
         setSuccess(false);
-        showAlert(errMsg); 
-
+        showAlert(errMsg, "error"); 
       })
-      .finally(() => setLoading(false)); // Stop loading
-  }, [token, navigate]);
+      .finally(() => setLoading(false));
+  }, [token, navigate, onActivate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center relative">
@@ -83,27 +79,29 @@ export default function Activate() {
 
         {loading ? (
           <>
-            {/* Loading state */}
             <Loader2 className="w-12 h-12 text-[#C05299] animate-spin mx-auto" />
             <p className="mt-4 text-gray-700 text-lg">Activating your account...</p>
           </>
         ) : (
           <>
-            {/* Success or failure icon */}
             {success ? (
               <CheckCircle className="w-16 h-16 text-[#C05299] mx-auto" />
             ) : (
               <XCircle className="w-16 h-16 text-[#9333EA] mx-auto" />
             )}
 
-            {/* Display message */}
             <h2 className="mt-4 text-xl font-semibold text-gray-800">
               {message}
             </h2>
+
+            {success && (
+              <p className="mt-2 text-gray-600">
+                Redirecting to your feed...
+              </p>
+            )}
           </>
         )}
       </div>
     </div>
   );
-
 }
