@@ -38,8 +38,8 @@ const corsOptions = {
 // Apply CORS middleware BEFORE other middleware
 app.use(cors(corsOptions));
 
-// Handle preflight requests
-app.options('*', cors(corsOptions));
+// ❌ REMOVED - This line causes the error in Express 5.x / newer path-to-regexp
+// app.options('*', cors(corsOptions));
 
 // Socket.IO setup with CORS
 const io = require('socket.io')(server, {
