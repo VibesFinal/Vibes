@@ -23,8 +23,8 @@ export default function Activate({ onActivate }) {
     }
 
     // Use axiosInstance which has the correct baseURL
-    axios
-      .get(`https://vibes-backend-u39x.onrender.com/user/verify/${token}`)
+    axiosInstance
+      .get(`/user/verify/${token}`)
       .then((res) => {
         const { token: sessionToken, welcomeMessage, user } = res.data;
 
