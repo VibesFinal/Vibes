@@ -4,6 +4,7 @@ import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import vLogo from "../components/images/v_logo.png"; 
 import { showAlert } from "../utils/alertUtils";
 import axiosInstance from "../api/axiosInstance";
+import axios from "axios";
 
 export default function Activate({ onActivate }) {
   const [loading, setLoading] = useState(true); 
@@ -22,8 +23,8 @@ export default function Activate({ onActivate }) {
     }
 
     // Use axiosInstance which has the correct baseURL
-    axiosInstance
-      .get(`/user/verify/${token}`)
+    axios
+      .get(`https://vibes-backend-u39x.onrender.com/user/verify/${token}`)
       .then((res) => {
         const { token: sessionToken, welcomeMessage, user } = res.data;
 
