@@ -4,7 +4,6 @@ import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import vLogo from "../components/images/v_logo.png"; 
 import { showAlert } from "../utils/alertUtils";
 import axiosInstance from "../api/axiosInstance";
-import axios from "axios";
 
 export default function Activate({ onActivate }) {
   const [loading, setLoading] = useState(true); 
@@ -15,17 +14,26 @@ export default function Activate({ onActivate }) {
   const { token } = useParams();
 
   useEffect(() => {
+    console.log("🎯 Activate component mounted!");
+    console.log("🔍 Token from URL:", token);
+    
     if (!token) {
+      console.log("❌ No token found in URL");
       setMessage("❌ Invalid activation link.");
       setSuccess(false);
       setLoading(false);
       return;
     }
 
+    console.log("📡 Making API call to:", `/user/verify/${token}`);
+    console.log("🌐 Base URL:", axiosInstance.defaults.baseURL);
+
     // Use axiosInstance which has the correct baseURL
     axiosInstance
       .get(`/user/verify/${token}`)
       .then((res) => {
+        console.log("✅ Success response:", res.data);
+        
         const { token: sessionToken, welcomeMessage, user } = res.data;
 
         // Store token and user info in localStorage
@@ -48,13 +56,21 @@ export default function Activate({ onActivate }) {
         setTimeout(() => navigate("/feed"), 2000);
       })
       .catch((err) => {
-        console.error("Activation error:", err);
+        console.error("❌ Activation error:", err);
+        console.error("❌ Error response:", err.response);
+        console.error("❌ Error status:", err.response?.status);
+        console.error("❌ Error data:", err.response?.data);
+        console.error("❌ Request URL:", err.config?.url);
+        
         const errMsg = err.response?.data?.message || "Activation failed. Please try again.";
         setMessage(errMsg);
         setSuccess(false);
         showAlert(errMsg, "error"); 
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        console.log("🏁 Request finished");
+        setLoading(false);
+      });
   }, [token, navigate, onActivate]);
 
   return (
