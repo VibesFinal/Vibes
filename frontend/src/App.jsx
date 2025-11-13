@@ -233,7 +233,7 @@ export default function App() {
             <Route path="/communities/:id/chat" element={<CommunityChat />} />
             <Route path="/health-faq" element={<HealthFAQ />} />
             <Route path="/chat" element={<ChatInbox />} />
-            {/*<Route path="/user/verify/:token" element={<Activate />} />*/}
+            <Route path="/user/verify/:token" element={<Activate />} />
             <Route
               path="/admin/certifications"
               element={<AdminRoute element={<AdminCertifications />} />}
