@@ -9,20 +9,33 @@ const errorHandler = require("./middleware/errorHandler");
 // App & server setup
 const app = express();
 const server = http.createServer(app);
-const io = require('socket.io')(server, {
-  cors: {
-    origin: [
+
+// ✅ Get allowed origins from environment variable or use defaults
+const allowedOrigins = process.env.ALLOWED_ORIGINS 
+  ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim())
+  : [
       "http://localhost:3000",
       "http://localhost:4000",
       "https://vibes-frontend-8jla.onrender.com"
-    ],
+    ];
+
+console.log('🌐 Allowed CORS origins:', allowedOrigins);
+
+const io = require('socket.io')(server, {
+  cors: {
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
     credentials: true
   }
 });
 
 // PostgreSQL
-const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+const isProduction = process.env.NODE_ENV === "production";
+
+const pool = new pg.Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: isProduction ? { rejectUnauthorized: false } : false
+});
 
 // ✅ ✅ ✅ SOCKET.IO NAMESPACES SETUP ✅ ✅ ✅
 // Public community chat (no auth)
@@ -38,7 +51,7 @@ require('./socket/notifications')(io, pool);
 
 // ✅ Attach io to req (for HTTP routes that emit notifications)
 app.use((req, res, next) => {
-  req.io = io; // 👈 Still needed for HTTP-triggered notifications
+  req.io = io;
   next();
 });
 
@@ -47,9 +60,7 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
 const corsOptions = {
-  origin: ["http://localhost:3000", 
-    "http://localhost:4000" ,
-  "https://vibes-frontend-8jla.onrender.com"],
+  origin: allowedOrigins,
   credentials: true,
   optionsSuccessStatus: 200,
   allowedHeaders: ["Content-Type", "Authorization"]
@@ -59,7 +70,6 @@ app.use(cors(corsOptions));
 // --------------------------
 // ROUTES
 // --------------------------
-
 
 const auth = require("./Routes/auth");
 app.use("/user", auth);
