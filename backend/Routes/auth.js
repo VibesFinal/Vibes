@@ -26,7 +26,7 @@ const { generateWelcomeMessage } = require('./welcome');
 const { ERROR_MESSAGES } = require("../utils/errorMessages.js");
 
 // Frontend URL
-const FRONTEND_URL = "https://vibes-backend-u39x.onrender.com";
+const FRONTEND_URL = "https://vibes-frontend-8jla.onrender.com";
 
 
 // -------------------- Register --------------------
