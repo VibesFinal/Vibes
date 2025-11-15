@@ -1,12 +1,11 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import io from 'socket.io-client';
-import axiosInstance from '../api/axiosInstance'; // ← Step 1: Import axios instance
+import axiosInstance from '../api/axiosInstance';
 import { BACKEND_URL } from '../api/axiosInstance';
 
 const NotificationContext = createContext();
 
-// Replace with your backend URL
-const SOCKET_URL = BACKEND_URL; // or your deployed URL
+const SOCKET_URL = BACKEND_URL;
 
 export const useNotifications = () => {
   const context = useContext(NotificationContext);
@@ -41,7 +40,7 @@ export const NotificationProvider = ({ children, userId }) => {
     };
   }, [userId]);
 
-  // Step 2: Fetch unread notifications using axios
+  // Fetch unread notifications
   useEffect(() => {
     if (!userId) return;
 
@@ -59,21 +58,19 @@ export const NotificationProvider = ({ children, userId }) => {
     fetchNotifications();
   }, [userId]);
 
-  // Step 3: Mark a notification as read using axios
+  // Mark a notification as read and REMOVE it from the list
   const markAsRead = async (id) => {
     try {
       await axiosInstance.patch(`/notifications/read/${id}`);
-      setNotifications((prev) =>
-        prev.map((notif) =>
-          notif.id === id ? { ...notif, is_read: true } : notif
-        )
-      );
+      
+      // Remove the notification from the list instead of just marking it as read
+      setNotifications((prev) => prev.filter((notif) => notif.id !== id));
     } catch (err) {
       console.error('Failed to mark as read:', err);
     }
   };
 
-  // Step 4: Mark all as read using axios
+  // Mark all as read and CLEAR the list
   const markAllAsRead = async () => {
     const unreadIds = notifications
       .filter((n) => !n.is_read)
@@ -84,9 +81,8 @@ export const NotificationProvider = ({ children, userId }) => {
         unreadIds.map((id) => axiosInstance.patch(`/notifications/read/${id}`))
       );
 
-      setNotifications((prev) =>
-        prev.map((n) => ({ ...n, is_read: true }))
-      );
+      // Clear all notifications from the list
+      setNotifications([]);
     } catch (err) {
       console.error('Failed to mark all as read:', err);
     }
