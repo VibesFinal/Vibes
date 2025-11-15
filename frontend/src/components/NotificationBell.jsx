@@ -7,7 +7,6 @@ const NotificationBell = ({ size = 24, shouldClose }) => {
   const { unreadCount, notifications, markAsRead, markAllAsRead, loading } = useNotifications();
   const [isOpen, setIsOpen] = useState(false);
 
-  
   // closes the dropdown when shouldClose changes to true
   useEffect(() => {
     if (shouldClose) setIsOpen(false);
@@ -25,14 +24,24 @@ const NotificationBell = ({ size = 24, shouldClose }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
 
-
+  // ✨ NEW: Mark all as read when dropdown opens
+  useEffect(() => {
+    if (isOpen && unreadCount > 0) {
+      // Small delay so user sees the notifications first
+      const timer = setTimeout(() => {
+        markAllAsRead();
+      }, 500); // 500ms delay - adjust as needed
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, unreadCount, markAllAsRead]);
 
   return (
     <div className="relative">
       {/* Modern Glassmorphic Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-center p-2 rounded-2xl bg-white/80 backdrop-blur-2xl hover:bg-white/90 transition-all duration-300 border border-[#e9d5ff]/50 shadow-sm hover:shadow-md"
+        className="notification-button flex items-center justify-center p-2 rounded-2xl bg-white/80 backdrop-blur-2xl hover:bg-white/90 transition-all duration-300 border border-[#e9d5ff]/50 shadow-sm hover:shadow-md"
         aria-label="Notifications"
       >
         {/* Bell Icon: Primary brand color */}
@@ -53,7 +62,7 @@ const NotificationBell = ({ size = 24, shouldClose }) => {
       {/* Dropdown */}
       {isOpen && (
         <div 
-          className="absolute right-0 mt-3 w-80 bg-white/90 backdrop-blur-2xl shadow-xl rounded-2xl z-50 max-h-96 overflow-y-auto border border-[#e9d5ff]/50"
+          className="notification-dropdown absolute right-0 mt-3 w-80 bg-white/90 backdrop-blur-2xl shadow-xl rounded-2xl z-50 max-h-96 overflow-y-auto border border-[#e9d5ff]/50"
           onClick={() => setIsOpen(false)}
         >
           <div 
