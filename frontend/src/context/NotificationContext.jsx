@@ -1,11 +1,12 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import io from 'socket.io-client';
-import axiosInstance from '../api/axiosInstance';
+import axiosInstance from '../api/axiosInstance'; // ← Step 1: Import axios instance
 import { BACKEND_URL } from '../api/axiosInstance';
 
 const NotificationContext = createContext();
 
-const SOCKET_URL = BACKEND_URL;
+// Replace with your backend URL
+const SOCKET_URL = BACKEND_URL; // or your deployed URL
 
 export const useNotifications = () => {
   const context = useContext(NotificationContext);
@@ -40,7 +41,7 @@ export const NotificationProvider = ({ children, userId }) => {
     };
   }, [userId]);
 
-  // Fetch unread notifications
+  // Step 2: Fetch unread notifications using axios
   useEffect(() => {
     if (!userId) return;
 
@@ -58,19 +59,21 @@ export const NotificationProvider = ({ children, userId }) => {
     fetchNotifications();
   }, [userId]);
 
-  // Mark a notification as read and REMOVE it from the list
+  // Step 3: Mark a notification as read using axios
   const markAsRead = async (id) => {
     try {
       await axiosInstance.patch(`/notifications/read/${id}`);
-      
-      // Remove the notification from the list instead of just marking it as read
-      setNotifications((prev) => prev.filter((notif) => notif.id !== id));
+      setNotifications((prev) =>
+        prev.map((notif) =>
+          notif.id === id ? { ...notif, is_read: true } : notif
+        )
+      );
     } catch (err) {
       console.error('Failed to mark as read:', err);
     }
   };
 
-  // Mark all as read and CLEAR the list
+  // Step 4: Mark all as read using axios
   const markAllAsRead = async () => {
     const unreadIds = notifications
       .filter((n) => !n.is_read)
@@ -81,8 +84,9 @@ export const NotificationProvider = ({ children, userId }) => {
         unreadIds.map((id) => axiosInstance.patch(`/notifications/read/${id}`))
       );
 
-      // Clear all notifications from the list
-      setNotifications([]);
+      setNotifications((prev) =>
+        prev.map((n) => ({ ...n, is_read: true }))
+      );
     } catch (err) {
       console.error('Failed to mark all as read:', err);
     }
